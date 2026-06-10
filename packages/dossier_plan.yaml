@@ -1,0 +1,51 @@
+# UI Package - Dossier Dashboard Helpers
+# State for the floor-plan view (dashboards/dos/views/plan.yaml):
+# which floor is shown and which room's detail bar is open. Pure
+# dashboard state; no initial values so selections survive restarts.
+# Also defines the night-mode switch the theme's palette flip reads.
+
+input_boolean:
+  dossier_night_mode:
+    name: "Dossier Night Mode"
+    icon: "mdi:theme-light-dark"
+
+input_select:
+  dossier_plan_floor:
+    name: "Dossier Plan Floor"
+    icon: "mdi:floor-plan"
+    options:
+      - "ground"
+      - "first"
+      - "attic"
+
+  dossier_plan_room:
+    name: "Dossier Plan Selected Room"
+    icon: "mdi:select-marker"
+    options:
+      - "none"
+      - "living"
+      - "kitchen"
+      - "master"
+      - "study"
+      - "attic"
+
+automation:
+  - id: dossier_plan_reset_room_on_floor_change
+    alias: "UI: Dossier plan - close room detail on floor change"
+    description: >-
+      Mirrors the design prototype: switching floors closes the open
+      room detail bar so the detail never refers to a room that is no
+      longer visible.
+    mode: single
+    trigger:
+      - trigger: state
+        entity_id: input_select.dossier_plan_floor
+    condition:
+      - condition: template
+        value_template: "{{ states('input_select.dossier_plan_room') != 'none' }}"
+    action:
+      - action: input_select.select_option
+        target:
+          entity_id: input_select.dossier_plan_room
+        data:
+          option: "none"

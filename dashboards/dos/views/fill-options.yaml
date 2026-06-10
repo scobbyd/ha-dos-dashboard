@@ -1,0 +1,396 @@
+# _anchor_defs is not a lovelace/button-card key; it only hosts the YAML anchor
+# definitions shared across this file, so deleting/reordering cards can't break aliases.
+_anchor_defs:
+- &id001
+  padding: '0'
+- &id002
+  show: false
+- &id003
+  enabled: false
+- &id009
+  left: 2
+  right: 8
+  top: 8
+  bottom: 0
+- &id006
+  lines: *id002
+- &id007
+  lines:
+    show: true
+title: Fill Options
+path: fill-options
+icon: mdi:format-paint
+type: panel
+theme: dos
+cards:
+- type: custom:stack-in-card
+  mode: vertical
+  card_mod: !include _partials/frame.yaml
+  cards:
+  - type: custom:button-card
+    show_icon: false
+    show_name: false
+    show_state: false
+    show_label: true
+    tap_action:
+      action: none
+    label: "[[[\n  return `<div style=\"border-bottom:1.4px solid var(--dos-ink); margin:0 0 22px 0; padding:0 0 16px 0;\">\n    <div style=\"font-size:clamp(20px,2.4cqw,32px); font-weight:700; color:var(--dos-ink); letter-spacing:-0.01em; line-height:1.05;\">Fill Options</div>\n    <div style=\"font-size:clamp(10.5px,1.05cqw,13.5px); color:var(--dos-muted); margin-top:5px; letter-spacing:0.02em;\">Cold-chain daily energy drawn four ways: bars, line, area and per-device stack</div>\n  </div>`;\n]]]\n"
+    styles:
+      card:
+      - border-radius: '0'
+      - *id001
+      label:
+      - font-family: inherit
+      - text-align: left
+      - justify-self: stretch
+      - *id001
+  - type: custom:layout-card
+    layout_type: custom:grid-layout
+    layout:
+      grid-template-columns: repeat(auto-fit, minmax(380px, 1fr))
+      grid-gap: 26px 36px
+      margin: 0
+      padding: 0
+    cards:
+    - type: custom:stack-in-card
+      mode: vertical
+      cards:
+      - type: custom:button-card
+        template: dos_section_header
+        variables:
+          title: Cold chain &middot; daily bars
+      - type: custom:apexcharts-card
+        graph_span: 14d
+        header: *id002
+        series:
+        - entity: sensor.cold_chain_energy
+          name: Daily
+          color: '#5d8499'
+          type: column
+          group_by:
+            func: diff
+            duration: 1d
+        yaxis:
+        - min: 0
+          decimals: 0
+          apex_config:
+            show: true
+            tickAmount: 3
+            labels:
+              offsetX: -2
+              style:
+                fontSize: 8px
+              formatter: 'EVAL:function(v){ if (v == null) return ''''; return Math.round(v) + '' kWh''; }
+
+                '
+        apex_config:
+          colors:
+          - '#5d8499'
+          chart:
+            height: 180
+            parentHeightOffset: 0
+            offsetX: -4
+            toolbar: *id002
+            animations: *id003
+          plotOptions:
+            bar:
+              columnWidth: 65%
+              borderRadius: 0
+          fill:
+            opacity: 0.85
+          grid:
+            show: true
+            strokeDashArray: 2
+            padding: *id009
+            xaxis: *id006
+            yaxis: *id007
+          legend: *id002
+          dataLabels: *id003
+          tooltip:
+            enabled: true
+            x:
+              format: ddd dd
+          annotations:
+            yaxis:
+            - y: 0
+              strokeDashArray: 3
+              borderColor: rgba(140,133,122,0.55)
+              opacity: 0.7
+          xaxis:
+            type: datetime
+            labels:
+              show: true
+              style:
+                fontSize: 8px
+              format: dd
+            axisBorder: *id002
+            axisTicks: *id002
+        card_mod:
+          style: "ha-card {\n  padding: 0 !important; margin: 2px 0 14px 0 !important;\n}\n.apexcharts-bar-area { fill:#5d8499 !important; }\n"
+    - type: custom:stack-in-card
+      mode: vertical
+      cards:
+      - type: custom:button-card
+        template: dos_section_header
+        variables:
+          title: Cold chain &middot; daily line
+      - type: custom:apexcharts-card
+        graph_span: 14d
+        header: *id002
+        series:
+        - entity: sensor.cold_chain_energy
+          name: Daily
+          color: '#5d8499'
+          type: line
+          group_by:
+            func: diff
+            duration: 1d
+          stroke_width: 2.2
+        yaxis:
+        - min: 0
+          decimals: 0
+          apex_config:
+            show: true
+            tickAmount: 3
+            labels:
+              offsetX: -2
+              style:
+                fontSize: 8px
+              formatter: 'EVAL:function(v){ if (v == null) return ''''; return Math.round(v) + '' kWh''; }
+
+                '
+        apex_config:
+          colors:
+          - '#5d8499'
+          chart:
+            height: 180
+            parentHeightOffset: 0
+            offsetX: -4
+            toolbar: *id002
+            animations: *id003
+          plotOptions:
+            bar:
+              columnWidth: 65%
+              borderRadius: 0
+          fill:
+            opacity: 0.85
+          grid:
+            show: true
+            strokeDashArray: 2
+            padding: *id009
+            xaxis: *id006
+            yaxis: *id007
+          legend: *id002
+          dataLabels: *id003
+          tooltip:
+            enabled: true
+            x:
+              format: ddd dd
+          annotations:
+            yaxis:
+            - y: 0
+              strokeDashArray: 3
+              borderColor: rgba(140,133,122,0.55)
+              opacity: 0.7
+          xaxis:
+            type: datetime
+            labels:
+              show: true
+              style:
+                fontSize: 8px
+              format: dd
+            axisBorder: *id002
+            axisTicks: *id002
+          stroke:
+            width: 2.2
+            curve: straight
+        card_mod:
+          style: "ha-card {\n  padding: 0 !important; margin: 2px 0 14px 0 !important;\n}\n"
+    - type: custom:stack-in-card
+      mode: vertical
+      cards:
+      - type: custom:button-card
+        template: dos_section_header
+        variables:
+          title: Cold chain &middot; daily area
+      - type: custom:apexcharts-card
+        graph_span: 14d
+        header: *id002
+        series:
+        - entity: sensor.cold_chain_energy
+          name: Daily
+          color: '#5d8499'
+          type: area
+          group_by:
+            func: diff
+            duration: 1d
+          stroke_width: 2
+        yaxis:
+        - min: 0
+          decimals: 0
+          apex_config:
+            show: true
+            tickAmount: 3
+            labels:
+              offsetX: -2
+              style:
+                fontSize: 8px
+              formatter: 'EVAL:function(v){ if (v == null) return ''''; return Math.round(v) + '' kWh''; }
+
+                '
+        apex_config:
+          colors:
+          - '#5d8499'
+          chart:
+            height: 180
+            parentHeightOffset: 0
+            offsetX: -4
+            toolbar: *id002
+            animations: *id003
+          plotOptions:
+            bar:
+              columnWidth: 65%
+              borderRadius: 0
+          fill:
+            type: gradient
+            gradient:
+              shadeIntensity: 0.4
+              opacityFrom: 0.42
+              opacityTo: 0.05
+          grid:
+            show: true
+            strokeDashArray: 2
+            padding: *id009
+            xaxis: *id006
+            yaxis: *id007
+          legend: *id002
+          dataLabels: *id003
+          tooltip:
+            enabled: true
+            x:
+              format: ddd dd
+          annotations:
+            yaxis:
+            - y: 0
+              strokeDashArray: 3
+              borderColor: rgba(140,133,122,0.55)
+              opacity: 0.7
+          xaxis:
+            type: datetime
+            labels:
+              show: true
+              style:
+                fontSize: 8px
+              format: dd
+            axisBorder: *id002
+            axisTicks: *id002
+          stroke:
+            width: 2
+            curve: smooth
+        card_mod:
+          style: "ha-card {\n  padding: 0 !important; margin: 2px 0 14px 0 !important;\n}\n"
+    - type: custom:stack-in-card
+      mode: vertical
+      cards:
+      - type: custom:button-card
+        template: dos_section_header
+        variables:
+          title: Cold chain &middot; per-device stacked
+      - type: custom:apexcharts-card
+        graph_span: 14d
+        header: *id002
+        series:
+        - entity: sensor.tz3000_zloso4jk_ts011f_summation_delivered_2
+          name: Fridge
+          color: '#5d8499'
+          type: column
+          group_by:
+            func: diff
+            duration: 1d
+        - entity: sensor.pm2_summation_delivered
+          name: Wine
+          color: '#b5654d'
+          type: column
+          group_by:
+            func: diff
+            duration: 1d
+        - entity: sensor.p6_t_beko_freezer_summation_delivered
+          name: Beko
+          color: '#8c887f'
+          type: column
+          group_by:
+            func: diff
+            duration: 1d
+        - entity: sensor.pm9_bauknecht_freezer_summation_delivered
+          name: Bauknecht
+          color: '#6b7a52'
+          type: column
+          group_by:
+            func: diff
+            duration: 1d
+        yaxis:
+        - min: 0
+          decimals: 0
+          apex_config:
+            show: true
+            tickAmount: 3
+            labels:
+              offsetX: -2
+              style:
+                fontSize: 8px
+              formatter: 'EVAL:function(v){ if (v == null) return ''''; return Math.round(v) + '' kWh''; }
+
+                '
+        apex_config:
+          colors:
+          - '#5d8499'
+          - '#b5654d'
+          - '#8c887f'
+          - '#6b7a52'
+          chart:
+            height: 180
+            parentHeightOffset: 0
+            offsetX: -4
+            toolbar: *id002
+            animations: *id003
+            stacked: true
+          plotOptions:
+            bar:
+              columnWidth: 65%
+              borderRadius: 0
+          fill:
+            opacity: 0.85
+          grid:
+            show: true
+            strokeDashArray: 2
+            padding: *id009
+            xaxis: *id006
+            yaxis: *id007
+          legend:
+            show: true
+            position: bottom
+            fontSize: 9px
+            labels:
+              colors: rgba(140,133,122,0.95)
+          dataLabels: *id003
+          tooltip:
+            enabled: true
+            x:
+              format: ddd dd
+          annotations:
+            yaxis:
+            - y: 0
+              strokeDashArray: 3
+              borderColor: rgba(140,133,122,0.55)
+              opacity: 0.7
+          xaxis:
+            type: datetime
+            labels:
+              show: true
+              style:
+                fontSize: 8px
+              format: dd
+            axisBorder: *id002
+            axisTicks: *id002
+        card_mod:
+          style: "ha-card {\n  padding: 0 !important; margin: 2px 0 14px 0 !important;\n}\n"

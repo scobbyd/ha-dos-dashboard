@@ -1,0 +1,637 @@
+# _anchor_defs is not a lovelace/button-card key; it only hosts the YAML anchor
+# definitions shared across this file, so deleting/reordering cards can't break aliases.
+_anchor_defs:
+- &id001
+  border-radius: '0'
+- &id002
+  padding: '0'
+title: Adv. Cooling
+path: dossier-cooling
+icon: mdi:snowflake
+type: panel
+theme: dos
+cards:
+- type: custom:stack-in-card
+  mode: vertical
+  card_mod: !include _partials/frame.yaml
+  cards:
+  - type: custom:stack-in-card
+    mode: horizontal
+    card_mod: !include _partials/header-bar.yaml
+    cards:
+    - type: custom:button-card
+      template: dos_view_header
+      variables:
+        title: 'Advanced Cooling'
+    - type: custom:button-card
+      tap_action:
+        action: none
+      template: dos_clock_time
+  - type: custom:layout-card
+    layout_type: custom:masonry-layout
+    layout: !include _partials/masonry.yaml
+    cards:
+    - type: custom:stack-in-card
+      mode: vertical
+      cards:
+      - type: custom:button-card
+        template: dos_section_header
+        variables:
+          title: State / gates
+      - type: custom:button-card
+        entity: input_select.ems_state
+        variables:
+          k: EMS state
+          accent: false
+          last: false
+        template: dos_state_text_row
+      - type: custom:button-card
+        entity: binary_sensor.cooling_weather_gate
+        variables:
+          k: Weather gate (season)
+          on_txt: Open
+          off_txt: Closed
+          last: false
+        template: dos_binary_word_row
+      - type: custom:button-card
+        entity: binary_sensor.cooling_heat_lock_clear
+        variables:
+          k: Heat lock clear (≥48h)
+          on_txt: Clear
+          off_txt: Locked
+          last: false
+        template: dos_binary_word_row
+      - type: custom:button-card
+        entity: sensor.cooling_outdoor_forecast_24h_avg
+        variables:
+          k: 24h avg outdoor forecast
+          unit: °C
+          fmt: dec1
+          accent: false
+          last: true
+        template: dos_value_row
+    - type: custom:stack-in-card
+      mode: vertical
+      cards:
+      - type: custom:button-card
+        template: dos_section_header
+        variables:
+          title: Free cooling &middot; day
+      - type: custom:button-card
+        entity: input_boolean.advanced_cooling_enabled
+        tap_action:
+          action: toggle
+        hold_action:
+          action: more-info
+        variables:
+          k: Enabled
+          small: true
+        template: dos_toggle_row
+      - type: custom:button-card
+        entity: binary_sensor.cooling_precool_active
+        variables:
+          k: Active
+          on_txt: Active
+          off_txt: Idle
+          last: false
+        template: dos_binary_word_row
+      - type: custom:button-card
+        entity: binary_sensor.cooling_ems_free
+        variables:
+          k: EMS free
+          on_txt: 'Yes'
+          off_txt: 'No'
+          last: false
+        template: dos_binary_word_row
+      - type: custom:button-card
+        entity: binary_sensor.cooling_epex_cheap_ahead
+        variables:
+          k: EPEX cheap ahead
+          on_txt: 'Yes'
+          off_txt: 'No'
+          last: false
+        template: dos_binary_word_row
+      - type: custom:button-card
+        entity: input_boolean.cooling_epex_hold_enabled
+        tap_action:
+          action: toggle
+        hold_action:
+          action: more-info
+        variables:
+          k: EPEX hold enabled
+          small: true
+        template: dos_toggle_row
+      - type: custom:button-card
+        entity: input_boolean.cooling_session_active
+        show_icon: false
+        show_name: false
+        show_state: false
+        show_label: true
+        triggers_update: all
+        tap_action:
+          action: toggle
+        hold_action:
+          action: more-info
+        label: "[[[\n  const e = (entity && entity.entity_id) ? states[entity.entity_id] : null;\n  const on = (e || {}).state === 'on';\n  const box = on ? 'background:var(--dos-accent); border:1px solid var(--dos-accent);' : 'background:transparent; border:1px solid var(--dos-quiet);';\n  const txt = on ? 'var(--dos-ink)' : 'var(--dos-quiet)';\n  return `<div style=\"display:flex; align-items:center; justify-content:space-between; gap:8px; padding:clamp(5px,0.6cqw,6.5px) 0; border-bottom:none;\">\n    <span style=\"display:flex; align-items:center; gap:9px; font-size:clamp(11.5px,1.05cqw,13px); color:var(--dos-text); white-space:nowrap; min-width:0;\">\n      <span style=\"width:8px; height:8px; ${box}\"></span>Session active</span>\n    <span style=\"font-size:clamp(9px,0.85cqw,10.5px); letter-spacing:0.1em; text-transform:uppercase; font-weight:600; color:${txt}; white-space:nowrap;\">${on?'On':'Off'}</span></div>`;\n]]]\n"
+        styles:
+          card:
+          - *id002
+          label:
+          - font-family: inherit
+          - text-align: left
+          - justify-self: stretch
+          - *id002
+    - type: custom:stack-in-card
+      mode: vertical
+      cards:
+      - type: custom:button-card
+        template: dos_section_header
+        variables:
+          title: Free cooling &middot; night
+      - type: custom:button-card
+        entity: input_boolean.cooling_night_enabled
+        tap_action:
+          action: toggle
+        hold_action:
+          action: more-info
+        variables:
+          k: Enabled
+          small: true
+        template: dos_toggle_row
+      - type: custom:button-card
+        entity: binary_sensor.cooling_night_active
+        variables:
+          k: Active
+          on_txt: Active
+          off_txt: Idle
+          last: false
+        template: dos_binary_word_row
+      - type: custom:button-card
+        entity: input_datetime.cooling_night_start
+        variables:
+          k: Window start
+          last: false
+        template: dos_time_window_match_row
+      - type: custom:button-card
+        entity: input_datetime.cooling_night_end
+        variables:
+          k: Window end
+          last: true
+        template: dos_time_window_match_row
+    - type: custom:stack-in-card
+      mode: vertical
+      cards:
+      - type: custom:button-card
+        template: dos_section_header
+        variables:
+          title: Air conditioners
+      - type: custom:button-card
+        tap_action:
+          action: none
+        template: dos_table_header
+      - type: custom:stack-in-card
+        mode: horizontal
+        card_mod: !include _partials/stack-reset-underline.yaml
+        cards:
+        - type: custom:button-card
+          entity: climate.bedroom_room_temperature
+          template: dos_climate_temp_row
+          variables:
+            name: Bedroom
+        - type: custom:button-card
+          entity: climate.bedroom_room_temperature
+          template:
+          - dos_stepper_minus_plain
+          - dos_step_climate_minus
+        - type: custom:button-card
+          entity: climate.bedroom_room_temperature
+          template: dos_climate_setpoint
+        - type: custom:button-card
+          entity: climate.bedroom_room_temperature
+          template:
+          - dos_stepper_plus_plain
+          - dos_step_climate_plus
+        - type: custom:button-card
+          entity: climate.bedroom_room_temperature
+          template: dos_climate_mode
+      - type: custom:stack-in-card
+        mode: horizontal
+        card_mod: !include _partials/stack-reset-underline.yaml
+        cards:
+        - type: custom:button-card
+          entity: climate.study_room_temperature
+          template: dos_climate_temp_row
+          variables:
+            name: Study
+        - type: custom:button-card
+          entity: climate.study_room_temperature
+          template:
+          - dos_stepper_minus_plain
+          - dos_step_climate_minus
+        - type: custom:button-card
+          entity: climate.study_room_temperature
+          template: dos_climate_setpoint
+        - type: custom:button-card
+          entity: climate.study_room_temperature
+          template:
+          - dos_stepper_plus_plain
+          - dos_step_climate_plus
+        - type: custom:button-card
+          entity: climate.study_room_temperature
+          template: dos_climate_mode
+      - type: custom:stack-in-card
+        mode: horizontal
+        card_mod: !include _partials/stack-reset-underline.yaml
+        cards:
+        - type: custom:button-card
+          entity: climate.living_room_room_temperature
+          template: dos_climate_temp_row
+          variables:
+            name: Living
+        - type: custom:button-card
+          entity: climate.living_room_room_temperature
+          template:
+          - dos_stepper_minus_plain
+          - dos_step_climate_minus
+        - type: custom:button-card
+          entity: climate.living_room_room_temperature
+          template: dos_climate_setpoint
+        - type: custom:button-card
+          entity: climate.living_room_room_temperature
+          template:
+          - dos_stepper_plus_plain
+          - dos_step_climate_plus
+        - type: custom:button-card
+          entity: climate.living_room_room_temperature
+          template: dos_climate_mode
+      - type: custom:stack-in-card
+        mode: horizontal
+        card_mod: !include _partials/stack-reset-underline.yaml
+        cards:
+        - type: custom:button-card
+          entity: climate.attic_room_temperature
+          template: dos_climate_temp_row
+          variables:
+            name: Attic
+        - type: custom:button-card
+          entity: climate.attic_room_temperature
+          template:
+          - dos_stepper_minus_plain
+          - dos_step_climate_minus
+        - type: custom:button-card
+          entity: climate.attic_room_temperature
+          template: dos_climate_setpoint
+        - type: custom:button-card
+          entity: climate.attic_room_temperature
+          template:
+          - dos_stepper_plus_plain
+          - dos_step_climate_plus
+        - type: custom:button-card
+          entity: climate.attic_room_temperature
+          template: dos_climate_mode
+    - type: custom:stack-in-card
+      mode: vertical
+      cards:
+      - type: custom:button-card
+        template: dos_section_header
+        variables:
+          title: Tuning &middot; gating &amp; ladder
+      - type: custom:button-card
+        entity: input_number.cooling_gate_temp_threshold
+        variables:
+          k: Gate temp threshold
+          unit: °C
+          fmt: dec1
+          accent: false
+          last: false
+        template: dos_value_row
+      - type: custom:button-card
+        entity: input_number.cooling_gate_hysteresis
+        variables:
+          k: Gate hysteresis
+          unit: °C
+          fmt: dec1
+          accent: false
+          last: false
+        template: dos_value_row
+      - type: custom:button-card
+        entity: input_number.cooling_track_offset
+        variables:
+          k: Track offset — day (inverter lift)
+          unit: °C
+          fmt: dec1
+          accent: false
+          last: false
+        template: dos_value_row
+      - type: custom:button-card
+        entity: input_number.cooling_night_track_offset
+        variables:
+          k: Track offset — night (inverter lift)
+          unit: °C
+          fmt: dec1
+          accent: false
+          last: false
+        template: dos_value_row
+      - type: custom:button-card
+        entity: input_number.cooling_exit_bump
+        variables:
+          k: Exit bump
+          unit: °C
+          fmt: dec1
+          accent: false
+          last: false
+        template: dos_value_row
+      - type: custom:button-card
+        entity: input_number.cooling_grace_minutes
+        variables:
+          k: Grace
+          unit: min
+          fmt: dec0
+          accent: false
+          last: false
+        template: dos_value_row
+      - type: custom:button-card
+        entity: input_number.cooling_lowpower_watts
+        variables:
+          k: Ratchet — low-power threshold
+          unit: W
+          fmt: int
+          accent: false
+          last: false
+        template: dos_value_row
+      - type: custom:button-card
+        entity: input_number.cooling_lowpower_minutes
+        variables:
+          k: Ratchet — low-power dwell
+          unit: min
+          fmt: dec0
+          accent: false
+          last: true
+        template: dos_value_row
+    - type: custom:stack-in-card
+      mode: vertical
+      cards:
+      - type: custom:button-card
+        template: dos_section_header
+        variables:
+          title: Tuning &middot; EPEX price hold
+      - type: custom:button-card
+        show_icon: false
+        show_name: false
+        show_state: false
+        show_label: true
+        tap_action:
+          action: none
+        label: '[[[ return `<div style="font-size:clamp(10px,0.95cqw,11.5px); color:var(--dos-quiet); letter-spacing:0.02em; line-height:1.45; padding:0 0 8px 0;">Sustain-only: holds an active precool session through a cheap window, never starts one.</div>`; ]]]
+
+          '
+        styles:
+          card:
+          - *id002
+          label:
+          - font-family: inherit
+          - text-align: left
+          - justify-self: stretch
+          - *id002
+          - white-space: normal
+      - type: custom:button-card
+        entity: input_number.cooling_epex_threshold
+        variables:
+          k: Threshold (cheap below)
+          unit: ''
+          fmt: dec1
+          accent: false
+          last: false
+        template: dos_value_row
+      - type: custom:button-card
+        entity: input_number.cooling_epex_lookahead_minutes
+        variables:
+          k: Lookahead
+          unit: min
+          fmt: dec0
+          accent: false
+          last: false
+        template: dos_value_row
+      - type: custom:button-card
+        entity: input_select.cooling_epex_aggregation
+        variables:
+          k: Aggregation (max/median)
+          accent: false
+          last: false
+        template: dos_state_text_row
+      - type: custom:button-card
+        entity: input_number.cooling_epex_hysteresis
+        variables:
+          k: Hysteresis
+          unit: ''
+          fmt: dec1
+          accent: false
+          last: true
+        template: dos_value_row
+    - type: custom:stack-in-card
+      mode: vertical
+      cards:
+      - type: custom:button-card
+        template: dos_section_header
+        variables:
+          title: Tuning &middot; 1st floor (bedroom + study)
+      - type: custom:button-card
+        tap_action:
+          action: none
+        variables:
+          title: Day
+        template: dos_section_caption
+      - type: custom:button-card
+        entity: input_number.cooling_first_floor_base_setpoint
+        variables:
+          k: Base setpoint
+          unit: °C
+          fmt: dec1
+          accent: false
+          last: false
+        template: dos_value_row
+      - type: custom:button-card
+        entity: input_number.cooling_first_floor_floor
+        variables:
+          k: Floor
+          unit: °C
+          fmt: dec1
+          accent: false
+          last: false
+        template: dos_value_row
+      - type: custom:button-card
+        entity: input_number.cooling_bedroom_live_setpoint
+        variables:
+          k: Bedroom live
+          unit: °C
+          fmt: dec1
+          accent: true
+          last: false
+        template: dos_value_row
+      - type: custom:button-card
+        entity: input_number.cooling_study_live_setpoint
+        variables:
+          k: Study live
+          unit: °C
+          fmt: dec1
+          accent: true
+          last: false
+        template: dos_value_row
+      - type: custom:button-card
+        entity: input_select.cooling_bedroom_fan
+        variables:
+          k: Bedroom fan
+          accent: false
+          last: false
+        template: dos_state_text_row
+      - type: custom:button-card
+        entity: input_select.cooling_study_fan
+        variables:
+          k: Study fan
+          accent: false
+          last: false
+        template: dos_state_text_row
+      - type: custom:button-card
+        tap_action:
+          action: none
+        variables:
+          title: Night
+        template: dos_section_caption
+      - type: custom:button-card
+        entity: input_number.cooling_night_first_floor_base_setpoint
+        variables:
+          k: Base setpoint
+          unit: °C
+          fmt: dec1
+          accent: false
+          last: false
+        template: dos_value_row
+      - type: custom:button-card
+        entity: input_number.cooling_night_first_floor_floor
+        variables:
+          k: Floor
+          unit: °C
+          fmt: dec1
+          accent: false
+          last: false
+        template: dos_value_row
+      - type: custom:button-card
+        entity: input_number.cooling_night_bedroom_live_setpoint
+        variables:
+          k: Bedroom live
+          unit: °C
+          fmt: dec1
+          accent: true
+          last: false
+        template: dos_value_row
+      - type: custom:button-card
+        entity: input_number.cooling_night_study_live_setpoint
+        variables:
+          k: Study live
+          unit: °C
+          fmt: dec1
+          accent: true
+          last: false
+        template: dos_value_row
+      - type: custom:button-card
+        entity: input_select.cooling_night_bedroom_fan
+        variables:
+          k: Bedroom fan
+          accent: false
+          last: false
+        template: dos_state_text_row
+      - type: custom:button-card
+        entity: input_select.cooling_night_study_fan
+        variables:
+          k: Study fan
+          accent: false
+          last: true
+        template: dos_state_text_row
+    - type: custom:stack-in-card
+      mode: vertical
+      cards:
+      - type: custom:button-card
+        template: dos_section_header
+        variables:
+          title: Tuning &middot; living + attic
+      - type: custom:button-card
+        tap_action:
+          action: none
+        variables:
+          title: Living
+        template: dos_section_caption
+      - type: custom:button-card
+        entity: input_number.cooling_living_base_setpoint
+        variables:
+          k: Base setpoint
+          unit: °C
+          fmt: dec1
+          accent: false
+          last: false
+        template: dos_value_row
+      - type: custom:button-card
+        entity: input_number.cooling_living_floor
+        variables:
+          k: Floor
+          unit: °C
+          fmt: dec1
+          accent: false
+          last: false
+        template: dos_value_row
+      - type: custom:button-card
+        entity: input_number.cooling_living_live_setpoint
+        variables:
+          k: Live setpoint
+          unit: °C
+          fmt: dec1
+          accent: true
+          last: false
+        template: dos_value_row
+      - type: custom:button-card
+        entity: input_select.cooling_living_fan
+        variables:
+          k: Living fan
+          accent: false
+          last: false
+        template: dos_state_text_row
+      - type: custom:button-card
+        tap_action:
+          action: none
+        variables:
+          title: Attic
+        template: dos_section_caption
+      - type: custom:button-card
+        entity: input_number.cooling_attic_base_setpoint
+        variables:
+          k: Base setpoint
+          unit: °C
+          fmt: dec1
+          accent: false
+          last: false
+        template: dos_value_row
+      - type: custom:button-card
+        entity: input_number.cooling_attic_floor
+        variables:
+          k: Floor
+          unit: °C
+          fmt: dec1
+          accent: false
+          last: false
+        template: dos_value_row
+      - type: custom:button-card
+        entity: input_number.cooling_attic_live_setpoint
+        variables:
+          k: Live setpoint
+          unit: °C
+          fmt: dec1
+          accent: true
+          last: false
+        template: dos_value_row
+      - type: custom:button-card
+        entity: input_select.cooling_attic_fan
+        variables:
+          k: Attic fan
+          accent: false
+          last: true
+        template: dos_state_text_row
+  - !include _partials/footer.yaml

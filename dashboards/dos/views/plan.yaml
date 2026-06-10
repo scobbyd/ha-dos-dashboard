@@ -1,0 +1,853 @@
+# Plan — interactive floor-plan view (Claude Design handoff, June 2026).
+# Standard page header (floor title + clock + ink rule) above a
+# landscape split from plan.jsx (DossierPlanWide): a left rail (floor
+# switcher, inline room detail / legend) beside a full-height plan
+# stage; collapses to the stacked phone flow below 1000px.
+# Underlay SVGs come from tools/floorplan/export.js into www/floorplans/
+# (day + night per floor; night walls recede to putty, a -night-ink
+# variant exists for comparison; upper floors carry a faint ground-floor
+# ghost). Room overlay positions are percentages of the padded SVG
+# viewBox, printed by the export script; rerun it after any geometry
+# change and re-paste the numbers. Helpers: packages/ui/dossier_plan.yaml.
+_anchor_defs:
+- &id002
+  border-radius: '0'
+- &id003
+  padding: '0'
+- &plan_card_mod
+  style: |
+    ha-card {
+      width: min(100%, calc((100vh - 230px) * 0.9514));
+      margin: 0 auto !important;
+      container-type: inline-size; container-name: plan;
+    }
+- &chipbox_card_mod
+  style: ':host > ha-card { background: transparent !important; box-shadow: none !important; border: 1px solid var(--dos-line) !important; border-radius: 0 !important; }
+
+    :host { flex: 0 0 auto !important; }
+
+    #root { gap: 0 !important; }
+
+    '
+- &switcher_card_mod
+  style: ':host > ha-card { background: transparent !important; box-shadow: none !important; border: 1px solid var(--dos-line) !important; border-radius: 0 !important; }
+
+    #root { gap: 0 !important; }
+
+    #root > * { flex: 1 1 0 !important; }
+
+    '
+- &detail_card_mod
+  style: 'ha-card { border-top: 1.5px solid var(--dos-ink) !important; margin: 22px 0 0 0 !important; padding: 12px 0 0 0 !important; }
+
+    '
+title: Plan
+path: dossier-plan
+icon: mdi:floor-plan
+type: panel
+theme: dos
+cards:
+- type: custom:stack-in-card
+  mode: vertical
+  card_mod: !include _partials/frame.yaml
+  cards:
+  - type: custom:stack-in-card
+    mode: horizontal
+    card_mod: !include _partials/header-bar.yaml
+    cards:
+    - type: custom:button-card
+      template: dos_plan_rail_header
+    - type: custom:button-card
+      tap_action:
+        action: none
+      template: dos_clock_time
+  - type: custom:layout-card
+    layout_type: custom:grid-layout
+    layout:
+      grid-template-columns: minmax(320px, 380px) minmax(0, 1fr)
+      grid-template-rows: auto 1fr
+      grid-template-areas: |
+        "chrome plan"
+        "detail plan"
+      grid-column-gap: 36px
+      margin: 0
+      padding: 0
+      mediaquery:
+        '(max-width: 1000px)':
+          grid-template-columns: minmax(0, 1fr)
+          grid-template-rows: none
+          grid-template-areas: |
+            "chrome"
+            "plan"
+            "detail"
+    cards:
+    # ---- left rail chrome: masthead + floor switcher ------------------
+    - type: custom:stack-in-card
+      mode: vertical
+      view_layout:
+        grid-area: chrome
+      cards:
+      - type: custom:stack-in-card
+        mode: horizontal
+        card_mod: *switcher_card_mod
+        cards:
+        - type: custom:button-card
+          entity: input_select.dossier_plan_floor
+          tap_action:
+            action: perform-action
+            perform_action: input_select.select_option
+            target:
+              entity_id: input_select.dossier_plan_floor
+            data:
+              option: ground
+          template: dos_plan_floor_tab
+          variables:
+            lab: Ground
+            opt: ground
+            sep: false
+        - type: custom:button-card
+          entity: input_select.dossier_plan_floor
+          tap_action:
+            action: perform-action
+            perform_action: input_select.select_option
+            target:
+              entity_id: input_select.dossier_plan_floor
+            data:
+              option: first
+          template: dos_plan_floor_tab
+          variables:
+            lab: First
+            opt: first
+            sep: true
+        - type: custom:button-card
+          entity: input_select.dossier_plan_floor
+          tap_action:
+            action: perform-action
+            perform_action: input_select.select_option
+            target:
+              entity_id: input_select.dossier_plan_floor
+            data:
+              option: attic
+          template: dos_plan_floor_tab
+          variables:
+            lab: Attic
+            opt: attic
+            sep: true
+    # ---- plan stage: ground floor ------------------------------------
+    - type: conditional
+      view_layout:
+        grid-area: plan
+      conditions:
+      - condition: state
+        entity: input_select.dossier_plan_floor
+        state: ground
+      card:
+        type: picture-elements
+        image: /local/floorplans/ground-day.svg
+        card_mod: *plan_card_mod
+        elements:
+        - type: conditional
+          conditions:
+          - entity: input_boolean.dossier_night_mode
+            state: 'on'
+          elements:
+          - type: image
+            image: /local/floorplans/ground-night.svg
+            style:
+              left: 50%
+              top: 50%
+              width: 100%
+              height: 100%
+        - type: custom:button-card
+          template: dos_plan_room
+          tap_action:
+            action: none
+          variables:
+            name: Garage
+            kind: sensor
+          style:
+            left: 15.928%
+            top: 31.361%
+            width: 29.813%
+            height: 60.778%
+        - type: custom:button-card
+          entity: sensor.lumi_lumi_weather_temperature_4
+          template: dos_plan_room
+          tap_action:
+            action: more-info
+          variables:
+            name: Pantry
+            kind: sensor
+            temp_entity: sensor.lumi_lumi_weather_temperature_4
+          style:
+            left: 44.889%
+            top: 17.585%
+            width: 28.109%
+            height: 33.225%
+        - type: custom:button-card
+          entity: switch.tz3000_zloso4jk_ts011f_switch_2
+          template: dos_plan_room
+          tap_action:
+            action: perform-action
+            perform_action: input_select.select_option
+            target:
+              entity_id: input_select.dossier_plan_room
+            data:
+              option: kitchen
+          hold_action:
+            action: more-info
+          variables:
+            name: Kitchen
+            kind: switch
+            switch_entity: switch.tz3000_zloso4jk_ts011f_switch_2
+          style:
+            left: 44.889%
+            top: 51.094%
+            width: 28.109%
+            height: 33.793%
+        - type: custom:button-card
+          template: dos_plan_room
+          tap_action:
+            action: none
+          variables:
+            name: Entrance
+            kind: circ
+          style:
+            left: 44.889%
+            top: 83.509%
+            width: 28.109%
+            height: 31.037%
+        - type: custom:button-card
+          template: dos_plan_room
+          tap_action:
+            action: none
+          variables:
+            name: M.K.
+            kind: circ
+            small: true
+          style:
+            left: 32.964%
+            top: 95.583%
+            width: 4.259%
+            height: 6.888%
+        - type: custom:button-card
+          template: dos_plan_room
+          tap_action:
+            action: none
+          variables:
+            name: WC
+            kind: circ
+            small: true
+          style:
+            left: 52.555%
+            top: 94.976%
+            width: 12.777%
+            height: 8.104%
+        - type: custom:button-card
+          entity: climate.living_room_room_temperature
+          template: dos_plan_room
+          tap_action:
+            action: perform-action
+            perform_action: input_select.select_option
+            target:
+              entity_id: input_select.dossier_plan_room
+            data:
+              option: living
+          hold_action:
+            action: more-info
+          variables:
+            name: Living Room
+            kind: climate
+            temp_entity: sensor.ts3t_living_temperature
+            climate_entity: climate.living_room_room_temperature
+            light_entity: light.ecodim_bv_ecodim_zigbee_3_0_light
+          style:
+            left: 78.961%
+            top: 66.613%
+            width: 40.034%
+            height: 64.83%
+    # ---- plan stage: first floor --------------------------------------
+    - type: conditional
+      view_layout:
+        grid-area: plan
+      conditions:
+      - condition: state
+        entity: input_select.dossier_plan_floor
+        state: first
+      card:
+        type: picture-elements
+        image: /local/floorplans/first-day.svg
+        card_mod: *plan_card_mod
+        elements:
+        - type: conditional
+          conditions:
+          - entity: input_boolean.dossier_night_mode
+            state: 'on'
+          elements:
+          - type: image
+            image: /local/floorplans/first-night.svg
+            style:
+              left: 50%
+              top: 50%
+              width: 100%
+              height: 100%
+        - type: custom:button-card
+          template: dos_plan_room
+          tap_action:
+            action: none
+          variables:
+            name: Bedroom 2
+            kind: sensor
+          style:
+            left: 44.889%
+            top: 46.637%
+            width: 28.109%
+            height: 24.878%
+        - type: custom:button-card
+          template: dos_plan_room
+          tap_action:
+            action: none
+          variables:
+            name: Landing
+            kind: circ
+          style:
+            left: 44.889%
+            top: 67.585%
+            width: 28.109%
+            height: 17.018%
+        - type: custom:button-card
+          entity: sensor.ts2t_bathroom_temperature
+          template: dos_plan_room
+          tap_action:
+            action: more-info
+          variables:
+            name: Bathroom
+            kind: sensor
+            temp_entity: sensor.ts2t_bathroom_temperature
+          style:
+            left: 44.889%
+            top: 87.561%
+            width: 28.109%
+            height: 22.934%
+        - type: custom:button-card
+          entity: climate.bedroom_room_temperature
+          template: dos_plan_room
+          tap_action:
+            action: perform-action
+            perform_action: input_select.select_option
+            target:
+              entity_id: input_select.dossier_plan_room
+            data:
+              option: master
+          hold_action:
+            action: more-info
+          variables:
+            name: Bedroom
+            kind: climate
+            temp_entity: sensor.ts4t_bedroom_temperature
+            climate_entity: climate.bedroom_room_temperature
+            co2_entity: sensor.esphome_web_f8ab94_bedroom_co2
+          style:
+            left: 78.961%
+            top: 50.891%
+            width: 40.034%
+            height: 33.387%
+        - type: custom:button-card
+          entity: climate.study_room_temperature
+          template: dos_plan_room
+          tap_action:
+            action: perform-action
+            perform_action: input_select.select_option
+            target:
+              entity_id: input_select.dossier_plan_room
+            data:
+              option: study
+          hold_action:
+            action: more-info
+          variables:
+            name: Study
+            kind: climate
+            temp_entity: sensor.ts1t_study_temperature
+            climate_entity: climate.study_room_temperature
+          style:
+            left: 78.961%
+            top: 83.306%
+            width: 40.034%
+            height: 31.442%
+    # ---- plan stage: attic --------------------------------------------
+    - type: conditional
+      view_layout:
+        grid-area: plan
+      conditions:
+      - condition: state
+        entity: input_select.dossier_plan_floor
+        state: attic
+      card:
+        type: picture-elements
+        image: /local/floorplans/attic-day.svg
+        card_mod: *plan_card_mod
+        elements:
+        - type: conditional
+          conditions:
+          - entity: input_boolean.dossier_night_mode
+            state: 'on'
+          elements:
+          - type: image
+            image: /local/floorplans/attic-night.svg
+            style:
+              left: 50%
+              top: 50%
+              width: 100%
+              height: 100%
+        - type: custom:button-card
+          entity: climate.attic_room_temperature
+          template: dos_plan_room
+          tap_action:
+            action: perform-action
+            perform_action: input_select.select_option
+            target:
+              entity_id: input_select.dossier_plan_room
+            data:
+              option: attic
+          hold_action:
+            action: more-info
+          variables:
+            name: Attic
+            kind: climate
+            temp_entity: sensor.ts5t_attic_temperature
+            climate_entity: climate.attic_room_temperature
+          style:
+            left: 78.961%
+            top: 66.613%
+            width: 40.034%
+            height: 64.83%
+        - type: custom:button-card
+          entity: switch.pm1_boiler
+          template: dos_plan_room
+          tap_action:
+            action: more-info
+          hold_action:
+            action: toggle
+          variables:
+            name: Boiler
+            kind: switch
+            switch_entity: switch.pm1_boiler
+            small: true
+          style:
+            left: 87.905%
+            top: 45.948%
+            width: 13.629%
+            height: 13.776%
+    # ---- rail detail zone: legend or the selected room -----------------
+    - type: conditional
+      view_layout:
+        grid-area: detail
+      conditions:
+      - condition: state
+        entity: input_select.dossier_plan_room
+        state: none
+      card:
+        type: custom:button-card
+        show_icon: false
+        show_name: false
+        show_state: false
+        show_label: true
+        tap_action:
+          action: none
+        card_mod: *detail_card_mod
+        label: "[[[\n  return `<div style=\"padding-top:6px; font-size:12.5px; color:var(--dos-quiet); line-height:1.6; text-align:left;\">\n    <div style=\"font-size:11px; font-weight:700; letter-spacing:0.16em; text-transform:uppercase; color:var(--dos-soft); margin-bottom:12px;\">Select a room</div>\n    Tap any room on the plan to read its values and adjust it here.\n    <div style=\"margin-top:18px; display:flex; flex-direction:column; gap:10px;\">\n      <span style=\"display:flex; align-items:center; gap:10px;\"><span style=\"width:16px; height:16px; background:var(--dos-accent2); opacity:0.32; flex:0 0 16px;\"></span>Heating &mdash; terracotta wash, deeper = working harder</span>\n      <span style=\"display:flex; align-items:center; gap:10px;\"><span style=\"width:16px; height:16px; background:var(--dos-accent); opacity:0.32; flex:0 0 16px;\"></span>Cooling &mdash; slate wash</span>\n      <span style=\"display:flex; align-items:center; gap:10px;\"><span style=\"width:16px; text-align:center; color:var(--dos-soft); flex:0 0 16px;\">&#9650;&#9660;</span>Above / below setpoint</span>\n      <span style=\"display:flex; align-items:center; gap:10px;\"><span style=\"width:16px; height:12px; border:1.5px dashed var(--dos-line); flex:0 0 16px; box-sizing:border-box;\"></span>House footprint below (upper floors)</span>\n    </div></div>`;\n]]]\n"
+        styles:
+          card:
+          - *id003
+          label:
+          - font-family: inherit
+          - text-align: left
+          - justify-self: stretch
+          - *id003
+    - type: conditional
+      view_layout:
+        grid-area: detail
+      conditions:
+      - condition: state
+        entity: input_select.dossier_plan_room
+        state: living
+      card:
+        type: custom:stack-in-card
+        mode: vertical
+        card_mod: *detail_card_mod
+        cards:
+        - type: custom:stack-in-card
+          mode: horizontal
+          card_mod: !include _partials/stack-reset-underline.yaml
+          cards:
+          - type: custom:button-card
+            template: dos_section_header
+            variables:
+              title: Living Room
+          - type: custom:button-card
+            tap_action:
+              action: perform-action
+              perform_action: input_select.select_option
+              target:
+                entity_id: input_select.dossier_plan_room
+              data:
+                option: none
+            template: dos_plan_close
+        - type: custom:stack-in-card
+          mode: horizontal
+          card_mod: !include _partials/stack-reset-underline.yaml
+          cards:
+          - type: custom:button-card
+            entity: climate.living_room_room_temperature
+            template: dos_climate_temp_row
+            variables:
+              name: Air conditioning
+          - type: custom:button-card
+            entity: climate.living_room_room_temperature
+            template:
+            - dos_stepper_minus_plain
+            - dos_step_climate_minus
+          - type: custom:button-card
+            entity: climate.living_room_room_temperature
+            template: dos_climate_setpoint
+          - type: custom:button-card
+            entity: climate.living_room_room_temperature
+            template:
+            - dos_stepper_plus_plain
+            - dos_step_climate_plus
+          - type: custom:button-card
+            entity: climate.living_room_room_temperature
+            template: dos_climate_mode
+        - type: custom:button-card
+          entity: sensor.ts3t_living_temperature
+          variables:
+            k: Room temperature
+            unit: °C
+          template: dos_value_row
+        - type: custom:button-card
+          entity: light.ecodim_bv_ecodim_zigbee_3_0_light
+          tap_action:
+            action: toggle
+          hold_action:
+            action: more-info
+          variables:
+            k: Main lights
+          template: dos_toggle_row
+        - type: custom:stack-in-card
+          mode: horizontal
+          card_mod:
+            style: "#root { align-items: center !important; gap: 12px !important; }\n"
+          cards:
+          - type: custom:button-card
+            entity: light.ecodim_bv_ecodim_zigbee_3_0_light
+            tap_action:
+              action: none
+            template: dos_label_cell
+            extra_styles: |
+              :host { flex: 0 0 auto !important; }
+            variables:
+              k: Brightness
+              unit: ''
+          - type: custom:mushroom-light-card
+            entity: light.ecodim_bv_ecodim_zigbee_3_0_light
+            show_brightness_control: true
+            collapsible_controls: false
+            icon_type: none
+            primary_info: none
+            secondary_info: none
+            card_mod:
+              style: "{% if is_state('input_boolean.dossier_night_mode','on') %}\nha-card { --rgb-state-light: 130, 162, 182; }\n{% else %}\nha-card { --rgb-state-light: 62, 85, 103; }\n{% endif %}\n:host { flex: 1 1 auto !important; }\nha-card {\n  padding: 0 !important; margin: 0 !important;\n  --control-border-radius: 0px;\n  --control-height: 20px;\n  --spacing: 0px;\n}\n"
+          - type: custom:button-card
+            entity: light.ecodim_bv_ecodim_zigbee_3_0_light
+            show_icon: false
+            show_name: false
+            show_state: false
+            show_label: true
+            triggers_update: all
+            tap_action:
+              action: more-info
+            extra_styles: |
+              :host { flex: 0 0 44px !important; }
+            label: "[[[\n  const e = states['light.ecodim_bv_ecodim_zigbee_3_0_light'];\n  const on = e && e.state === 'on';\n  const b = (on && e.attributes && e.attributes.brightness != null) ? Math.round(e.attributes.brightness / 255 * 100) : null;\n  const disp = !on ? '\\u2014' : (b == null ? 'On' : b + '%');\n  return `<span style=\"font-size:clamp(11.5px,1.05cqw,13px); color:var(--dos-soft); font-variant-numeric:tabular-nums;\">${disp}</span>`;\n]]]\n"
+            styles:
+              card:
+              - *id003
+              - align-self: center
+              label:
+              - font-family: inherit
+              - text-align: right
+              - justify-self: end
+              - *id003
+    - type: conditional
+      view_layout:
+        grid-area: detail
+      conditions:
+      - condition: state
+        entity: input_select.dossier_plan_room
+        state: kitchen
+      card:
+        type: custom:stack-in-card
+        mode: vertical
+        card_mod: *detail_card_mod
+        cards:
+        - type: custom:stack-in-card
+          mode: horizontal
+          card_mod: !include _partials/stack-reset-underline.yaml
+          cards:
+          - type: custom:button-card
+            template: dos_section_header
+            variables:
+              title: Kitchen
+          - type: custom:button-card
+            tap_action:
+              action: perform-action
+              perform_action: input_select.select_option
+              target:
+                entity_id: input_select.dossier_plan_room
+              data:
+                option: none
+            template: dos_plan_close
+        - type: custom:button-card
+          entity: switch.tz3000_zloso4jk_ts011f_switch_2
+          tap_action:
+            action: toggle
+          hold_action:
+            action: more-info
+          variables:
+            k: Fridge
+          template: dos_toggle_row
+        - type: custom:button-card
+          entity: sensor.te10_fridge_temperature
+          variables:
+            k: Fridge temperature
+            unit: °C
+            last: true
+          template: dos_value_row
+    - type: conditional
+      view_layout:
+        grid-area: detail
+      conditions:
+      - condition: state
+        entity: input_select.dossier_plan_room
+        state: master
+      card:
+        type: custom:stack-in-card
+        mode: vertical
+        card_mod: *detail_card_mod
+        cards:
+        - type: custom:stack-in-card
+          mode: horizontal
+          card_mod: !include _partials/stack-reset-underline.yaml
+          cards:
+          - type: custom:button-card
+            template: dos_section_header
+            variables:
+              title: Bedroom
+          - type: custom:button-card
+            tap_action:
+              action: perform-action
+              perform_action: input_select.select_option
+              target:
+                entity_id: input_select.dossier_plan_room
+              data:
+                option: none
+            template: dos_plan_close
+        - type: custom:stack-in-card
+          mode: horizontal
+          card_mod: !include _partials/stack-reset-underline.yaml
+          cards:
+          - type: custom:button-card
+            entity: climate.bedroom_room_temperature
+            template: dos_climate_temp_row
+            variables:
+              name: Air conditioning
+          - type: custom:button-card
+            entity: climate.bedroom_room_temperature
+            template:
+            - dos_stepper_minus_plain
+            - dos_step_climate_minus
+          - type: custom:button-card
+            entity: climate.bedroom_room_temperature
+            template: dos_climate_setpoint
+          - type: custom:button-card
+            entity: climate.bedroom_room_temperature
+            template:
+            - dos_stepper_plus_plain
+            - dos_step_climate_plus
+          - type: custom:button-card
+            entity: climate.bedroom_room_temperature
+            template: dos_climate_mode
+        - type: custom:button-card
+          entity: sensor.ts4t_bedroom_temperature
+          variables:
+            k: Room temperature
+            unit: °C
+          template: dos_value_row
+        - type: custom:button-card
+          entity: sensor.esphome_web_f8ab94_bedroom_co2
+          variables:
+            k: CO2
+            unit: ppm
+            fmt: dec0
+            sub: ''
+            accent: false
+            last: false
+          template: dos_value_row
+        - type: custom:button-card
+          entity: sensor.te01_waterbed_door_temperature
+          variables:
+            k: Waterbed temperature
+            unit: °C
+          template: dos_value_row
+        - type: custom:button-card
+          entity: switch.p3t_waterbed_switch
+          tap_action:
+            action: toggle
+          hold_action:
+            action: more-info
+          variables:
+            k: Waterbed heating
+            last: true
+          template: dos_toggle_row
+    - type: conditional
+      view_layout:
+        grid-area: detail
+      conditions:
+      - condition: state
+        entity: input_select.dossier_plan_room
+        state: study
+      card:
+        type: custom:stack-in-card
+        mode: vertical
+        card_mod: *detail_card_mod
+        cards:
+        - type: custom:stack-in-card
+          mode: horizontal
+          card_mod: !include _partials/stack-reset-underline.yaml
+          cards:
+          - type: custom:button-card
+            template: dos_section_header
+            variables:
+              title: Study
+          - type: custom:button-card
+            tap_action:
+              action: perform-action
+              perform_action: input_select.select_option
+              target:
+                entity_id: input_select.dossier_plan_room
+              data:
+                option: none
+            template: dos_plan_close
+        - type: custom:stack-in-card
+          mode: horizontal
+          card_mod: !include _partials/stack-reset-underline.yaml
+          cards:
+          - type: custom:button-card
+            entity: climate.study_room_temperature
+            template: dos_climate_temp_row
+            variables:
+              name: Air conditioning
+          - type: custom:button-card
+            entity: climate.study_room_temperature
+            template:
+            - dos_stepper_minus_plain
+            - dos_step_climate_minus
+          - type: custom:button-card
+            entity: climate.study_room_temperature
+            template: dos_climate_setpoint
+          - type: custom:button-card
+            entity: climate.study_room_temperature
+            template:
+            - dos_stepper_plus_plain
+            - dos_step_climate_plus
+          - type: custom:button-card
+            entity: climate.study_room_temperature
+            template: dos_climate_mode
+        - type: custom:button-card
+          entity: sensor.ts1t_study_temperature
+          variables:
+            k: Room temperature
+            unit: °C
+            last: true
+          template: dos_value_row
+    - type: conditional
+      view_layout:
+        grid-area: detail
+      conditions:
+      - condition: state
+        entity: input_select.dossier_plan_room
+        state: attic
+      card:
+        type: custom:stack-in-card
+        mode: vertical
+        card_mod: *detail_card_mod
+        cards:
+        - type: custom:stack-in-card
+          mode: horizontal
+          card_mod: !include _partials/stack-reset-underline.yaml
+          cards:
+          - type: custom:button-card
+            template: dos_section_header
+            variables:
+              title: Attic
+          - type: custom:button-card
+            tap_action:
+              action: perform-action
+              perform_action: input_select.select_option
+              target:
+                entity_id: input_select.dossier_plan_room
+              data:
+                option: none
+            template: dos_plan_close
+        - type: custom:stack-in-card
+          mode: horizontal
+          card_mod: !include _partials/stack-reset-underline.yaml
+          cards:
+          - type: custom:button-card
+            entity: climate.attic_room_temperature
+            template: dos_climate_temp_row
+            variables:
+              name: Air conditioning
+          - type: custom:button-card
+            entity: climate.attic_room_temperature
+            template:
+            - dos_stepper_minus_plain
+            - dos_step_climate_minus
+          - type: custom:button-card
+            entity: climate.attic_room_temperature
+            template: dos_climate_setpoint
+          - type: custom:button-card
+            entity: climate.attic_room_temperature
+            template:
+            - dos_stepper_plus_plain
+            - dos_step_climate_plus
+          - type: custom:button-card
+            entity: climate.attic_room_temperature
+            template: dos_climate_mode
+        - type: custom:button-card
+          entity: sensor.ts5t_attic_temperature
+          variables:
+            k: Room temperature
+            unit: °C
+          template: dos_value_row
+        - type: custom:button-card
+          entity: switch.pm1_boiler
+          tap_action:
+            action: toggle
+          hold_action:
+            action: more-info
+          variables:
+            k: Boiler
+          template: dos_toggle_row
+        - type: custom:button-card
+          entity: sensor.pm1_boiler_power
+          variables:
+            k: Boiler power
+            unit: W
+            fmt: int
+            sub: ''
+            accent: false
+            last: true
+          template: dos_value_row
+  # ---- footer ---------------------------------------------------------
+  - !include _partials/footer.yaml

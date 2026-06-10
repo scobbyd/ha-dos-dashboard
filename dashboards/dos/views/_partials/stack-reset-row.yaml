@@ -1,0 +1,5 @@
+# Centered horizontal row alignment. Card chrome (background/border/shadow/
+# radius) is stripped theme-wide by dos. !include'd as `card_mod:`.
+style: '#root { align-items: center !important; }
+
+  '

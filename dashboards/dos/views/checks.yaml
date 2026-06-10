@@ -1,0 +1,678 @@
+# _anchor_defs is not a lovelace/button-card key; it only hosts the YAML anchor
+# definitions shared across this file, so deleting/reordering cards can't break aliases.
+_anchor_defs:
+- &id001
+  border-radius: '0'
+- &id002
+  padding: '0'
+- &id003
+  show: false
+- &id004
+  enabled: false
+title: Checks
+path: dossier-checks
+icon: mdi:clipboard-check-outline
+type: panel
+theme: dos
+cards:
+- type: custom:stack-in-card
+  mode: vertical
+  card_mod: !include _partials/frame.yaml
+  cards:
+  - type: custom:stack-in-card
+    mode: horizontal
+    card_mod: !include _partials/header-bar.yaml
+    cards:
+    - type: custom:button-card
+      template: dos_view_header
+      variables:
+        title: 'Checks'
+    - type: custom:button-card
+      tap_action:
+        action: none
+      template: dos_clock_time
+  - type: custom:layout-card
+    layout_type: custom:masonry-layout
+    layout: !include _partials/masonry.yaml
+    cards:
+    - type: custom:stack-in-card
+      mode: vertical
+      cards:
+      - type: custom:button-card
+        template: dos_section_header
+        variables:
+          title: Cooling equipment
+      - type: custom:button-card
+        entity: sensor.t4_t_bauknecht_freezer_temperature
+        variables:
+          k: Bauknecht freezer (T4.T)
+          unit: °C
+          fmt: dec1
+          sub: ''
+          accent: false
+          last: false
+        template: dos_value_row
+      - type: custom:button-card
+        entity: sensor.te10_fridge_temperature
+        variables:
+          k: Fridge (TE10)
+          unit: °C
+          fmt: dec1
+          sub: ''
+          accent: false
+          last: false
+        template: dos_value_row
+      - type: custom:button-card
+        entity: sensor.te11_beko_freezer_temperature
+        variables:
+          k: Beko freezer (TE11)
+          unit: °C
+          fmt: dec1
+          sub: ''
+          accent: false
+          last: false
+        template: dos_value_row
+      - type: custom:button-card
+        entity: sensor.ts6t_winefridge_temperature
+        variables:
+          k: Wine fridge (TS6.T)
+          unit: °C
+          fmt: dec1
+          sub: ''
+          accent: false
+          last: false
+        template: dos_value_row
+      - type: custom:button-card
+        entity: sensor.p6_t_beko_freezer_active_power
+        variables:
+          k: Beko freezer
+          unit: W
+          fmt: int
+          sub: power
+          accent: false
+          last: false
+        template: dos_value_row
+      - type: custom:button-card
+        entity: sensor.pm9_bauknecht_freezer_active_power
+        variables:
+          k: Bauknecht freezer
+          unit: W
+          fmt: int
+          sub: power
+          accent: false
+          last: false
+        template: dos_value_row
+      - type: custom:button-card
+        entity: sensor.tz3000_zloso4jk_ts011f_active_power_2
+        variables:
+          k: Fridge (P2.T)
+          unit: W
+          fmt: int
+          sub: power
+          accent: false
+          last: false
+        template: dos_value_row
+      - type: custom:button-card
+        entity: sensor.pm2_active_power
+        variables:
+          k: Wine fridge
+          unit: W
+          fmt: int
+          sub: power
+          accent: false
+          last: true
+        template: dos_value_row
+    - type: custom:stack-in-card
+      mode: vertical
+      cards:
+      - type: custom:button-card
+        template: dos_section_header
+        variables:
+          title: Server
+      - type: custom:button-card
+        entity: sensor.server_chipset_temperature
+        variables:
+          k: Chipset
+          unit: °C
+          fmt: dec1
+          sub: ''
+          accent: false
+          last: false
+        template: dos_value_row
+      - type: custom:button-card
+        entity: sensor.server_cpu_temperature
+        variables:
+          k: CPU
+          unit: °C
+          fmt: dec1
+          sub: ''
+          accent: false
+          last: false
+        template: dos_value_row
+      - type: custom:button-card
+        entity: sensor.server_nvme_temperature
+        variables:
+          k: NVMe
+          unit: °C
+          fmt: dec1
+          sub: ''
+          accent: false
+          last: true
+        template: dos_value_row
+    - type: custom:stack-in-card
+      mode: vertical
+      cards:
+      - type: custom:button-card
+        template: dos_section_header
+        variables:
+          title: Sensor batteries
+      - type: custom:button-card
+        entity: sensor.batteries_needing_attention
+        variables:
+          k: Needing attention
+          unit: ''
+          fmt: int
+          sub: NiMH ≤ threshold V, freezers by %
+          accent: false
+          last: false
+        template: dos_value_row
+      - type: custom:button-card
+        entity: sensor.lumi_lumi_weather_battery_4
+        variables:
+          k: Pantry
+          unit: '%'
+          fmt: dec0
+          sub: ''
+          accent: false
+          last: false
+        template: dos_value_row
+      - type: custom:button-card
+        entity: sensor.t4_t_bauknecht_freezer_battery
+        variables:
+          k: Freezer
+          unit: '%'
+          fmt: dec0
+          sub: ''
+          accent: false
+          last: false
+        template: dos_value_row
+      - type: custom:button-card
+        entity: sensor.lumi_lumi_weather_battery_3
+        variables:
+          k: AC downstairs
+          unit: '%'
+          fmt: dec0
+          sub: ''
+          accent: false
+          last: false
+        template: dos_value_row
+      - type: custom:button-card
+        entity: sensor.t3t_acstudy_battery_2
+        variables:
+          src: attr
+          attr: battery_voltage
+          fmt: dec2
+          sub: voltage
+          k: AC study
+          unit: V
+          last: false
+        template: dos_value_row
+      - type: custom:button-card
+        entity: sensor.t4_t_bauknecht_freezer_battery
+        variables:
+          src: attr
+          attr: battery_voltage
+          fmt: dec2
+          sub: voltage
+          k: Waterbed
+          unit: V
+          last: false
+        template: dos_value_row
+      - type: custom:button-card
+        entity: sensor.t2_t_fridge_battery
+        variables:
+          src: attr
+          attr: battery_voltage
+          fmt: dec2
+          sub: voltage
+          k: Fridge
+          unit: V
+          last: false
+        template: dos_value_row
+      - type: custom:button-card
+        entity: sensor.ts3t_living_battery
+        variables:
+          src: attr
+          attr: battery_voltage
+          fmt: dec2
+          sub: voltage
+          k: Living room
+          unit: V
+          last: false
+        template: dos_value_row
+      - type: custom:button-card
+        entity: sensor.t6t_smallfridge_battery
+        variables:
+          src: attr
+          attr: battery_voltage
+          fmt: dec2
+          sub: voltage
+          k: AC attic
+          unit: V
+          last: false
+        template: dos_value_row
+      - type: custom:button-card
+        entity: sensor.ts2t_bathroom_battery_2
+        variables:
+          src: attr
+          attr: battery_voltage
+          fmt: dec2
+          sub: voltage
+          k: Bathroom
+          unit: V
+          last: false
+        template: dos_value_row
+      - type: custom:button-card
+        entity: sensor.ts1t_study_battery
+        variables:
+          src: attr
+          attr: battery_voltage
+          fmt: dec2
+          sub: voltage
+          k: Study
+          unit: V
+          last: false
+        template: dos_value_row
+      - type: custom:button-card
+        entity: sensor.ts4t_bedroom_battery
+        variables:
+          src: attr
+          attr: battery_voltage
+          fmt: dec2
+          sub: voltage
+          k: Bedroom
+          unit: V
+          last: false
+        template: dos_value_row
+      - type: custom:button-card
+        entity: sensor.ts5t_attic_battery
+        variables:
+          src: attr
+          attr: battery_voltage
+          fmt: dec2
+          sub: voltage
+          k: Attic
+          unit: V
+          last: false
+        template: dos_value_row
+      - type: custom:button-card
+        entity: sensor.ts6t_winefridge_battery
+        variables:
+          src: attr
+          attr: battery_voltage
+          fmt: dec2
+          sub: voltage
+          k: Wine fridge
+          unit: V
+          last: true
+        template: dos_value_row
+    - !include _partials/fixes.yaml
+    - type: custom:stack-in-card
+      mode: vertical
+      cards:
+      - type: custom:button-card
+        template: dos_section_header
+        variables:
+          title: Wine fridge
+      - type: custom:button-card
+        entity: sensor.wine_fridge_status
+        template: dos_checks_status_row
+        variables:
+          txt: Status
+      - type: custom:button-card
+        entity: sensor.ts6t_winefridge_temperature
+        variables:
+          k: Temperature
+          unit: °C
+          fmt: dec1
+          sub: ''
+          accent: false
+          last: false
+        template: dos_value_row
+      - type: custom:button-card
+        entity: sensor.pm2_active_power
+        variables:
+          k: Power consumption
+          unit: W
+          fmt: int
+          sub: ''
+          accent: false
+          last: true
+        template: dos_value_row
+      - type: custom:button-card
+        template: dos_subheader
+        variables:
+          title: Controls
+      - type: custom:button-card
+        entity: input_select.wine_storage_mode
+        template: dos_checks_status_row
+        variables:
+          txt: Storage mode
+          usc: true
+      - type: custom:stack-in-card
+        mode: horizontal
+        card_mod: !include _partials/stack-reset-underline-row.yaml
+        cards:
+        - type: custom:button-card
+          entity: input_number.wine_fridge_target_temperature_red
+          template: dos_checks_target_row
+          variables:
+            txt: Red wine target
+        - type: custom:button-card
+          entity: input_number.wine_fridge_target_temperature_red
+          template:
+          - dos_stepper_minus_plain
+          - dos_step_decrement
+        - type: custom:button-card
+          entity: input_number.wine_fridge_target_temperature_red
+          template:
+          - dos_stepper_plus_plain
+          - dos_step_increment
+      - type: custom:stack-in-card
+        mode: horizontal
+        card_mod: !include _partials/stack-reset-underline-row.yaml
+        cards:
+        - type: custom:button-card
+          entity: input_number.wine_fridge_target_temperature_white
+          template: dos_checks_target_row
+          variables:
+            txt: White wine target
+        - type: custom:button-card
+          entity: input_number.wine_fridge_target_temperature_white
+          template:
+          - dos_stepper_minus_plain
+          - dos_step_decrement
+        - type: custom:button-card
+          entity: input_number.wine_fridge_target_temperature_white
+          template:
+          - dos_stepper_plus_plain
+          - dos_step_increment
+      - type: custom:stack-in-card
+        mode: horizontal
+        card_mod: !include _partials/stack-reset-underline-row.yaml
+        cards:
+        - type: custom:button-card
+          entity: input_number.wine_fridge_temperature_tolerance
+          template: dos_checks_target_row
+          variables:
+            txt: Temperature tolerance
+        - type: custom:button-card
+          entity: input_number.wine_fridge_temperature_tolerance
+          template:
+          - dos_stepper_minus_plain
+          - dos_step_decrement
+        - type: custom:button-card
+          entity: input_number.wine_fridge_temperature_tolerance
+          template:
+          - dos_stepper_plus_plain
+          - dos_step_increment
+      - type: custom:stack-in-card
+        mode: horizontal
+        card_mod: !include _partials/stack-reset-row.yaml
+        cards:
+        - type: custom:button-card
+          entity: input_number.wine_fridge_manual_temperature
+          template: dos_checks_target_row
+          variables:
+            txt: Manual temperature
+        - type: custom:button-card
+          entity: input_number.wine_fridge_manual_temperature
+          template:
+          - dos_stepper_minus_plain
+          - dos_step_decrement
+        - type: custom:button-card
+          entity: input_number.wine_fridge_manual_temperature
+          template:
+          - dos_stepper_plus_plain
+          - dos_step_increment
+    - type: custom:stack-in-card
+      mode: vertical
+      cards:
+      - type: custom:button-card
+        template: dos_section_header
+        variables:
+          title: AC filter maintenance
+      - type: custom:button-card
+        entity: input_boolean.ac_filter_monitoring_enabled
+        tap_action:
+          action: toggle
+        hold_action:
+          action: more-info
+        show_icon: false
+        show_name: false
+        show_state: false
+        show_label: true
+        triggers_update: all
+        label: "[[[\n  const on = (states['input_boolean.ac_filter_monitoring_enabled']||{}).state === 'on';\n  const box = on ? 'background:var(--dos-accent); border:1px solid var(--dos-accent);' : 'background:transparent; border:1px solid var(--dos-quiet);';\n  const txt = on ? 'var(--dos-ink)' : 'var(--dos-quiet)';\n  return `<div style=\"display:flex; align-items:center; justify-content:space-between; gap:8px; padding:clamp(5px,0.6cqw,6.5px) 0; border-bottom:0.6px solid var(--dos-line);\">\n    <span style=\"display:flex; align-items:center; gap:9px; font-size:clamp(11.5px,1.05cqw,13px); color:var(--dos-text); white-space:nowrap; min-width:0;\">\n      <span style=\"width:8px; height:8px; ${box}\"></span>Monitoring enabled</span>\n    <span style=\"font-size:clamp(9px,0.85cqw,10.5px); letter-spacing:0.1em; text-transform:uppercase; font-weight:600; color:${txt}; white-space:nowrap;\">${on?'On':'Off'}</span></div>`;\n]]]\n"
+        styles:
+          card:
+          - *id002
+          - margin: 0 0 6px 0
+          label:
+          - font-family: inherit
+          - text-align: left
+          - justify-self: stretch
+          - *id002
+      - type: custom:button-card
+        entity: sensor.bedroom_ac_filter_countdown
+        variables:
+          k: Bedroom
+          last: false
+        template: dos_temp_unit_row
+      - type: custom:button-card
+        entity: sensor.living_room_ac_filter_countdown
+        variables:
+          k: Living room
+          last: false
+        template: dos_temp_unit_row
+      - type: custom:button-card
+        entity: sensor.attic_ac_filter_countdown
+        variables:
+          k: Attic
+          last: false
+        template: dos_temp_unit_row
+      - type: custom:button-card
+        entity: sensor.study_ac_filter_countdown
+        variables:
+          k: Study
+          last: true
+        template: dos_temp_unit_row
+      - type: custom:button-card
+        template: dos_subheader
+        variables:
+          title: Mark cleaned
+      - type: custom:button-card
+        entity: input_button.bedroom_ac_filter_cleaned_button
+        tap_action:
+          action: perform-action
+          perform_action: input_button.press
+          target:
+            entity_id: input_button.bedroom_ac_filter_cleaned_button
+        hold_action:
+          action: more-info
+          entity: input_button.bedroom_ac_filter_cleaned_button
+        variables:
+          k: Bedroom
+        template: dos_text_pair_row
+      - type: custom:button-card
+        entity: input_button.living_room_ac_filter_cleaned_button
+        tap_action:
+          action: perform-action
+          perform_action: input_button.press
+          target:
+            entity_id: input_button.living_room_ac_filter_cleaned_button
+        hold_action:
+          action: more-info
+          entity: input_button.living_room_ac_filter_cleaned_button
+        variables:
+          k: Living room
+        template: dos_text_pair_row
+      - type: custom:button-card
+        entity: input_button.attic_ac_filter_cleaned_button
+        tap_action:
+          action: perform-action
+          perform_action: input_button.press
+          target:
+            entity_id: input_button.attic_ac_filter_cleaned_button
+        hold_action:
+          action: more-info
+          entity: input_button.attic_ac_filter_cleaned_button
+        variables:
+          k: Attic
+        template: dos_text_pair_row
+      - type: custom:button-card
+        entity: input_button.study_ac_filter_cleaned_button
+        tap_action:
+          action: perform-action
+          perform_action: input_button.press
+          target:
+            entity_id: input_button.study_ac_filter_cleaned_button
+        hold_action:
+          action: more-info
+          entity: input_button.study_ac_filter_cleaned_button
+        variables:
+          k: Study
+        template: dos_text_pair_row
+    - type: custom:stack-in-card
+      mode: vertical
+      cards:
+      - type: custom:button-card
+        template: dos_section_header
+        variables:
+          title: History &middot; cold chain
+      - type: custom:apexcharts-card
+        graph_span: 12h
+        header: *id003
+        chart_type: line
+        all_series_config:
+          curve: smooth
+          show:
+            legend_value: false
+        series:
+        - entity: sensor.te10_fridge_temperature
+          name: Fridge
+          color: '#5d8499'
+          stroke_width: 1.4
+          group_by:
+            func: avg
+            duration: 15min
+        - entity: sensor.t4_t_bauknecht_freezer_temperature
+          name: Bauknecht
+          color: '#b5654d'
+          stroke_width: 1.4
+          group_by:
+            func: avg
+            duration: 15min
+        - entity: sensor.te11_beko_freezer_temperature
+          name: Beko
+          color: '#8c887f'
+          stroke_width: 1.4
+          group_by:
+            func: avg
+            duration: 15min
+        - entity: sensor.ts6t_winefridge_temperature
+          name: Wine
+          color: '#6b7a52'
+          stroke_width: 1.4
+          group_by:
+            func: avg
+            duration: 15min
+        yaxis:
+        - min: -25
+          max: 20
+          decimals: 0
+          apex_config:
+            show: true
+            tickAmount: 3
+            labels:
+              offsetX: -2
+              style:
+                fontSize: 8px
+              formatter: "EVAL:function(v){\n  if (v == null) return '';\n  return Math.round(v) + ' °C';\n}\n"
+        apex_config:
+          colors:
+          - '#5d8499'
+          - '#b5654d'
+          - '#8c887f'
+          - '#6b7a52'
+          chart:
+            height: 180
+            parentHeightOffset: 0
+            offsetX: -4
+            toolbar: *id003
+            animations: *id004
+            sparkline: *id004
+          grid:
+            show: true
+            strokeDashArray: 2
+            padding:
+              left: 2
+              right: 58
+              top: 8
+              bottom: 0
+            xaxis:
+              lines: *id003
+            yaxis:
+              lines:
+                show: true
+          legend: *id003
+          tooltip:
+            enabled: true
+            x:
+              format: HH:mm
+          stroke:
+            width:
+            - 1.4
+            - 1.4
+            - 1.4
+            - 1.4
+            curve: smooth
+            lineCap: round
+          dataLabels: *id004
+          xaxis:
+            type: datetime
+            labels: *id003
+            axisBorder: *id003
+            axisTicks: *id003
+          markers:
+            size: 0
+        card_mod:
+          style: "ha-card {\n  padding: 0 !important; margin: 0 0 6px 0 !important;\n}\n"
+      - type: custom:button-card
+        template: dos_chart_legend
+        variables:
+          rows:
+          - stroke: var(--dos-series1)
+            dash: '0'
+            label: Fridge
+          - stroke: var(--dos-series2)
+            dash: 7 4
+            label: Bauknecht
+          - stroke: var(--dos-series3)
+            dash: 1 4
+            label: Beko
+          - stroke: var(--dos-series4)
+            dash: 8 3 1 3
+            label: Wine
+          desc: Four cold-chain temperatures over the last 12 hours; remaining units listed below.
+      - type: custom:button-card
+        entity: sensor.pm9_bauknecht_freezer_active_power
+        variables:
+          k: Bauknecht freezer
+          unit: W
+          fmt: int
+          sub: power
+          accent: false
+          last: true
+        template: dos_value_row
+  - !include _partials/footer.yaml

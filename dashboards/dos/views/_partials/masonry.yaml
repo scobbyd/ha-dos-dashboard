@@ -1,0 +1,9 @@
+# Shared page-level masonry layout (custom:layout-card / masonry-layout).
+# !include'd as `layout:` by the 8 masonry views. fill-options uses a grid and is excluded.
+# Portrait fix: 8px gutter + -8px bleed (was 18/-18). Single-column masonry drops the
+# horizontal gutter on mobile, so the old -18px bleed put content on the screen edge.
+width: 360
+max_cols: 3
+card_margin: 0px 8px 26px 8px
+margin: 0px -8px 0px -8px
+padding: 0

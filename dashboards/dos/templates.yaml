@@ -1,0 +1,649 @@
+# _anchor_defs is not a lovelace/button-card key; it only hosts the YAML anchor
+# definitions shared across this file, so deleting/reordering templates can't
+# break aliases. pad0/lineh1/minw0 are single style entries; show_label_only is
+# the standard button-card flag set (use via `<<: *show_label_only`); the
+# label_* anchors are the four canonical label style lists.
+_anchor_defs:
+- &pad0
+  padding: '0'
+- &lineh1
+  line-height: '1'
+- &minw0
+  min-width: '0'
+- &show_label_only
+  show_icon: false
+  show_name: false
+  show_state: false
+  show_label: true
+- &label_left
+  - font-family: inherit
+  - text-align: left
+  - justify-self: stretch
+  - *pad0
+- &label_left_wrap
+  - font-family: inherit
+  - text-align: left
+  - justify-self: stretch
+  - *pad0
+  - white-space: normal
+  - overflow: visible
+- &label_right
+  - font-family: inherit
+  - text-align: right
+  - justify-self: end
+  - *pad0
+- &label_center
+  - font-family: inherit
+  - *pad0
+  - justify-self: stretch
+  - text-align: center
+dos_stepper_minus:
+  <<: *show_label_only
+  styles:
+    card:
+    - border: 0.8px solid var(--dos-soft)
+    - width: 20px
+    - height: 20px
+    - *pad0
+    - margin: 0 8px 0 0
+    - align-self: center
+    label:
+    - font-family: inherit
+    - font-size: 14px
+    - color: var(--dos-soft)
+    - *lineh1
+  label: −
+dos_stepper_plus:
+  template: dos_stepper_minus
+  label: +
+  styles:
+    card:
+    - margin: 0 0 0 8px
+dos_label_cell:
+  tap_action:
+    action: more-info
+  <<: *show_label_only
+  triggers_update: all
+  styles:
+    card:
+    - padding: 6px 0
+    - *minw0
+    label:
+    - font-family: inherit
+    - text-align: left
+    - justify-self: stretch
+    - *pad0
+    - white-space: normal
+  label: '[[[ return `<div style="flex:1; min-width:0; font-size:clamp(11.5px,1.05cqw,13px); color:var(--dos-text); line-height:1.25;">${variables.k}<span style="color:var(--dos-quiet); margin-left:5px; font-size:clamp(9px,0.85cqw,10.5px);">${variables.unit}</span></div>`; ]]]'
+dos_value_row:
+  tap_action:
+    action: more-info
+  <<: *show_label_only
+  triggers_update: all
+  styles:
+    card:
+    - *pad0
+    label: *label_left_wrap
+  label: "[[[\n  const vr = variables || {};\n  const eid = (entity && entity.entity_id) ? entity.entity_id : null;\n  const s = eid ? states[eid] : null;\n  const raw = (vr.src==='attr') ? ((s && s.attributes) ? s.attributes[vr.attr] : null) : (s ? s.state : null);\n  const v = (raw==null || raw==='unavailable' || raw==='unknown') ? null : parseFloat(raw);\n  let disp;\n  if (v==null || isNaN(v)) disp = '—';\n  else if (vr.fmt==='int') disp = Math.round(v).toLocaleString('de-DE');\n  else if (vr.fmt==='dec2') disp = v.toFixed(2).replace('.', ',');\n  else disp = v.toFixed(vr.fmt==='dec0'?0:1).replace('.', ',');\n  const last = vr.last ? 'none' : '0.6px solid var(--dos-line)';\n  const sub = vr.sub ? `<span style=\"color:var(--dos-quiet); margin-left:6px; font-size:clamp(10px,0.95cqw,12px);\">${vr.sub}</span>` : '';\n  const vcol = vr.accent ? 'var(--dos-accent)' : 'var(--dos-ink)';\n  const u = (vr.unit && disp!=='—') ? `<span style=\"font-size:clamp(9.5px,0.9cqw,11px); font-weight:400; color:var(--dos-soft); margin-left:3px;\">${vr.unit}</span>` : '';\n  const k = (vr.k==null) ? '' : vr.k;\n  return `<div style=\"display:flex; justify-content:space-between; align-items:baseline; gap:8px; padding:clamp(5px,0.7cqw,7px) 0; border-bottom:${last};\">\n    <span style=\"font-size:clamp(12px,1.1cqw,13.5px); color:var(--dos-text); white-space:nowrap;\">${k}${sub}</span>\n    <span style=\"font-size:clamp(12.5px,1.15cqw,14px); font-weight:600; color:${vcol}; font-variant-numeric:tabular-nums; white-space:nowrap;\">${disp}${u}</span></div>`;\n]]]\n"
+dos_stepper_minus_plain:
+  template: dos_stepper_minus
+  styles:
+    card:
+    - width: 18px
+    - height: 18px
+    - margin: 0 7px 0 0
+    label:
+    - font-size: 13px
+dos_stepper_plus_plain:
+  template: dos_stepper_plus
+  styles:
+    card:
+    - width: 18px
+    - height: 18px
+    - margin: 0 0 0 7px
+    label:
+    - font-size: 13px
+# Action mixins for the steppers above. Combine in a template list, e.g.
+#   template: [dos_stepper_minus_plain, dos_step_climate_minus]
+# The tap_action targets the card's own entity, so call sites only set
+# `entity:` (plus min/max/step variables where the defaults don't fit).
+dos_step_climate_minus:
+  variables:
+    min: 16
+    max: 30
+    step: 0.5
+    fallback: 20
+  tap_action:
+    action: perform-action
+    perform_action: climate.set_temperature
+    target:
+      entity_id: '[[[ return entity.entity_id ]]]'
+    data:
+      temperature: '[[[ const t = (entity && entity.attributes) ? parseFloat(entity.attributes.temperature) : NaN; return isNaN(t) ? variables.fallback : Math.max(variables.min, t - variables.step); ]]]'
+dos_step_climate_plus:
+  variables:
+    min: 16
+    max: 30
+    step: 0.5
+    fallback: 20
+  tap_action:
+    action: perform-action
+    perform_action: climate.set_temperature
+    target:
+      entity_id: '[[[ return entity.entity_id ]]]'
+    data:
+      temperature: '[[[ const t = (entity && entity.attributes) ? parseFloat(entity.attributes.temperature) : NaN; return isNaN(t) ? variables.fallback : Math.min(variables.max, t + variables.step); ]]]'
+dos_step_number_minus:
+  variables:
+    min: 0
+    max: 100
+    step: 1
+  tap_action:
+    action: perform-action
+    perform_action: input_number.set_value
+    target:
+      entity_id: '[[[ return entity.entity_id ]]]'
+    data:
+      value: '[[[ if (!entity) return; const v = parseFloat(entity.state); const n = isNaN(v) ? variables.min : v - variables.step; return Math.max(variables.min, Math.round(n/variables.step)*variables.step); ]]]'
+dos_step_number_plus:
+  variables:
+    min: 0
+    max: 100
+    step: 1
+  tap_action:
+    action: perform-action
+    perform_action: input_number.set_value
+    target:
+      entity_id: '[[[ return entity.entity_id ]]]'
+    data:
+      value: '[[[ if (!entity) return; const v = parseFloat(entity.state); const n = isNaN(v) ? variables.min : v + variables.step; return Math.min(variables.max, Math.round(n/variables.step)*variables.step); ]]]'
+# Increment/decrement mixins: the helper's own min/max/step apply.
+dos_step_decrement:
+  tap_action:
+    action: perform-action
+    perform_action: input_number.decrement
+    target:
+      entity_id: '[[[ return entity.entity_id ]]]'
+dos_step_increment:
+  tap_action:
+    action: perform-action
+    perform_action: input_number.increment
+    target:
+      entity_id: '[[[ return entity.entity_id ]]]'
+# dos_value_span: right-aligned numeric span (beside steppers / in field
+# rows). variables: fmt (dec1 default | int/dec0 -> rounded de-DE | dec2),
+# unit (omitted when empty), w (card width), small (compact fonts).
+# Wrappers below: dos_heating_target_value (+more-info),
+# dos_energy_value (56px compact, +more-info), dos_value_int_span
+# (56px compact rounded %).
+dos_value_span:
+  tap_action:
+    action: more-info
+  <<: *show_label_only
+  triggers_update: all
+  variables:
+    fmt: dec1
+    unit: ''
+    w: 74px
+    small: false
+  styles:
+    card:
+    - *pad0
+    - width: '[[[ return variables.w ]]]'
+    - align-self: center
+    label: *label_right
+  label: "[[[\n  const raw = ((entity && entity.entity_id ? states[entity.entity_id] : null)||{}).state;\n  const v = (raw==null||raw==='unavailable'||raw==='unknown') ? null : parseFloat(raw);\n  let disp;\n  if (v==null||isNaN(v)) disp = '—';\n  else if (variables.fmt==='int'||variables.fmt==='dec0') disp = Math.round(v).toLocaleString('de-DE');\n  else if (variables.fmt==='dec2') disp = v.toFixed(2).replace('.', ',');\n  else disp = v.toFixed(1).replace('.', ',');\n  const uSz = variables.small ? 'clamp(8.5px,0.8cqw,10px)' : 'clamp(9px,0.85cqw,10.5px)';\n  const vSz = variables.small ? 'clamp(12px,1.1cqw,13.5px)' : 'clamp(12.5px,1.15cqw,14px)';\n  const u = variables.unit ? `<span style=\"font-size:${uSz}; font-weight:400; color:var(--dos-soft); margin-left:2px;\">${variables.unit}</span>` : '';\n  return `<span style=\"font-size:${vSz}; font-weight:600; color:var(--dos-ink); font-variant-numeric:tabular-nums; white-space:nowrap;\">${disp}${u}</span>`;\n]]]\n"
+dos_energy_row:
+  tap_action:
+    action: more-info
+  <<: *show_label_only
+  triggers_update: all
+  styles:
+    card:
+    - *pad0
+    label: *label_left_wrap
+  label: "[[[\n  const vr = variables || {};\n  const num = (id) => { if(!id) return null; const s = states[id]; const r = s ? s.state : null;\n    return (r==null||r==='unavailable'||r==='unknown') ? null : parseFloat(r); };\n  const w = num(vr.e_now);\n  let k = num(vr.e_kwh);\n  if (k!=null && !isNaN(k) && vr.kdiv) k = k / vr.kdiv;\n  const wD = (w==null||isNaN(w)) ? '—' : Math.round(w).toLocaleString('de-DE');\n  const kD = (k==null||isNaN(k)) ? '—' : k.toFixed(2).replace('.', ',');\n  const border = vr.last ? 'none' : '0.6px solid var(--dos-line)';\n  const sub = vr.sub ? `<span style=\"color:var(--dos-quiet); margin-left:6px; font-size:clamp(9px,0.85cqw,10.5px);\">${vr.sub}</span>` : '';\n  const kCol = 'var(--dos-accent2)';\n  return `<div style=\"display:grid; grid-template-columns:1fr 50px 52px; column-gap:6px; align-items:baseline; padding:clamp(5px,0.7cqw,7px) 0; border-bottom:${border};\">\n    <span style=\"font-size:clamp(12px,1.1cqw,13.5px); color:var(--dos-text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;\">${vr.k}${sub}</span>\n    <span style=\"font-size:clamp(12px,1.1cqw,13.5px); font-weight:600; color:var(--dos-ink); font-variant-numeric:tabular-nums; text-align:right; white-space:nowrap;\">${wD}</span>\n    <span style=\"font-size:clamp(12px,1.1cqw,13.5px); font-weight:600; color:${kCol}; font-variant-numeric:tabular-nums; text-align:right; white-space:nowrap;\">${kD}</span>\n  </div>`;\n]]]\n"
+dos_daynight_toggle_day:
+  <<: *show_label_only
+  triggers_update: all
+  styles:
+    card:
+    - *pad0
+    label: *label_center
+  label: "[[[\n  const night = (states['input_boolean.dossier_night_mode'] || {}).state === 'on';\n  const ink = night ? '#f2efe8' : '#0d1b2a';\n  const paper = night ? '#17140f' : '#f5f5f4';\n  const quiet = night ? '#6e6a62' : '#8a8a8a';\n  const active = !night;\n  return `<span style=\"display:block; background:${active ? ink : 'transparent'}; color:${active ? paper : quiet}; font-family:inherit; font-size:9px; font-weight:700; letter-spacing:0.14em; text-transform:uppercase; line-height:1.4; padding:3px 11px; white-space:nowrap;\">Day</span>`;\n]]]\n"
+dos_daynight_toggle_night:
+  <<: *show_label_only
+  triggers_update: all
+  styles:
+    card:
+    - *pad0
+    label: *label_center
+  label: "[[[\n  const night = (states['input_boolean.dossier_night_mode'] || {}).state === 'on';\n  const ink = night ? '#f2efe8' : '#0d1b2a';\n  const paper = night ? '#17140f' : '#f5f5f4';\n  const quiet = night ? '#6e6a62' : '#8a8a8a';\n  const line = night ? '#38332c' : '#d4d4d4';\n  const active = night;\n  return `<span style=\"display:block; background:${active ? ink : 'transparent'}; color:${active ? paper : quiet}; font-family:inherit; font-size:9px; font-weight:700; letter-spacing:0.14em; text-transform:uppercase; line-height:1.4; padding:3px 11px; white-space:nowrap; border-left:1px solid ${line};\">Night</span>`;\n]]]\n"
+dos_state_text_row:
+  tap_action:
+    action: more-info
+  <<: *show_label_only
+  triggers_update: all
+  styles:
+    card:
+    - *pad0
+    label: *label_left_wrap
+  label: "[[[\n  const s = (entity && entity.entity_id) ? states[entity.entity_id] : null;\n  const raw = s ? s.state : null;\n  const disp = (raw==null || raw==='unavailable' || raw==='unknown') ? '—' : raw.replace(/_/g,' ');\n  const last = variables.last ? 'none' : '0.6px solid var(--dos-line)';\n  const vcol = variables.accent ? 'var(--dos-accent)' : 'var(--dos-ink)';\n  return `<div style=\"display:flex; justify-content:space-between; align-items:baseline; gap:8px; padding:clamp(5px,0.7cqw,7px) 0; border-bottom:${last};\">\n    <span style=\"font-size:clamp(12px,1.1cqw,13.5px); color:var(--dos-text); white-space:nowrap;\">${variables.k}</span>\n    <span style=\"font-size:clamp(10.5px,1cqw,12px); font-weight:600; color:${vcol}; letter-spacing:0.06em; text-transform:uppercase; font-variant-numeric:tabular-nums; white-space:nowrap;\">${disp}</span></div>`;\n]]]\n"
+dos_clock_time:
+  tap_action:
+    action: none
+  <<: *show_label_only
+  triggers_update: all
+  styles:
+    card:
+    - padding: 0 0 16px 0
+    label: *label_right
+  label: "[[[\n  const time = new Date().toLocaleTimeString('en-GB', {hour:'2-digit', minute:'2-digit'});\n  return `<div style=\"font-size:clamp(16px,1.8cqw,23px); font-weight:600; color:var(--dos-ink); font-variant-numeric:tabular-nums; letter-spacing:0.02em; text-align:right; white-space:nowrap;\">${time}</div>`;\n]]]\n"
+dos_view_header:
+  <<: *show_label_only
+  triggers_update: all
+  tap_action:
+    action: none
+  styles:
+    card:
+    - padding: 0 0 16px 0
+    - *minw0
+    label: *label_left
+  label: "[[[\n  return `\n    <div style=\"min-width:0;\">\n      <div style=\"font-size:clamp(20px,2.4cqw,32px); font-weight:700; color:var(--dos-ink); letter-spacing:-0.01em; line-height:1.05;\">${variables.title}</div>\n    </div>`;\n]]]\n"
+dos_binary_word_row:
+  tap_action:
+    action: more-info
+  <<: *show_label_only
+  triggers_update: all
+  styles:
+    card:
+    - *pad0
+    label: *label_left_wrap
+  label: "[[[\n  const s = (entity && entity.entity_id) ? states[entity.entity_id] : null;\n  const raw = s ? s.state : null;\n  const on = raw === 'on';\n  const unk = (raw==null || raw==='unavailable' || raw==='unknown');\n  const disp = unk ? '—' : (on ? variables.on_txt : variables.off_txt);\n  const col = unk ? 'var(--dos-quiet)' : (on ? 'var(--dos-accent)' : 'var(--dos-quiet)');\n  const last = variables.last ? 'none' : '0.6px solid var(--dos-line)';\n  return `<div style=\"display:flex; justify-content:space-between; align-items:baseline; gap:8px; padding:clamp(5px,0.7cqw,7px) 0; border-bottom:${last};\">\n    <span style=\"font-size:clamp(12px,1.1cqw,13.5px); color:var(--dos-text); white-space:nowrap;\">${variables.k}</span>\n    <span style=\"font-size:clamp(9px,0.85cqw,10.5px); font-weight:600; color:${col}; letter-spacing:0.1em; text-transform:uppercase; white-space:nowrap;\">${disp}</span></div>`;\n]]]\n"
+dos_section_caption:
+  tap_action:
+    action: none
+  <<: *show_label_only
+  styles:
+    card:
+    - padding: 10px 0 4px 0
+    label: *label_left
+  label: '[[[ return `<span style="font-size:clamp(9px,0.85cqw,10.5px); color:var(--dos-quiet); letter-spacing:0.06em; text-transform:uppercase;">${variables.title}</span>`; ]]]
+
+    '
+dos_table_header:
+  tap_action:
+    action: none
+  <<: *show_label_only
+  styles:
+    card:
+    - *pad0
+    label: *label_left
+  label: "[[[\n  return `<div style=\"display:flex; align-items:baseline; font-size:clamp(9px,0.85cqw,10.5px); color:var(--dos-quiet); letter-spacing:0.06em; text-transform:uppercase; padding-bottom:6px; border-bottom:0.6px solid var(--dos-line);\">\n    <span style=\"flex:1; min-width:0;\">Zone</span>\n    <span style=\"width:52px; text-align:right;\">Actual</span>\n    <span style=\"width:88px; text-align:right;\">Set</span>\n    <span style=\"width:52px; text-align:right;\">Mode</span>\n  </div>`;\n]]]\n"
+dos_time_window_row:
+  tap_action:
+    action: more-info
+  <<: *show_label_only
+  triggers_update: all
+  styles:
+    card:
+    - *pad0
+    label: *label_left_wrap
+  label: "[[[\n  const e = (entity && entity.entity_id) ? states[entity.entity_id] : null;\n  const raw = e ? e.state : null;\n  let disp = '—';\n  if (raw && raw!=='unavailable' && raw!=='unknown') {\n    const parts = raw.split(':');\n    disp = (parts.length>=2) ? `${parts[0]}:${parts[1]}` : raw;\n  }\n  const last = variables.last ? 'none' : '0.6px solid var(--dos-line)';\n  return `<div style=\"display:flex; justify-content:space-between; align-items:baseline; gap:8px; padding:clamp(5px,0.7cqw,7px) 0; border-bottom:${last};\">\n    <span style=\"font-size:clamp(12px,1.1cqw,13.5px); color:var(--dos-text); white-space:nowrap;\">${variables.k}</span>\n    <span style=\"font-size:clamp(12.5px,1.15cqw,14px); font-weight:600; color:var(--dos-ink); font-variant-numeric:tabular-nums; white-space:nowrap;\">${disp}</span></div>`;\n]]]\n"
+dos_temp_unit_row:
+  tap_action:
+    action: more-info
+  <<: *show_label_only
+  triggers_update: all
+  styles:
+    card:
+    - *pad0
+    label: *label_left_wrap
+  label: "[[[\n  const e = (entity && entity.entity_id) ? states[entity.entity_id] : null;\n  const raw = e ? e.state : null;\n  let disp = (raw==null || raw==='unavailable' || raw==='unknown') ? '—' : raw;\n  const num = parseFloat(disp);\n  const unit = (e && e.attributes && e.attributes.unit_of_measurement) ? e.attributes.unit_of_measurement : '';\n  if (disp!=='—' && !isNaN(num) && disp.trim() === String(num)) disp = Math.round(num).toLocaleString('de-DE');\n  const u = (disp!=='—' && unit) ? `<span style=\"font-size:clamp(9.5px,0.9cqw,11px); font-weight:400; color:var(--dos-soft); margin-left:3px;\">${unit}</span>` : '';\n  const last = variables.last ? 'none' : '0.6px solid var(--dos-line)';\n  return `<div style=\"display:flex; justify-content:space-between; align-items:baseline; gap:8px; padding:clamp(5px,0.7cqw,7px) 0; border-bottom:${last};\">\n    <span style=\"font-size:clamp(12px,1.1cqw,13.5px); color:var(--dos-text); white-space:nowrap;\">${variables.k}</span>\n    <span style=\"font-size:clamp(12.5px,1.15cqw,14px); font-weight:600; color:var(--dos-ink); font-variant-numeric:tabular-nums; white-space:nowrap;\">${disp}${u}</span></div>`;\n]]]\n"
+dos_text_pair_row:
+  tap_action:
+    action: more-info
+  <<: *show_label_only
+  styles:
+    card:
+    - *pad0
+    label: *label_left
+  label: "[[[\n  return `<div style=\"display:flex; align-items:center; justify-content:space-between; gap:8px; padding:clamp(5px,0.6cqw,6.5px) 0; border-bottom:0.6px solid var(--dos-line);\">\n    <span style=\"font-size:clamp(11.5px,1.05cqw,13px); color:var(--dos-text); white-space:nowrap;\">${variables.k}</span>\n    <span style=\"font-size:clamp(9px,0.85cqw,10.5px); letter-spacing:0.1em; text-transform:uppercase; font-weight:600; color:var(--dos-accent); white-space:nowrap;\">Mark</span></div>`;\n]]]\n"
+dos_state_string_row:
+  tap_action:
+    action: more-info
+  <<: *show_label_only
+  triggers_update: all
+  styles:
+    card:
+    - *pad0
+    label: *label_left
+  label: "[[[\n  const s = (states[entity.entity_id]||{}).state;\n  const disp = (s==null||s==='unavailable'||s==='unknown') ? '—' : s;\n  return `<div style=\"display:flex; justify-content:space-between; align-items:baseline; gap:8px; padding:clamp(5px,0.7cqw,7px) 0; border-bottom:0.6px solid var(--dos-line);\">\n    <span style=\"font-size:clamp(12px,1.1cqw,13.5px); color:var(--dos-text); white-space:nowrap;\">${variables.k}</span>\n    <span style=\"font-size:clamp(11px,1.0cqw,12.5px); font-weight:600; color:var(--dos-accent2); font-variant-numeric:tabular-nums; white-space:nowrap;\">${disp}</span></div>`;\n]]]\n"
+dos_value_int_span:
+  template: dos_value_span
+  variables:
+    w: 56px
+    small: true
+    fmt: int
+    unit: '%'
+dos_binary_word_accent_row:
+  tap_action:
+    action: more-info
+  <<: *show_label_only
+  triggers_update: all
+  styles:
+    card:
+    - *pad0
+    label: *label_left_wrap
+  label: "[[[\n  const s = (entity && entity.entity_id) ? states[entity.entity_id] : null;\n  const raw = s ? s.state : null;\n  if (raw==null||raw==='unavailable'||raw==='unknown') {\n    var disp='—', col='var(--dos-quiet)';\n  } else {\n    const on = raw==='on';\n    var disp = on ? variables.on_word : variables.off_word;\n    var col = on ? (variables.on_accent ? 'var(--dos-accent)' : 'var(--dos-quiet)') : 'var(--dos-accent2)';\n  }\n  const last = variables.last ? 'none' : '0.6px solid var(--dos-line)';\n  return `<div style=\"display:flex; justify-content:space-between; align-items:baseline; gap:8px; padding:clamp(5px,0.7cqw,7px) 0; border-bottom:${last};\">\n    <span style=\"font-size:clamp(12px,1.1cqw,13.5px); color:var(--dos-text); white-space:nowrap;\">${variables.k}</span>\n    <span style=\"font-size:clamp(9px,0.85cqw,10.5px); letter-spacing:0.08em; text-transform:uppercase; font-weight:600; color:${col}; white-space:nowrap;\">${disp}</span></div>`;\n]]]\n"
+dos_time_window_match_row:
+  tap_action:
+    action: more-info
+  <<: *show_label_only
+  triggers_update: all
+  styles:
+    card:
+    - *pad0
+    label: *label_left_wrap
+  label: "[[[\n  const s = (entity && entity.entity_id) ? states[entity.entity_id] : null;\n  const raw = s ? s.state : null;\n  let disp = '—';\n  if (!(raw==null || raw==='unavailable' || raw==='unknown')) {\n    const m = raw.match(/(\\d{2}):(\\d{2})/);\n    disp = m ? (m[1]+':'+m[2]) : raw;\n  }\n  const last = variables.last ? 'none' : '0.6px solid var(--dos-line)';\n  return `<div style=\"display:flex; justify-content:space-between; align-items:baseline; gap:8px; padding:clamp(5px,0.7cqw,7px) 0; border-bottom:${last};\">\n    <span style=\"font-size:clamp(12px,1.1cqw,13.5px); color:var(--dos-text); white-space:nowrap;\">${variables.k}</span>\n    <span style=\"font-size:clamp(12.5px,1.15cqw,14px); font-weight:600; color:var(--dos-ink); font-variant-numeric:tabular-nums; white-space:nowrap;\">${disp}</span></div>`;\n]]]\n"
+dos_section_header:
+  <<: *show_label_only
+  label: '[[[ return `<span style="font-variant:small-caps; text-transform:lowercase; letter-spacing:0.06em; font-weight:700; font-size:clamp(11.5px,1.05cqw,13px); color:var(--dos-ink);">${variables.title}</span>`; ]]]
+
+    '
+  tap_action:
+    action: none
+  styles:
+    card:
+    - border-bottom: 0.8px solid var(--dos-ink)
+    - padding: 0 0 6px 0
+    - margin: 0 0 12px 0
+    label: *label_left
+dos_climate_temp_row:
+  <<: *show_label_only
+  label: "[[[\n  const e = (entity && entity.entity_id) ? states[entity.entity_id] : null;\n  const cur = (e && e.attributes) ? parseFloat(e.attributes.current_temperature) : NaN;\n  const c = isNaN(cur) ? '—' : cur.toFixed(1).replace('.', ',');\n  return `<div style=\"display:flex; align-items:center;\">\n    <span style=\"flex:1; min-width:0; font-size:clamp(12px,1.1cqw,13.5px); color:var(--dos-text);\">${variables.name}</span>\n    <span style=\"width:52px; text-align:right; font-size:clamp(12.5px,1.15cqw,14px); font-weight:600; color:var(--dos-ink); font-variant-numeric:tabular-nums;\">${c}&deg;</span></div>`;\n]]]\n"
+  tap_action:
+    action: more-info
+  styles:
+    card:
+    - padding: 5px 0
+    - *minw0
+    label: *label_left
+dos_climate_setpoint:
+  <<: *show_label_only
+  label: "[[[\n  const e = states[entity.entity_id];\n  const t = (e && e.attributes) ? parseFloat(e.attributes.temperature) : NaN;\n  const s = isNaN(t) ? '—' : t.toFixed(1).replace('.', ',');\n  const deg = isNaN(t) ? '' : '&deg;';\n  return `<span style=\"font-size:clamp(11.5px,1.05cqw,13px); color:var(--dos-soft); font-variant-numeric:tabular-nums;\">${s}${deg}</span>`;\n]]]\n"
+  tap_action:
+    action: more-info
+  styles:
+    card:
+    - *pad0
+    - width: 38px
+    - align-self: center
+    label: *label_right
+dos_climate_mode:
+  <<: *show_label_only
+  label: "[[[\n  const m = (states[entity.entity_id] || {}).state || 'off';\n  const col = m === 'heat' ? 'var(--dos-accent2)' : (m === 'cool' ? 'var(--dos-accent)' : 'var(--dos-quiet)');\n  return `<span style=\"font-size:clamp(9px,0.85cqw,10.5px); letter-spacing:0.08em; text-transform:uppercase; color:${col}; font-weight:600;\">${m}</span>`;\n]]]\n"
+  tap_action:
+    action: more-info
+  styles:
+    card:
+    - *pad0
+    - width: 52px
+    - align-self: center
+    label: *label_right
+dos_gauge:
+  tap_action:
+    action: more-info
+  <<: *show_label_only
+  label: "[[[\n  const e = (entity && entity.entity_id) ? states[entity.entity_id] : null;\n  const raw = e ? e.state : null;\n  const v = (raw==null||raw==='unavailable'||raw==='unknown') ? null : parseFloat(raw);\n  const max = variables.mx;\n  const mag = (v==null||isNaN(v)) ? v : (variables.abs ? Math.abs(v) : v);\n  const pct = (v==null||isNaN(v)) ? 0 : Math.max(0, Math.min(100, mag/max*100));\n  const disp = (v==null||isNaN(v)) ? '—' : (mag/1000).toFixed(2).replace('.', ',');\n  const ke = states[variables.ken];\n  const kr = ke ? ke.state : null;\n  const kv = (kr==null||kr==='unavailable'||kr==='unknown') ? null : parseFloat(kr);\n  const kdisp = (kv==null||isNaN(kv)) ? '—' : kv.toFixed(1).replace('.', ',');\n  return `\n    <div style=\"display:flex; justify-content:space-between; align-items:baseline; gap:8px;\">\n      <span style=\"font-size:clamp(12px,1.1cqw,13.5px); color:var(--dos-text); white-space:nowrap;\">${variables.txt}</span>\n      <span style=\"display:inline-flex; align-items:baseline;\">\n        <span style=\"font-size:clamp(18px,2.2cqw,26px); font-weight:600; font-variant-numeric:tabular-nums; color:${variables.col};\">${disp}<span style=\"font-size:clamp(9.5px,0.9cqw,11px); font-weight:400; color:var(--dos-soft); margin-left:3px;\">kW</span></span>\n        <span style=\"font-size:clamp(11px,1.0cqw,12.5px); font-weight:500; font-variant-numeric:tabular-nums; white-space:nowrap; border-left:0.8px solid var(--dos-line); padding-left:8px; margin-left:9px; color:${variables.kcol};\">${kdisp}<span style=\"font-size:clamp(8px,0.78cqw,9.5px); margin-left:2px; color:var(--dos-soft);\">kWh</span></span>\n      </span>\n    </div>\n    <div style=\"height:4px; background:var(--dos-line); margin-top:6px; position:relative;\">\n      <div style=\"position:absolute; left:0; top:0; bottom:0; width:${pct}%; background:${variables.col};\"></div>\n    </div>\n    <div style=\"display:flex; justify-content:space-between; font-size:clamp(8px,0.8cqw,9px); color:var(--dos-quiet); letter-spacing:0.04em; margin-top:3px; font-variant-numeric:tabular-nums;\"><span>0 kW</span><span>${(max/1000).toFixed(0)} kW</span></div>`;\n]]]\n"
+  triggers_update: all
+dos_gauge_grid:
+  <<: *show_label_only
+  label: "[[[\n  const e = (entity && entity.entity_id) ? states[entity.entity_id] : null;\n  const raw = e ? e.state : null;\n  const w = (raw==null||raw==='unavailable'||raw==='unknown') ? null : parseFloat(raw);\n  const v = (w==null||isNaN(w)) ? null : Math.abs(w)/1000;\n  const max = (variables.mx || 14000)/1000;\n  const pct = (v==null) ? 0 : Math.max(0, Math.min(100, v/max*100));\n  const disp = (v==null) ? '—' : v.toFixed(2).replace('.', ',');\n  const dir = (w==null||isNaN(w)) ? '' : (w < 0 ? 'exporting' : (w > 0 ? 'importing' : 'balanced'));\n  const col = (w==null||isNaN(w)) ? 'var(--dos-soft)' : (w < 0 ? 'var(--dos-accent)' : (w > 0 ? 'var(--dos-accent2)' : 'var(--dos-soft)'));\n  const sub = dir ? `<span style=\"color:var(--dos-quiet); margin-left:6px; font-size:clamp(10px,0.95cqw,12px);\">${dir}</span>` : '';\n  const rd = (id) => { const s = states[id]; const r = s ? s.state : null; const n = (r==null||r==='unavailable'||r==='unknown') ? null : parseFloat(r); return (n==null||isNaN(n)) ? '—' : n.toFixed(1).replace('.', ','); };\n  const expd = rd(variables.expen);\n  const impd = rd(variables.impen);\n  return `\n    <div style=\"display:flex; justify-content:space-between; align-items:baseline; gap:8px;\">\n      <span style=\"font-size:clamp(12px,1.1cqw,13.5px); color:var(--dos-text); white-space:nowrap;\">${variables.txt}${sub}</span>\n      <span style=\"display:inline-flex; align-items:baseline;\">\n        <span style=\"font-size:clamp(18px,2.2cqw,26px); font-weight:600; font-variant-numeric:tabular-nums; color:${col};\">${disp}<span style=\"font-size:clamp(9.5px,0.9cqw,11px); font-weight:400; color:var(--dos-soft); margin-left:3px;\">kW</span></span>\n        <span style=\"font-size:clamp(11px,1.0cqw,12.5px); font-weight:500; font-variant-numeric:tabular-nums; white-space:nowrap; border-left:0.8px solid var(--dos-line); padding-left:8px; margin-left:9px; color:var(--dos-text);\"><span style=\"color:var(--dos-soft); font-variant:small-caps; text-transform:lowercase; letter-spacing:0.04em; margin-right:3px;\">exp</span>${expd} <span style=\"color:var(--dos-soft); font-variant:small-caps; text-transform:lowercase; letter-spacing:0.04em; margin-right:3px; margin-left:5px;\">imp</span><span style=\"color:var(--dos-accent2);\">${impd}</span><span style=\"font-size:clamp(8px,0.78cqw,9.5px); margin-left:2px; color:var(--dos-soft);\">kWh</span></span>\n      </span>\n    </div>\n    <div style=\"height:4px; background:var(--dos-line); margin-top:6px; position:relative;\">\n      <div style=\"position:absolute; left:0; top:0; bottom:0; width:${pct}%; background:${col};\"></div>\n    </div>\n    <div style=\"display:flex; justify-content:space-between; font-size:clamp(8px,0.8cqw,9px); color:var(--dos-quiet); letter-spacing:0.04em; margin-top:3px; font-variant-numeric:tabular-nums;\"><span>0 kW</span><span>${max.toFixed(0)} kW</span></div>`;\n]]]\n"
+  tap_action:
+    action: more-info
+    entity: sensor.inverter_grid_power
+  triggers_update: all
+  styles:
+    card:
+    - padding: 4px 0 8px 0
+    label: *label_left_wrap
+dos_chart_legend:
+  <<: *show_label_only
+  label: "[[[\n  const sw = (r) => r.stroke ? `<svg width=\"20\" height=\"8\" style=\"vertical-align:middle; margin-right:5px; overflow:visible;\"><line x1=\"0\" y1=\"4\" x2=\"20\" y2=\"4\" stroke=\"${r.stroke}\" stroke-width=\"2\" stroke-dasharray=\"${r.dash==null?'0':r.dash}\" stroke-linecap=\"${r.cap||'round'}\"></line></svg>` : `<span style=\"display:inline-block; ${r.css} vertical-align:middle; margin-right:5px;\"></span>`;\n  const rows = variables.rows.map((r, i) => `${i ? '&nbsp;&nbsp;' : ''}${sw(r)}${r.label}`).join('\\n    ');\n  return `<div style=\"font-size:clamp(9.5px,0.85cqw,10.5px); color:var(--dos-quiet); letter-spacing:0.03em; line-height:1.5;\">\n    ${rows}\n    <br>${variables.desc}</div>`;\n]]]\n"
+  tap_action:
+    action: none
+  styles:
+    card:
+    - padding: 0 0 4px 0
+    label: *label_left_wrap
+dos_energy_field_label:
+  <<: *show_label_only
+  label: "[[[\n  return `<span style=\"font-size:clamp(12px,1.1cqw,13.5px); color:var(--dos-text);\">${variables.k}</span>`;\n]]]\n"
+  tap_action:
+    action: more-info
+  styles:
+    card:
+    - padding: 6px 0
+    - *minw0
+    label:
+    - font-family: inherit
+    - text-align: left
+    - justify-self: start
+    - *pad0
+dos_energy_value:
+  template: dos_value_span
+  variables:
+    w: 56px
+    small: true
+  tap_action:
+    action: more-info
+dos_subheader:
+  <<: *show_label_only
+  label: '[[[ return `<span style="font-variant:small-caps; text-transform:lowercase; letter-spacing:0.05em; font-weight:600; font-size:clamp(10.5px,0.95cqw,12px); color:var(--dos-muted);">${variables.title}</span>`; ]]]
+
+    '
+  tap_action:
+    action: none
+  styles:
+    card:
+    - border-bottom: 0.6px solid var(--dos-line)
+    - padding: 0 0 4px 0
+    - margin: 14px 0 8px 0
+    label: *label_left
+dos_garden_plant_health:
+  tap_action:
+    action: more-info
+  <<: *show_label_only
+  label: "[[[\n  const e = (entity && entity.entity_id) ? states[entity.entity_id] : null;\n  const st = e ? e.state : null;\n  const ok = (st && st !== 'unavailable' && st !== 'unknown');\n  const label = ok ? (st === 'problem' ? 'attention' : 'healthy') : '—';\n  const col = (st === 'problem') ? 'var(--dos-accent2)' : 'var(--dos-quiet)';\n  return `<div style=\"display:flex; justify-content:space-between; align-items:baseline; gap:8px; ${variables.margin}\">\n    <span style=\"font-variant:small-caps; text-transform:lowercase; letter-spacing:0.05em; font-weight:600; font-size:clamp(11px,1cqw,12.5px); color:var(--dos-muted);\">${variables.name}</span>\n    <span style=\"font-size:clamp(9px,0.85cqw,10.5px); letter-spacing:0.08em; text-transform:uppercase; color:${col}; font-weight:600;\">${label}</span></div>`;\n]]]\n"
+  styles:
+    card:
+    - *pad0
+    label: *label_left
+dos_garden_battery_row:
+  tap_action:
+    action: more-info
+  <<: *show_label_only
+  label: "[[[\n  const e = (entity && entity.entity_id) ? states[entity.entity_id] : null;\n  const raw = e ? e.state : null;\n  const v = (raw==null || raw==='unavailable' || raw==='unknown') ? null : parseFloat(raw);\n  const disp = (v==null||isNaN(v)) ? '—' : Math.round(v);\n  const u = (disp!=='—') ? `<span style=\"font-size:clamp(9.5px,0.9cqw,11px); font-weight:400; color:var(--dos-soft); margin-left:3px;\">%</span>` : '';\n  return `<div style=\"display:flex; justify-content:space-between; align-items:baseline; gap:8px; padding:${variables.pad}; border-bottom:none;\">\n    <span style=\"font-size:clamp(12px,1.1cqw,13.5px); color:var(--dos-text); white-space:nowrap;\">Sensor battery</span>\n    <span style=\"font-size:clamp(12.5px,1.15cqw,14px); font-weight:600; color:var(--dos-ink); font-variant-numeric:tabular-nums; white-space:nowrap;\">${disp}${u}</span></div>`;\n]]]\n"
+  triggers_update: all
+  styles:
+    card:
+    - *pad0
+    label: *label_left_wrap
+dos_garden_status_row:
+  tap_action:
+    action: more-info
+  <<: *show_label_only
+  label: "[[[\n  const e = (entity && entity.entity_id) ? states[entity.entity_id] : null;\n  const st = e ? e.state : null;\n  const ok = (st && st!=='unavailable' && st!=='unknown');\n  const txt = ok ? (st==='on' ? 'Active' : 'Inactive') : '—';\n  const col = (st==='on') ? 'var(--dos-accent)' : 'var(--dos-quiet)';\n  const last = variables.last ? 'none' : '0.6px solid var(--dos-line)';\n  return `<div style=\"display:flex; justify-content:space-between; align-items:baseline; gap:8px; padding:clamp(5px,0.7cqw,7px) 0; border-bottom:${last};\">\n    <span style=\"font-size:clamp(12px,1.1cqw,13.5px); color:var(--dos-text); white-space:nowrap;\">${variables.k}</span>\n    <span style=\"font-size:clamp(9px,0.85cqw,10.5px); letter-spacing:0.08em; text-transform:uppercase; font-weight:600; color:${col}; white-space:nowrap;\">${txt}</span></div>`;\n]]]\n"
+  triggers_update: all
+  styles:
+    card:
+    - *pad0
+    label: *label_left_wrap
+dos_checks_status_row:
+  tap_action:
+    action: more-info
+  <<: *show_label_only
+  label: "[[[\n  const e = (entity && entity.entity_id) ? states[entity.entity_id] : null;\n  const raw = e ? e.state : null;\n  let disp = (raw==null || raw==='unavailable' || raw==='unknown') ? '—' : raw;\n  if (disp!=='—') disp = disp.charAt(0).toUpperCase() + (variables.usc ? disp.slice(1).replace(/_/g,' ') : disp.slice(1));\n  return `<div style=\"display:flex; justify-content:space-between; align-items:baseline; gap:8px; padding:clamp(5px,0.7cqw,7px) 0; border-bottom:0.6px solid var(--dos-line);\">\n    <span style=\"font-size:clamp(12px,1.1cqw,13.5px); color:var(--dos-text); white-space:nowrap;\">${variables.txt}</span>\n    <span style=\"font-size:clamp(9px,0.85cqw,10.5px); letter-spacing:0.08em; text-transform:uppercase; font-weight:600; color:var(--dos-accent); white-space:nowrap;\">${disp}</span></div>`;\n]]]\n"
+  triggers_update: all
+  styles:
+    card:
+    - *pad0
+    label: *label_left_wrap
+dos_checks_target_row:
+  <<: *show_label_only
+  label: "[[[\n  const e = (entity && entity.entity_id) ? states[entity.entity_id] : null;\n  const v = e ? parseFloat(e.state) : NaN;\n  const c = isNaN(v) ? '—' : v.toFixed(1).replace('.', ',');\n  return `<div style=\"display:flex; align-items:center;\">\n    <span style=\"flex:1; min-width:0; font-size:clamp(12px,1.1cqw,13.5px); color:var(--dos-text);\">${variables.txt}</span>\n    <span style=\"width:52px; text-align:right; font-size:clamp(12.5px,1.15cqw,14px); font-weight:600; color:var(--dos-ink); font-variant-numeric:tabular-nums;\">${c}&deg;</span></div>`;\n]]]\n"
+  triggers_update: all
+  styles:
+    card:
+    - padding: 5px 0
+    - *minw0
+    label: *label_left
+# dos_heating_target_key: identical rendering to dos_label_cell (same label
+# JS and styles); kept as its own name for call-site clarity, adds the
+# tap-through to more-info.
+dos_heating_target_key:
+  template: dos_label_cell
+  tap_action:
+    action: more-info
+dos_heating_target_value:
+  template: dos_value_span
+  tap_action:
+    action: more-info
+# dos_toggle_row: the standard on/off entity row (square indicator, label,
+# ON/OFF word; em-dash when unavailable). variables: k (label), small
+# (compact 11.5/13px sizing, default false = 12/13.5px), last (suppress the
+# hairline under the final row). Tap/hold actions belong to the call site;
+# dos_dossier_device_toggle below bakes in toggle/more-info.
+dos_toggle_row:
+  <<: *show_label_only
+  triggers_update: all
+  variables:
+    k: ''
+    small: false
+    last: false
+  styles:
+    card:
+    - *pad0
+    label: *label_left_wrap
+  label: "[[[\n  const e = (entity && entity.entity_id) ? states[entity.entity_id] : null;\n  const raw = (e && e.state!=null) ? e.state : null;\n  const known = raw!=null && raw!=='unavailable' && raw!=='unknown';\n  const on = known && raw === 'on';\n  const box = on ? 'background:var(--dos-accent); border:1px solid var(--dos-accent);' : 'background:transparent; border:1px solid var(--dos-quiet);';\n  const txt = !known ? 'var(--dos-quiet)' : (on ? 'var(--dos-ink)' : 'var(--dos-quiet)');\n  const word = !known ? '—' : (on ? 'On' : 'Off');\n  const fk = variables.small ? 'clamp(11.5px,1.05cqw,13px)' : 'clamp(12px,1.1cqw,13.5px)';\n  const pad = variables.small ? 'clamp(5px,0.6cqw,6.5px)' : 'clamp(5px,0.7cqw,7px)';\n  const last = variables.last ? 'none' : '0.6px solid var(--dos-line)';\n  return `<div style=\"display:flex; align-items:center; justify-content:space-between; gap:8px; padding:${pad} 0; border-bottom:${last};\">\n    <span style=\"display:flex; align-items:center; gap:9px; font-size:${fk}; color:var(--dos-text); min-width:0;\">\n      <span style=\"width:8px; height:8px; flex:none; ${box}\"></span>${variables.k}</span>\n    <span style=\"font-size:clamp(9px,0.85cqw,10.5px); letter-spacing:0.1em; text-transform:uppercase; font-weight:600; color:${txt}; white-space:nowrap;\">${word}</span></div>`;\n]]]\n"
+# dos_dossier_device_toggle: dos_toggle_row in compact size with the device
+# panel's baked-in actions (tap = toggle, hold = more-info).
+dos_dossier_device_toggle:
+  template: dos_toggle_row
+  variables:
+    small: true
+  tap_action:
+    action: toggle
+  hold_action:
+    action: more-info
+# ---- Plan view (floor plan) templates ------------------------------
+# dos_plan_floor_tab: one segment of the Ground/First/Attic switcher.
+# variables: lab (display text), opt (input_select option), sep (left rule).
+dos_plan_floor_tab:
+  <<: *show_label_only
+  triggers_update: all
+  styles:
+    card:
+    - *pad0
+    label: *label_center
+  label: "[[[\n  const cur = (states['input_select.dossier_plan_floor']||{}).state || 'ground';\n  const active = cur === variables.opt;\n  const sep = variables.sep ? 'border-left:1px solid var(--dos-line);' : '';\n  return `<span style=\"display:block; background:${active ? 'var(--dos-ink)' : 'transparent'}; color:${active ? 'var(--dos-paper)' : 'var(--dos-quiet)'}; font-family:inherit; font-size:11px; font-weight:700; letter-spacing:0.12em; text-transform:uppercase; line-height:1.2; padding:9px 0; white-space:nowrap; text-align:center; ${sep}\">${variables.lab}</span>`;\n]]]\n"
+# dos_plan_room: one room cell overlaid on the floor-plan underlay
+# (picture-elements element). Ports RoomCell + TintLayer from the design
+# prototype: small-caps room name, big tabular temp with drift arrow,
+# glyph row (mode dot, lamp glow dot, switch chip, CO2), and a background
+# tint = lamplight wash + AC comfort shading (heating terracotta, cooling
+# slate; intensity = unit effort calibrated to the real idle points:
+# heating idles at +4 over setpoint, cooling at -1.5 under).
+# variables: name, kind (sensor|climate|switch|circ), temp_entity,
+# climate_entity, co2_entity, switch_entity, light_entity, small.
+dos_plan_room:
+  <<: *show_label_only
+  triggers_update: all
+  extra_styles: |
+    :host { max-width: none !important; }
+  variables:
+    name: ''
+    kind: circ
+    temp_entity: null
+    climate_entity: null
+    co2_entity: null
+    switch_entity: null
+    light_entity: null
+    small: false
+  styles:
+    card:
+    - *pad0
+    - width: 100%
+    - height: 100%
+    - background: "[[[\n  const V = variables;\n  const layers = [];\n  const lt = V.light_entity ? states[V.light_entity] : null;\n  if (lt && lt.state === 'on') {\n    const bri = (lt.attributes && lt.attributes.brightness != null) ? (lt.attributes.brightness / 255) : 1;\n    layers.push(`color-mix(in srgb, var(--dos-glow) ${Math.round(4 + 18 * bri)}%, transparent)`);\n  }\n  const cl = V.climate_entity ? states[V.climate_entity] : null;\n  if (cl && (cl.state === 'heat' || cl.state === 'cool') && cl.attributes) {\n    const cur = parseFloat(cl.attributes.current_temperature);\n    const set = parseFloat(cl.attributes.temperature);\n    if (!isNaN(cur) && !isNaN(set)) {\n      const d = cur - set;\n      const effort = cl.state === 'heat' ? Math.max(0, Math.min((4 - d) / 6, 1)) : Math.max(0, Math.min((d + 1.5) / 4.5, 1));\n      const tok = cl.state === 'heat' ? '--dos-accent2' : '--dos-accent';\n      layers.push(`color-mix(in srgb, var(${tok}) ${Math.round(6 + effort * 30)}%, transparent)`);\n    }\n  }\n  if (!layers.length) return 'transparent';\n  return layers.map((c) => `linear-gradient(${c}, ${c})`).join(', ');\n]]]"
+    label: *label_center
+  label: "[[[\n  const V = variables;\n  const get = (id) => id ? states[id] : null;\n  const num = (s) => {\n    if (!s || s.state == null || s.state === 'unavailable' || s.state === 'unknown') return null;\n    const v = parseFloat(s.state);\n    return isNaN(v) ? null : v;\n  };\n  const cl = get(V.climate_entity);\n  let temp = V.temp_entity ? num(get(V.temp_entity)) : null;\n  if (temp == null && cl && cl.attributes) {\n    const ct = parseFloat(cl.attributes.current_temperature);\n    if (!isNaN(ct)) temp = ct;\n  }\n  const target = (cl && cl.attributes) ? parseFloat(cl.attributes.temperature) : NaN;\n  const mode = cl ? cl.state : null;\n  const sw = get(V.switch_entity);\n  const lt = get(V.light_entity);\n  const co2 = num(get(V.co2_entity));\n  const nameSz = V.small ? 'clamp(5.5px,1.8cqw,10px)' : 'clamp(6.5px,2.2cqw,12px)';\n  const tempSz = V.small ? 'clamp(8px,3.1cqw,15px)' : 'clamp(10px,4.7cqw,22px)';\n  let arrow = '';\n  if (temp != null && !isNaN(target) && Math.abs(temp - target) >= 0.7) {\n    arrow = `<span style=\"font-size:55%; color:var(--dos-soft); vertical-align:middle; margin-left:1px;\">${temp > target ? '\\u25B2' : '\\u25BC'}</span>`;\n  }\n  let mid = '';\n  if (temp != null) {\n    mid = `<div style=\"font-size:${tempSz}; font-weight:600; color:var(--dos-ink); font-variant-numeric:tabular-nums; margin-top:1px; line-height:1.1;\">${temp.toFixed(1).replace('.', ',')}&deg;${arrow}</div>`;\n  } else if (V.kind === 'sensor') {\n    mid = `<div style=\"font-size:${nameSz}; color:var(--dos-quiet); margin-top:2px;\">${V.temp_entity ? '\\u2014' : 'no sensor'}</div>`;\n  }\n  const chips = [];\n  if (mode === 'heat' || mode === 'cool') {\n    chips.push(`<span style=\"width:5px; height:5px; border-radius:50%; background:var(${mode === 'heat' ? '--dos-accent2' : '--dos-accent'});\"></span>`);\n  }\n  if (lt && lt.state === 'on') {\n    chips.push(`<span style=\"width:7px; height:7px; border-radius:50%; border:1px solid var(--dos-soft); background:var(--dos-glow);\"></span>`);\n  }\n  if (sw) {\n    const on = sw.state === 'on';\n    chips.push(`<span style=\"font-size:${V.small ? 'clamp(5px,1.5cqw,8px)' : 'clamp(6px,1.8cqw,10px)'}; letter-spacing:0.06em; text-transform:uppercase; font-weight:700; color:var(${on ? '--dos-ink' : '--dos-quiet'}); border:0.8px solid var(${on ? '--dos-ink' : '--dos-line'}); padding:0 3px;\">${on ? 'On' : 'Off'}</span>`);\n  }\n  if (co2 != null) {\n    chips.push(`<span style=\"font-size:clamp(6px,1.8cqw,10px); color:var(${co2 > 800 ? '--dos-accent2' : '--dos-quiet'}); font-variant-numeric:tabular-nums;\">${Math.round(co2)} CO&#8322;</span>`);\n  }\n  const chipRow = chips.length ? `<div style=\"display:flex; gap:4px; justify-content:center; align-items:center; margin-top:2px; flex-wrap:wrap;\">${chips.join('')}</div>` : '';\n  return `<div style=\"display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; line-height:1.1; overflow:hidden;\">\n    <div style=\"font-size:${nameSz}; letter-spacing:0.09em; text-transform:uppercase; color:var(--dos-quiet); font-weight:700; white-space:nowrap;\">${V.name}</div>${mid}${chipRow}</div>`;\n]]]\n"
+# dos_plan_close: right-aligned small-caps control that clears the
+# selected plan room (detail bar close button).
+dos_plan_close:
+  <<: *show_label_only
+  styles:
+    card:
+    - *pad0
+    - width: 60px
+    - align-self: center
+    label: *label_right
+  label: '[[[ return `<span style="font-variant:small-caps; text-transform:lowercase; letter-spacing:0.08em; font-weight:600; font-size:clamp(10px,0.95cqw,12px); color:var(--dos-quiet);">close &times;</span>`; ]]]'
+# dos_plan_rail_header: landscape-rail masthead — the active floor's
+# title, typeset identically to dos_view_header so the Plan view reads
+# like the other views.
+dos_plan_rail_header:
+  <<: *show_label_only
+  triggers_update: all
+  tap_action:
+    action: none
+  styles:
+    card:
+    - *pad0
+    - min-width: '0'
+    label: *label_left
+  label: "[[[\n  const titles = { ground: 'Ground Floor', first: 'First Floor', attic: 'Attic' };\n  const cur = (states['input_select.dossier_plan_floor']||{}).state || 'ground';\n  return `\n    <div style=\"min-width:0;\">\n      <div style=\"font-size:clamp(20px,2.4cqw,32px); font-weight:700; color:var(--dos-ink); letter-spacing:-0.01em; line-height:1.05;\">${titles[cur] || titles.ground}</div>\n    </div>`;\n]]]\n"
+# dos_footer_generated: footer timestamp + section numeral, used by the
+# shared _partials/footer.yaml. The numeral derives from the view path so
+# the partial needs no per-view configuration; keep the map in sync with
+# the view order in lab.yaml (fill-options is unnumbered by design).
+dos_footer_generated:
+  <<: *show_label_only
+  styles:
+    card:
+    - *pad0
+    - *lineh1
+    label: *label_right
+  label: "[[[\n  const time = new Date().toLocaleTimeString('en-GB', {hour:'2-digit', minute:'2-digit'});\n  const secs = {'dossier-general':'I','dossier-plan':'II','dossier-climate':'III','dossier-energy':'IV','dossier-garden':'V','dossier-checks':'VI','dossier-heating':'VII','dossier-cooling':'VIII'};\n  const slug = location.pathname.split('/').filter(Boolean).pop();\n  const sec = secs[slug] || (secs['dossier-' + slug] ? secs['dossier-' + slug] : (slug && slug.startsWith('dos') ? secs['dossier-general'] : null));\n  const tail = sec ? ` &middot; &sect;${sec} of VIII` : '';\n  return `<span style=\"font-size:clamp(9px,0.85cqw,10.5px); color:var(--dos-quiet); letter-spacing:0.04em; font-variant-numeric:tabular-nums; white-space:nowrap;\">generated ${time}${tail}</span>`;\n]]]\n"
+# ---- Fixes at home (todo.fixes_at_home) ----------------------------
+# dos_task_row: one open todo item, generated by auto-entities from
+# sensor.fixes_at_home_open's `items` attribute (_partials/fixes.yaml).
+# Tap completes the item; the row disappears when the mirror sensor
+# refires. variables: summary, detail.
+dos_task_row:
+  <<: *show_label_only
+  triggers_update: all
+  tap_action:
+    action: perform-action
+    perform_action: todo.update_item
+    target:
+      entity_id: todo.fixes_at_home
+    data:
+      item: '[[[ return variables.summary ]]]'
+      status: completed
+  styles:
+    card:
+    - *pad0
+    label: *label_left_wrap
+  label: "[[[\n  const d = variables.detail ? `<div style=\"font-size:clamp(9.5px,0.9cqw,11px); color:var(--dos-quiet); margin:2px 0 0 18px;\">${variables.detail}</div>` : '';\n  return `<div style=\"padding:clamp(5px,0.7cqw,7px) 0; border-bottom:0.6px solid var(--dos-line);\">\n    <div style=\"display:flex; align-items:baseline; gap:8px;\">\n      <span style=\"width:10px; height:10px; border:0.8px solid var(--dos-soft); flex:none; align-self:center;\"></span>\n      <span style=\"font-size:clamp(12px,1.1cqw,13.5px); color:var(--dos-text);\">${variables.summary}</span>\n    </div>${d}</div>`;\n]]]\n"
+# dos_task_empty: placeholder row when the todo list has no open items.
+dos_task_empty:
+  <<: *show_label_only
+  tap_action:
+    action: none
+  styles:
+    card:
+    - *pad0
+    label: *label_left
+  label: '[[[ return `<div style="padding:clamp(5px,0.7cqw,7px) 0; font-size:clamp(12px,1.1cqw,13.5px); color:var(--dos-quiet);">Nothing needs fixing</div>`; ]]]'

@@ -1,0 +1,6 @@
+style: |
+  ha-card {
+    border-bottom: 1.4px solid var(--dos-ink) !important;
+    margin: 0 0 22px 0 !important;
+  }
+  #root { align-items: flex-start !important; gap: clamp(8px,1.4cqw,16px) !important; }

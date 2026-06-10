@@ -1,0 +1,20 @@
+# Page frame for every dossier view: paper surface, page padding, typeface,
+# and the container-query context the cqw-based template fonts measure
+# against. Palette tokens and the day/night flip live in themes/dos.yaml
+# (theme tokens + card-mod-card/root); card chrome is stripped there too.
+# Portrait fix: the root card's OWN padding cannot use cqw (an element is never its
+# own container-query container), so it uses vw with a plain-px fallback. The button-card
+# TEMPLATE fonts keep cqw on purpose: they are descendants of the `dossier` container.
+style: |
+  ha-card {
+    background: var(--dos-paper) !important;
+    padding: 22px 18px !important;
+    padding: clamp(22px, 3vw, 44px) clamp(18px, 3vw, 44px) !important;
+    font-family: 'Nimbus Sans L','Nimbus Sans','Helvetica Neue',Helvetica,Arial,sans-serif !important;
+    color: var(--dos-text);
+    box-sizing: border-box !important;
+    overflow-x: hidden !important;
+    container-type: inline-size;
+    container-name: dossier;
+    width: 100%;
+  }

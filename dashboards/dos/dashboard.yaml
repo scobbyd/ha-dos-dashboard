@@ -1,0 +1,11 @@
+button_card_templates: !include templates.yaml
+views:
+  - !include views/general.yaml
+  - !include views/plan.yaml
+  - !include views/climate.yaml
+  - !include views/energy.yaml
+  - !include views/garden.yaml
+  - !include views/checks.yaml
+  - !include views/heating.yaml
+  - !include views/cooling.yaml
+  - !include views/fill-options.yaml

@@ -1,0 +1,28 @@
+# "Fixes at home" masonry column: open items from todo.fixes_at_home,
+# rendered as dos_task_row cards via auto-entities from the mirror sensor
+# (packages/maintenance/home_tasks.yaml). Shared by general + checks.
+type: custom:stack-in-card
+mode: vertical
+cards:
+- type: custom:button-card
+  template: dos_section_header
+  variables:
+    title: Fixes at home
+- type: custom:auto-entities
+  card:
+    type: custom:stack-in-card
+    mode: vertical
+  card_param: cards
+  filter:
+    template: >
+      {% set its = state_attr('sensor.fixes_at_home_open', 'items') or [] %}
+      {% if its %}
+        [{% for it in its %}
+          {"type": "custom:button-card",
+           "template": "dos_task_row",
+           "variables": {"summary": {{ it.summary | tojson }},
+                         "detail": {{ (it.description | default('')) | tojson }}}}{{ "," if not loop.last }}
+        {% endfor %}]
+      {% else %}
+        [{"type": "custom:button-card", "template": "dos_task_empty"}]
+      {% endif %}

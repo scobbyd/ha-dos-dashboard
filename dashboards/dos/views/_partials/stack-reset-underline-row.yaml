@@ -1,0 +1,7 @@
+# Hairline divider + centered row alignment. Card chrome is stripped
+# theme-wide by dos. !include'd as `card_mod:` (horizontal value rows).
+style: 'ha-card { border-bottom: 0.6px solid var(--dos-line) !important; }
+
+  #root { align-items: center !important; }
+
+  '

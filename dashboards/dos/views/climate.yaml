@@ -1,0 +1,483 @@
+# _anchor_defs is not a lovelace/button-card key; it only hosts the YAML anchor
+# definitions shared across this file, so deleting/reordering cards can't break aliases.
+_anchor_defs:
+- &id002
+  border-radius: '0'
+- &id003
+  padding: '0'
+title: Climate
+path: dossier-climate
+icon: mdi:thermometer
+type: panel
+theme: dos
+cards:
+- type: custom:stack-in-card
+  mode: vertical
+  card_mod: !include _partials/frame.yaml
+  cards:
+  - type: custom:stack-in-card
+    mode: horizontal
+    card_mod: !include _partials/header-bar.yaml
+    cards:
+    - type: custom:button-card
+      template: dos_view_header
+      variables:
+        title: 'Climate'
+    - type: custom:button-card
+      tap_action:
+        action: none
+      template: dos_clock_time
+  - type: custom:layout-card
+    layout_type: custom:masonry-layout
+    layout: !include _partials/masonry.yaml
+    cards:
+    - type: custom:stack-in-card
+      mode: vertical
+      cards:
+      - type: custom:button-card
+        template: dos_section_header
+        variables:
+          title: Air conditioning
+      - type: custom:button-card
+        tap_action:
+          action: none
+        template: dos_table_header
+      - type: custom:stack-in-card
+        mode: horizontal
+        card_mod: !include _partials/stack-reset-underline.yaml
+        cards:
+        - type: custom:button-card
+          entity: climate.living_room_room_temperature
+          template: dos_climate_temp_row
+          variables:
+            name: Living Room
+        - type: custom:button-card
+          entity: climate.living_room_room_temperature
+          template:
+          - dos_stepper_minus_plain
+          - dos_step_climate_minus
+        - type: custom:button-card
+          entity: climate.living_room_room_temperature
+          template: dos_climate_setpoint
+        - type: custom:button-card
+          entity: climate.living_room_room_temperature
+          template:
+          - dos_stepper_plus_plain
+          - dos_step_climate_plus
+        - type: custom:button-card
+          entity: climate.living_room_room_temperature
+          template: dos_climate_mode
+      - type: custom:stack-in-card
+        mode: horizontal
+        card_mod: !include _partials/stack-reset-underline.yaml
+        cards:
+        - type: custom:button-card
+          entity: climate.bedroom_room_temperature
+          template: dos_climate_temp_row
+          variables:
+            name: Bedroom
+        - type: custom:button-card
+          entity: climate.bedroom_room_temperature
+          template:
+          - dos_stepper_minus_plain
+          - dos_step_climate_minus
+        - type: custom:button-card
+          entity: climate.bedroom_room_temperature
+          template: dos_climate_setpoint
+        - type: custom:button-card
+          entity: climate.bedroom_room_temperature
+          template:
+          - dos_stepper_plus_plain
+          - dos_step_climate_plus
+        - type: custom:button-card
+          entity: climate.bedroom_room_temperature
+          template: dos_climate_mode
+      - type: custom:stack-in-card
+        mode: horizontal
+        card_mod: !include _partials/stack-reset-underline.yaml
+        cards:
+        - type: custom:button-card
+          entity: climate.study_room_temperature
+          template: dos_climate_temp_row
+          variables:
+            name: Study
+        - type: custom:button-card
+          entity: climate.study_room_temperature
+          template:
+          - dos_stepper_minus_plain
+          - dos_step_climate_minus
+        - type: custom:button-card
+          entity: climate.study_room_temperature
+          template: dos_climate_setpoint
+        - type: custom:button-card
+          entity: climate.study_room_temperature
+          template:
+          - dos_stepper_plus_plain
+          - dos_step_climate_plus
+        - type: custom:button-card
+          entity: climate.study_room_temperature
+          template: dos_climate_mode
+      - type: custom:stack-in-card
+        mode: horizontal
+        cards:
+        - type: custom:button-card
+          entity: climate.attic_room_temperature
+          template: dos_climate_temp_row
+          variables:
+            name: Attic
+        - type: custom:button-card
+          entity: climate.attic_room_temperature
+          template:
+          - dos_stepper_minus_plain
+          - dos_step_climate_minus
+        - type: custom:button-card
+          entity: climate.attic_room_temperature
+          template: dos_climate_setpoint
+        - type: custom:button-card
+          entity: climate.attic_room_temperature
+          template:
+          - dos_stepper_plus_plain
+          - dos_step_climate_plus
+        - type: custom:button-card
+          entity: climate.attic_room_temperature
+          template: dos_climate_mode
+    - type: custom:stack-in-card
+      mode: vertical
+      cards:
+      - type: custom:button-card
+        template: dos_section_header
+        variables:
+          title: Living Room
+      - type: custom:button-card
+        entity: sensor.ts3t_living_temperature
+        variables:
+          k: Temperature
+          unit: °C
+          fmt: dec1
+          sub: ''
+          accent: false
+          last: false
+        template: dos_value_row
+      - type: custom:button-card
+        entity: sensor.ts3t_living_humidity
+        variables:
+          k: Humidity
+          unit: '%'
+          fmt: dec0
+          sub: ''
+          accent: false
+          last: false
+        template: dos_value_row
+      - type: custom:button-card
+        entity: sensor.input_8
+        variables:
+          k: AC consumption
+          unit: W
+          fmt: int
+          sub: downstairs
+          accent: false
+          last: false
+        template: dos_value_row
+      - type: custom:button-card
+        entity: sensor.lumi_lumi_weather_temperature_3
+        variables:
+          k: AC exhaust temp
+          unit: °C
+          fmt: dec1
+          sub: ''
+          accent: false
+          last: false
+        template: dos_value_row
+      - type: custom:button-card
+        entity: sensor.living_room_compressor_frequency
+        variables:
+          k: AC compressor freq
+          unit: Hz
+          fmt: dec0
+          sub: ''
+          accent: false
+          last: true
+        template: dos_value_row
+    - type: custom:stack-in-card
+      mode: vertical
+      cards:
+      - type: custom:button-card
+        template: dos_section_header
+        variables:
+          title: Bedroom
+      - type: custom:button-card
+        entity: climate.bedroom_room_temperature
+        variables:
+          k: Temperature
+          src: attr
+          attr: current_temperature
+          unit: °C
+          fmt: dec1
+          last: false
+        template: dos_value_row
+      - type: custom:button-card
+        entity: sensor.ts4t_bedroom_humidity
+        variables:
+          k: Humidity
+          unit: '%'
+          fmt: dec0
+          sub: ''
+          accent: false
+          last: false
+        template: dos_value_row
+      - type: custom:button-card
+        entity: sensor.esphome_web_f8ab94_bedroom_co2
+        variables:
+          k: CO2
+          unit: ppm
+          fmt: int
+          sub: ''
+          accent: false
+          last: false
+        template: dos_value_row
+      - type: custom:button-card
+        entity: sensor.te01_waterbed_door_temperature
+        variables:
+          k: Waterbed (door)
+          unit: °C
+          fmt: dec1
+          sub: ''
+          accent: false
+          last: false
+        template: dos_value_row
+      - type: custom:button-card
+        entity: sensor.t2_t_waterbed2_temperature
+        variables:
+          k: Waterbed (window)
+          unit: °C
+          fmt: dec1
+          sub: ''
+          accent: false
+          last: true
+        template: dos_value_row
+    - type: custom:stack-in-card
+      mode: vertical
+      cards:
+      - type: custom:button-card
+        template: dos_section_header
+        variables:
+          title: Attic
+      - type: custom:button-card
+        entity: sensor.ts5t_attic_temperature
+        variables:
+          k: Temperature
+          unit: °C
+          fmt: dec1
+          sub: ''
+          accent: false
+          last: false
+        template: dos_value_row
+      - type: custom:button-card
+        entity: sensor.ts5t_attic_humidity
+        variables:
+          k: Humidity
+          unit: '%'
+          fmt: dec0
+          sub: ''
+          accent: false
+          last: false
+        template: dos_value_row
+      - type: custom:button-card
+        entity: sensor.t6t_smallfridge_temperature
+        variables:
+          k: AC exhaust temp
+          unit: °C
+          fmt: dec1
+          sub: ''
+          accent: false
+          last: false
+        template: dos_value_row
+      - type: custom:button-card
+        entity: switch.pm1_boiler
+        tap_action:
+          action: toggle
+        hold_action:
+          action: more-info
+        show_icon: false
+        show_name: false
+        show_state: false
+        show_label: true
+        triggers_update: all
+        label: "[[[\n  const on = (states['switch.pm1_boiler']||{}).state === 'on';\n  const box = on ? 'background:var(--dos-accent); border:1px solid var(--dos-accent);' : 'background:transparent; border:1px solid var(--dos-quiet);';\n  const txt = on ? 'var(--dos-ink)' : 'var(--dos-quiet)';\n  return `<div style=\"display:flex; align-items:center; justify-content:space-between; gap:8px; padding:clamp(5px,0.7cqw,7px) 0; border-bottom:0.6px solid var(--dos-line);\">\n    <span style=\"display:flex; align-items:center; gap:9px; font-size:clamp(12px,1.1cqw,13.5px); color:var(--dos-text); white-space:nowrap; min-width:0;\">\n      <span style=\"width:8px; height:8px; ${box}\"></span>Boiler</span>\n    <span style=\"font-size:clamp(9px,0.85cqw,10.5px); letter-spacing:0.1em; text-transform:uppercase; font-weight:600; color:${txt}; white-space:nowrap;\">${on?'On':'Off'}</span></div>`;\n]]]\n"
+        styles:
+          card:
+          - *id003
+          label:
+          - font-family: inherit
+          - text-align: left
+          - justify-self: stretch
+          - *id003
+      - type: custom:button-card
+        entity: sensor.pm1_boiler_power
+        variables:
+          k: Boiler power
+          unit: W
+          fmt: int
+          sub: ''
+          accent: false
+          last: true
+        template: dos_value_row
+    - type: custom:stack-in-card
+      mode: vertical
+      cards:
+      - type: custom:button-card
+        template: dos_section_header
+        variables:
+          title: Study
+      - type: custom:button-card
+        entity: sensor.ts1t_study_temperature
+        variables:
+          k: Temperature
+          unit: °C
+          fmt: dec1
+          sub: ''
+          accent: false
+          last: false
+        template: dos_value_row
+      - type: custom:button-card
+        entity: sensor.ts1t_study_humidity
+        variables:
+          k: Humidity
+          unit: '%'
+          fmt: dec0
+          sub: ''
+          accent: false
+          last: false
+        template: dos_value_row
+      - type: custom:button-card
+        entity: sensor.t3t_acstudy_temperature_2
+        variables:
+          k: AC exhaust temp
+          unit: °C
+          fmt: dec1
+          sub: ''
+          accent: false
+          last: true
+        template: dos_value_row
+    - type: custom:stack-in-card
+      mode: vertical
+      cards:
+      - type: custom:button-card
+        template: dos_section_header
+        variables:
+          title: Bathroom
+      - type: custom:button-card
+        entity: sensor.ts2t_bathroom_temperature
+        variables:
+          k: Temperature
+          unit: °C
+          fmt: dec1
+          sub: ''
+          accent: false
+          last: false
+        template: dos_value_row
+      - type: custom:button-card
+        entity: sensor.ts2t_bathroom_humidity
+        variables:
+          k: Humidity
+          unit: '%'
+          fmt: dec0
+          sub: ''
+          accent: false
+          last: true
+        template: dos_value_row
+    - type: custom:stack-in-card
+      mode: vertical
+      cards:
+      - type: custom:button-card
+        template: dos_section_header
+        variables:
+          title: Pantry
+      - type: custom:button-card
+        entity: sensor.lumi_lumi_weather_temperature_4
+        variables:
+          k: Temperature
+          unit: °C
+          fmt: dec1
+          sub: ''
+          accent: false
+          last: false
+        template: dos_value_row
+      - type: custom:button-card
+        entity: sensor.lumi_lumi_weather_humidity_4
+        variables:
+          k: Humidity
+          unit: '%'
+          fmt: dec0
+          sub: ''
+          accent: false
+          last: false
+        template: dos_value_row
+      - type: custom:button-card
+        entity: sensor.t4_t_bauknecht_freezer_temperature
+        variables:
+          k: Bauknecht
+          unit: °C
+          fmt: dec1
+          sub: ''
+          accent: false
+          last: true
+        template: dos_value_row
+    - type: custom:stack-in-card
+      mode: vertical
+      cards:
+      - type: custom:button-card
+        template: dos_section_header
+        variables:
+          title: Outside
+      - type: custom:button-card
+        entity: sensor.study_out
+        variables:
+          k: Temperature
+          unit: °C
+          fmt: dec1
+          sub: ''
+          accent: false
+          last: true
+        template: dos_value_row
+      - type: custom:button-card
+        show_icon: false
+        show_name: false
+        show_state: false
+        show_label: true
+        tap_action:
+          action: none
+        label: '[[[ return `<span style="font-variant:small-caps; text-transform:lowercase; letter-spacing:0.06em; font-weight:700; font-size:clamp(11.5px,1.05cqw,13px); color:var(--dos-ink);">Garage</span>`; ]]]
+
+          '
+        styles:
+          card:
+          - border-bottom: 0.8px solid var(--dos-ink)
+          - padding: 0 0 6px 0
+          - margin: 18px 0 12px 0
+          label:
+          - font-family: inherit
+          - text-align: left
+          - justify-self: stretch
+          - *id003
+      - type: custom:button-card
+        entity: sensor.t6t_garage_smallfridge_temperature
+        variables:
+          k: Temperature
+          unit: °C
+          fmt: dec1
+          sub: ''
+          accent: false
+          last: false
+        template: dos_value_row
+      - type: custom:button-card
+        entity: sensor.t6t_garage_smallfridge_humidity
+        variables:
+          k: Humidity
+          unit: '%'
+          fmt: dec0
+          sub: ''
+          accent: false
+          last: true
+        template: dos_value_row
+  - !include _partials/footer.yaml

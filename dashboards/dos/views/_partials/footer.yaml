@@ -1,0 +1,48 @@
+# Shared page footer: day/night toggle chipbox + "generated · §" line,
+# right-aligned over a hairline rule. Include as the LAST card of the view's
+# root frame stack:
+#   - !include _partials/footer.yaml
+# The section numeral derives from the view path inside dos_footer_generated
+# (templates.yaml), so no per-view configuration is needed.
+type: custom:stack-in-card
+mode: horizontal
+card_mod:
+  style: |
+    ha-card {
+      border-top: 0.8px solid var(--dos-line) !important;
+      margin: 22px 0 0 0 !important; padding: 8px 0 0 0 !important;
+    }
+    #root { align-items: center !important; justify-content: flex-end !important; gap: 12px !important; flex-wrap: wrap !important; }
+cards:
+- type: custom:stack-in-card
+  mode: horizontal
+  card_mod: !include stack-reset-footer.yaml
+  cards:
+  - type: custom:stack-in-card
+    mode: horizontal
+    card_mod:
+      style: |
+        :host > ha-card { border: 1px solid var(--dos-line) !important; }
+        :host { flex: 0 0 auto !important; }
+        #root { gap: 0 !important; }
+    cards:
+    - type: custom:button-card
+      entity: input_boolean.dossier_night_mode
+      tap_action:
+        action: perform-action
+        perform_action: input_boolean.turn_off
+        target:
+          entity_id: input_boolean.dossier_night_mode
+      template: dos_daynight_toggle_day
+    - type: custom:button-card
+      entity: input_boolean.dossier_night_mode
+      tap_action:
+        action: perform-action
+        perform_action: input_boolean.turn_on
+        target:
+          entity_id: input_boolean.dossier_night_mode
+      template: dos_daynight_toggle_night
+  - type: custom:button-card
+    tap_action:
+      action: none
+    template: dos_footer_generated

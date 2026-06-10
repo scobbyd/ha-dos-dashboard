@@ -1,0 +1,1555 @@
+# _anchor_defs is not a lovelace/button-card key; it only hosts the YAML anchor
+# definitions shared across this file, so deleting/reordering cards can't break aliases.
+_anchor_defs:
+- &id001
+  border-radius: '0'
+- &id014
+  min-width: '0'
+- &id002
+  padding: '0'
+- &id003
+  show: false
+- &id004
+  enabled: false
+- &id010
+  - 1.3
+  - 1.3
+  - 1.3
+- &id005
+  left: 2
+  right: 8
+  top: 8
+  bottom: 0
+- &id006
+  lines: *id003
+- &id007
+  lines:
+    show: true
+- &id008
+  size: 0
+- &id009
+  legend_value: false
+- &id012
+  width: *id010
+  curve: smooth
+  lineCap: round
+- &id013
+  show: true
+  strokeDashArray: 2
+  xaxis: *id006
+  yaxis: *id007
+  padding: *id005
+- &id015
+  chart:
+    height: 220
+    toolbar: *id003
+    animations: *id004
+    offsetX: -4
+  stroke: *id012
+  legend:
+    show: false
+    position: bottom
+    horizontalAlign: center
+    fontSize: 11px
+  tooltip:
+    enabled: true
+    shared: true
+    y:
+      formatter: EVAL:function(val) { if (val == null) return ''; return '€' + val.toFixed(2).replace('.', ',') + '/kWh'; }
+  grid: *id013
+  annotations:
+    yaxis:
+    - y: 0
+      borderColor: rgba(140,133,122,0.55)
+      strokeDashArray: 2
+- &id016
+  - id: price
+    apex_config:
+      stepSize: 0.1
+      labels:
+        formatter: EVAL:function(val) { if (val == null) return ''; return '€' + val.toFixed(2).replace('.', ','); }
+- &id017
+  - entity: sensor.tennet_imbalance_sell_price
+    name: Imbalance Sell (actual)
+    type: line
+    color: '#5d8499'
+    yaxis_id: price
+    extend_to: false
+    float_precision: 2
+    unit: ' EUR/kWh'
+    transform: return x / 1000;
+    stroke_width: 1.3
+  - entity: sensor.average_electricity_price
+    name: Day-Ahead (ENTSO-E)
+    type: line
+    color: '#b5654d'
+    yaxis_id: price
+    extend_to: false
+    float_precision: 2
+    data_generator: return (entity.attributes.prices || []).map(p => [new Date(p.time).getTime(), p.price]);
+    stroke_width: 1.3
+  - entity: sensor.epex_predictor_nl
+    name: EpexPredictor (LightGBM)
+    type: line
+    color: '#8c887f'
+    yaxis_id: price
+    extend_to: false
+    float_precision: 2
+    data_generator: return (entity.attributes.forecast || []).map(p => [new Date(p.datetime).getTime(), p.value]);
+    stroke_width: 1.3
+title: Energy
+path: dossier-energy
+icon: mdi:lightning-bolt
+type: panel
+theme: dos
+cards:
+- type: custom:stack-in-card
+  mode: vertical
+  card_mod: !include _partials/frame.yaml
+  cards:
+  - type: custom:stack-in-card
+    mode: horizontal
+    card_mod: !include _partials/header-bar.yaml
+    cards:
+    - type: custom:button-card
+      template: dos_view_header
+      variables:
+        title: 'Energy'
+    - type: custom:button-card
+      tap_action:
+        action: none
+      template: dos_clock_time
+  - type: custom:layout-card
+    layout_type: custom:masonry-layout
+    layout: !include _partials/masonry.yaml
+    cards:
+    - type: custom:stack-in-card
+      mode: vertical
+      cards:
+      - type: custom:button-card
+        template: dos_section_header
+        variables:
+          title: Overview
+      - type: custom:button-card
+        entity: sensor.total_pv_power
+        styles:
+          card:
+          - padding: 4px 0 8px 0
+          label:
+          - font-family: inherit
+          - text-align: left
+          - justify-self: stretch
+          - *id002
+          - white-space: normal
+          - overflow: visible
+        template: dos_gauge
+        variables:
+          txt: Solar production
+          col: var(--dos-accent)
+          ken: sensor.total_pv_energy_today
+          kcol: var(--dos-text)
+          mx: 14000
+          abs: false
+      - type: custom:button-card
+        entity: sensor.inverter_load_ups_power
+        styles:
+          card:
+          - padding: 4px 0 10px 0
+          label:
+          - font-family: inherit
+          - text-align: left
+          - justify-self: stretch
+          - *id002
+          - white-space: normal
+          - overflow: visible
+        template: dos_gauge
+        variables:
+          txt: House load
+          col: var(--dos-accent2)
+          ken: sensor.house_load_energy_today
+          kcol: var(--dos-accent2)
+          mx: 14000
+          abs: true
+      - type: custom:button-card
+        entity: sensor.inverter_grid_power
+        template: dos_gauge_grid
+        variables:
+          txt: Grid power
+          expen: sensor.inverter_today_energy_export
+          impen: sensor.inverter_today_energy_import
+    - type: custom:stack-in-card
+      mode: vertical
+      cards:
+      - type: custom:button-card
+        show_icon: false
+        show_name: false
+        show_state: false
+        show_label: true
+        triggers_update: all
+        tap_action:
+          action: more-info
+          entity: sensor.solcast_pv_forecast_forecast_today
+        label: "[[[\n  const a = states['sensor.total_pv_energy_today'];\n  const f = states['sensor.solcast_pv_forecast_forecast_today'];\n  const num = (e) => (e && !isNaN(parseFloat(e.state))) ? parseFloat(e.state).toFixed(1).replace('.', ',') : '—';\n  return `<div style=\"display:flex; justify-content:space-between; align-items:baseline; gap:8px;\">\n    <span style=\"font-variant:small-caps; text-transform:lowercase; letter-spacing:0.06em; font-weight:700; font-size:clamp(11.5px,1.05cqw,13px); color:var(--dos-ink);\">Solar forecast, actual &amp; usage</span>\n    <span style=\"font-size:clamp(9.5px,0.9cqw,11px); color:var(--dos-quiet); font-variant-numeric:tabular-nums; white-space:nowrap;\">${num(a)} / ${num(f)} kWh</span></div>`;\n]]]\n"
+        styles:
+          card:
+          - border-bottom: 0.8px solid var(--dos-ink)
+          - padding: 0 0 6px 0
+          - margin: 0 0 12px 0
+          label:
+          - font-family: inherit
+          - text-align: left
+          - justify-self: stretch
+          - *id002
+      - type: custom:apexcharts-card
+        graph_span: 24h
+        span:
+          start: day
+        header: *id003
+        series:
+        - entity: sensor.total_pv_power
+          name: Produced
+          unit: kW
+          type: area
+          color: '#5d8499'
+          extend_to: now
+          group_by:
+            func: avg
+            duration: 10min
+          transform: 'return (x == null || x > 20000 || x < 0) ? null : x / 1000;'
+          stroke_width: 1.3
+        - entity: sensor.inverter_load_ups_power
+          name: Consumption
+          unit: kW
+          type: area
+          color: '#b5654d'
+          extend_to: now
+          group_by:
+            func: avg
+            duration: 10min
+          transform: 'return (x == null || x < 0 || x > 20000) ? null : x / 1000;'
+          stroke_width: 1.3
+        - entity: sensor.solcast_pv_forecast_forecast_today
+          name: Forecast
+          unit: kW
+          type: line
+          color: '#8c887f'
+          data_generator: 'return (entity.attributes.detailedForecast || []).map(function(p){ return [new Date(p.period_start).getTime(), p.pv_estimate]; });
+
+            '
+          stroke_width: 1.3
+        yaxis:
+        - min: 0
+          decimals: 1
+          apex_config:
+            show: true
+            tickAmount: 3
+            labels:
+              offsetX: -2
+              style:
+                fontSize: 8px
+              formatter: 'EVAL:function(v){ if (v == null) return ''''; return v.toFixed(1).replace(''.'', '','') + '' kW''; }
+
+                '
+        apex_config:
+          colors:
+          - '#5d8499'
+          - '#b5654d'
+          - '#8c887f'
+          chart:
+            height: 220
+            parentHeightOffset: 0
+            offsetX: -4
+            toolbar: *id003
+            animations: *id004
+          stroke:
+            width: *id010
+            dashArray:
+            - 0
+            - 0
+            - 2
+            curve: smooth
+            lineCap: round
+          fill:
+            type:
+            - solid
+            - pattern
+            - solid
+            opacity:
+            - 0.12
+            - 0.6
+            - 0
+            pattern:
+              style: slantedLines
+              width: 6
+              height: 6
+              strokeWidth: 1.1
+          grid:
+            show: true
+            strokeDashArray: 2
+            padding: *id005
+            xaxis: *id006
+            yaxis: *id007
+          legend: *id003
+          dataLabels: *id004
+          markers: *id008
+          tooltip:
+            enabled: true
+            x:
+              format: HH:mm
+          annotations:
+            yaxis:
+            - y: 0
+              strokeDashArray: 3
+              borderColor: rgba(140,133,122,0.55)
+              opacity: 0.7
+          xaxis:
+            type: datetime
+            labels:
+              show: true
+              style:
+                fontSize: 8px
+              format: HH
+            axisBorder: *id003
+            axisTicks: *id003
+        card_mod:
+          style: "ha-card {\n  padding: 0 !important; margin: 2px 0 8px 0 !important;\n}\n/* mixed area+line chart: apexcharts gives every series rel=\"1\", so the theme's\n   ordinal rules can't target by order here. Style by series name instead. */\n.apexcharts-series[seriesName=\"Produced\"] path.apexcharts-area { stroke:var(--dos-series1) !important; stroke-width:1.8px !important; stroke-dasharray:0 !important; }\n.apexcharts-series[seriesName=\"Consumption\"] path.apexcharts-area { stroke:var(--dos-series2) !important; stroke-width:1.3px !important; stroke-dasharray:0 !important; }\n.apexcharts-series[seriesName=\"Forecast\"] path.apexcharts-line { stroke:var(--dos-series3) !important; stroke-width:1.3px !important; stroke-dasharray:1 4 !important; stroke-linecap:round !important; }\n"
+      - type: custom:button-card
+        template: dos_chart_legend
+        variables:
+          rows:
+          - css: width:13px; height:9px; background:var(--dos-series1); opacity:0.65;
+            label: Actual
+          - css: width:13px; height:9px; background:var(--dos-series2); opacity:0.65;
+            label: Usage
+          - stroke: var(--dos-series3)
+            dash: 1 4
+            label: Forecast
+          desc: Solcast forecast against the panels' actual output today. The gap is what cloud cover cost.
+    - type: custom:stack-in-card
+      mode: vertical
+      cards:
+      - type: custom:button-card
+        template: dos_section_header
+        variables:
+          title: Battery
+      - type: custom:button-card
+        entity: sensor.inverter_battery
+        show_icon: false
+        show_name: false
+        show_state: false
+        show_label: true
+        triggers_update: all
+        label: "[[[\n  const e = states['sensor.inverter_battery'];\n  const raw = e ? e.state : null;\n  const v = (raw==null||raw==='unavailable'||raw==='unknown') ? null : parseFloat(raw);\n  const pct = (v==null||isNaN(v)) ? 0 : Math.max(0, Math.min(100, v));\n  const disp = (v==null||isNaN(v)) ? '—' : Math.round(v);\n  return `\n    <div style=\"display:flex; justify-content:space-between; align-items:baseline; gap:8px;\">\n      <span style=\"font-size:clamp(12px,1.1cqw,13.5px); color:var(--dos-text); white-space:nowrap;\">Battery charge</span>\n      <span style=\"font-size:clamp(18px,2.2cqw,26px); font-weight:600; color:var(--dos-accent); font-variant-numeric:tabular-nums;\">${disp}<span style=\"font-size:clamp(9.5px,0.9cqw,11px); font-weight:400; color:var(--dos-soft); margin-left:3px;\">%</span></span>\n    </div>\n    <div style=\"height:4px; background:var(--dos-line); margin-top:6px; position:relative;\">\n      <div style=\"position:absolute; left:0; top:0; bottom:0; width:${pct}%; background:var(--dos-accent);\"></div>\n    </div>\n    <div style=\"display:flex; justify-content:space-between; font-size:clamp(8px,0.8cqw,9px); color:var(--dos-quiet); letter-spacing:0.04em; margin-top:3px; font-variant-numeric:tabular-nums;\">\n      <span>0%</span><span>100%</span></div>`;\n]]]\n"
+        styles:
+          card:
+          - padding: 8px 0 8px 0
+          label:
+          - font-family: inherit
+          - text-align: left
+          - justify-self: stretch
+          - *id002
+          - white-space: normal
+          - overflow: visible
+      - type: custom:apexcharts-card
+        graph_span: 24h
+        header: *id003
+        chart_type: line
+        all_series_config:
+          curve: smooth
+          show: *id009
+        series:
+        - entity: sensor.inverter_battery
+          name: SOC
+          color: '#5d8499'
+          group_by:
+            func: avg
+            duration: 20min
+          stroke_width: 1.3
+        yaxis:
+        - min: 0
+          max: 100
+          decimals: 0
+          apex_config:
+            show: true
+            tickAmount: 2
+            labels:
+              offsetX: -2
+              style:
+                fontSize: 8px
+              formatter: 'EVAL:function(v){ if (v == null) return ''''; return Math.round(v) + ''%''; }
+
+                '
+        apex_config:
+          colors:
+          - '#5d8499'
+          chart:
+            height: 180
+            parentHeightOffset: 0
+            offsetX: -4
+            toolbar: *id003
+            animations: *id004
+            sparkline: *id004
+          grid:
+            show: true
+            strokeDashArray: 2
+            padding: *id005
+            xaxis: *id006
+            yaxis: *id007
+          legend: *id003
+          tooltip:
+            enabled: true
+            x:
+              format: HH:mm
+          stroke:
+            width:
+            - 1.3
+            dashArray:
+            - 0
+            curve: smooth
+            lineCap: round
+          annotations:
+            yaxis:
+            - y: 0
+              strokeDashArray: 3
+              borderColor: rgba(140,133,122,0.55)
+              opacity: 0.7
+              label:
+                text: 0%
+                position: left
+                textAnchor: start
+                offsetX: 2
+                borderWidth: 0
+                style:
+                  background: transparent
+                  color: rgba(140,133,122,0.9)
+                  fontSize: 8px
+            - y: 100
+              strokeDashArray: 3
+              borderColor: rgba(140,133,122,0.55)
+              opacity: 0.7
+              label:
+                text: 100%
+                position: left
+                textAnchor: start
+                offsetX: 2
+                borderWidth: 0
+                style:
+                  background: transparent
+                  color: rgba(140,133,122,0.9)
+                  fontSize: 8px
+          dataLabels: *id004
+          xaxis:
+            type: datetime
+            labels:
+              show: true
+              style:
+                fontSize: 8px
+              format: HH
+            axisBorder: *id003
+            axisTicks: *id003
+          markers: *id008
+        card_mod:
+          style: "ha-card {\n  padding: 0 !important; margin: 4px 0 6px 0 !important;\n}\n"
+      - type: custom:button-card
+        template: dos_chart_legend
+        variables:
+          rows:
+          - stroke: var(--dos-series1)
+            dash: '0'
+            label: State of charge
+          desc: Battery charge over the last 24h, on a fixed 0&ndash;100% scale.
+    - type: custom:stack-in-card
+      mode: vertical
+      cards:
+      - type: custom:button-card
+        template: dos_section_header
+        variables:
+          title: Non-solar consumption
+      - type: custom:button-card
+        styles:
+          card:
+          - padding: 2px 0 2px 0
+          label:
+          - font-family: inherit
+          - text-align: left
+          - justify-self: stretch
+          - *id002
+        template: dos_section_caption
+        variables:
+          title: Per day &middot; 14 days
+      - type: custom:apexcharts-card
+        graph_span: 14d
+        header: *id003
+        series:
+        - entity: sensor.inverter_today_load_consumption
+          name: Daily
+          color: '#5d8499'
+          type: column
+          group_by:
+            func: max
+            duration: 1d
+        yaxis:
+        - min: 0
+          decimals: 0
+          apex_config:
+            show: true
+            tickAmount: 3
+            labels:
+              offsetX: -2
+              style:
+                fontSize: 8px
+              formatter: 'EVAL:function(v){ if (v == null) return ''''; return Math.round(v) + '' kWh''; }
+
+                '
+        apex_config:
+          colors:
+          - '#5d8499'
+          chart:
+            height: 180
+            parentHeightOffset: 0
+            offsetX: -4
+            toolbar: *id003
+            animations: *id004
+          plotOptions:
+            bar:
+              columnWidth: 65%
+              borderRadius: 0
+          fill:
+            opacity: 0.85
+          grid:
+            show: true
+            strokeDashArray: 2
+            padding: *id005
+            xaxis: *id006
+            yaxis: *id007
+          legend: *id003
+          dataLabels: *id004
+          tooltip:
+            enabled: true
+            x:
+              format: ddd dd
+          annotations:
+            yaxis:
+            - y: 0
+              strokeDashArray: 3
+              borderColor: rgba(140,133,122,0.55)
+              opacity: 0.7
+          xaxis:
+            type: datetime
+            labels:
+              show: true
+              style:
+                fontSize: 8px
+              format: dd
+            axisBorder: *id003
+            axisTicks: *id003
+        card_mod:
+          style: "ha-card {\n  padding: 0 !important; margin: 2px 0 14px 0 !important;\n}\n.apexcharts-bar-area { fill:#5d8499 !important; }\n"
+    - type: custom:stack-in-card
+      mode: vertical
+      cards:
+      - type: custom:button-card
+        template: dos_section_header
+        variables:
+          title: Circuit breakdown
+      - type: custom:button-card
+        show_icon: false
+        show_name: false
+        show_state: false
+        show_label: true
+        tap_action:
+          action: none
+        label: "[[[\n  return `<div style=\"display:grid; grid-template-columns:1fr 50px 52px; column-gap:6px; padding:0 0 5px 0;\">\n    <span></span>\n    <span style=\"font-size:clamp(8px,0.78cqw,9.5px); color:var(--dos-quiet); text-align:right; text-transform:uppercase; letter-spacing:0.07em;\">W</span>\n    <span style=\"font-size:clamp(8px,0.78cqw,9.5px); color:var(--dos-quiet); text-align:right; text-transform:uppercase; letter-spacing:0.07em;\">kWh</span>\n  </div>`;\n]]]\n"
+        styles:
+          card:
+          - *id002
+          label:
+          - font-family: inherit
+          - text-align: left
+          - justify-self: stretch
+          - *id002
+          - white-space: normal
+          - overflow: visible
+      - type: custom:button-card
+        entity: sensor.input_8
+        variables:
+          k: AC downstairs
+          e_now: sensor.input_8
+          e_kwh: sensor.input_8_wh
+          kdiv: 1000
+          last: false
+          sub: ''
+          muted: false
+        template: dos_energy_row
+      - type: custom:button-card
+        entity: sensor.input_6
+        variables:
+          k: AC upstairs
+          e_now: sensor.input_6
+          e_kwh: sensor.input_6_wh
+          kdiv: 1000
+          last: false
+          sub: ''
+          muted: false
+        template: dos_energy_row
+      - type: custom:button-card
+        entity: sensor.input_4
+        variables:
+          k: Laundry
+          e_now: sensor.input_4
+          e_kwh: sensor.input_4_wh
+          kdiv: 1000
+          last: false
+          sub: ''
+          muted: false
+        template: dos_energy_row
+      - type: custom:button-card
+        entity: sensor.input_5
+        variables:
+          k: Bedrooms
+          e_now: sensor.input_5
+          e_kwh: sensor.input_5_wh
+          kdiv: 1000
+          last: false
+          sub: ''
+          muted: false
+        template: dos_energy_row
+      - type: custom:button-card
+        entity: sensor.input_3
+        variables:
+          k: Living room
+          e_now: sensor.input_3
+          e_kwh: sensor.input_3_wh
+          kdiv: 1000
+          last: false
+          sub: ''
+          muted: false
+        template: dos_energy_row
+      - type: custom:button-card
+        entity: sensor.input_7
+        variables:
+          k: Bathroom / Hallway / Attic
+          e_now: sensor.input_7
+          e_kwh: sensor.input_7_wh
+          kdiv: 1000
+          last: false
+          sub: ''
+          muted: false
+        template: dos_energy_row
+      - type: custom:button-card
+        entity: sensor.input_2
+        variables:
+          k: Kitchen / Pantry
+          e_now: sensor.input_2
+          e_kwh: sensor.input_2_wh
+          kdiv: 1000
+          last: false
+          sub: ''
+          muted: false
+        template: dos_energy_row
+      - type: custom:button-card
+        entity: sensor.input_10
+        variables:
+          k: Network
+          e_now: sensor.input_10
+          e_kwh: sensor.input_10_wh
+          kdiv: 1000
+          last: false
+          sub: ''
+          muted: false
+        template: dos_energy_row
+      - type: custom:button-card
+        show_icon: false
+        show_name: false
+        show_state: false
+        show_label: true
+        tap_action:
+          action: none
+        label: "[[[\n  const num = (id) => { const s = states[id]; const r = s ? s.state : null;\n    return (r==null||r==='unavailable'||r==='unknown') ? null : parseFloat(r); };\n  const W = ['sensor.input_8','sensor.input_6','sensor.input_4','sensor.input_5','sensor.input_3','sensor.input_7','sensor.input_2','sensor.input_10'];\n  const K = ['sensor.input_8_wh','sensor.input_6_wh','sensor.input_4_wh','sensor.input_5_wh','sensor.input_3_wh','sensor.input_7_wh','sensor.input_2_wh','sensor.input_10_wh'];\n  let w=0,k=0;\n  W.forEach(id=>{const v=num(id); if(v!=null&&!isNaN(v)) w+=v;});\n  K.forEach(id=>{const v=num(id); if(v!=null&&!isNaN(v)) k+=v;});\n  k=k/1000;\n  const wD = Math.round(w).toLocaleString('de-DE');\n  const kD = k.toFixed(2).replace('.', ',');\n  return `<div style=\"display:grid; grid-template-columns:1fr 50px 52px; column-gap:6px; align-items:baseline; padding:7px 0 1px 0; border-top:0.8px solid var(--dos-ink); margin-top:3px;\">\n    <span style=\"font-size:clamp(10.5px,1.0cqw,12px); color:var(--dos-ink); font-variant:small-caps; text-transform:lowercase; letter-spacing:0.05em; font-weight:700;\">All circuits</span>\n    <span style=\"font-size:clamp(12px,1.1cqw,13.5px); font-weight:700; color:var(--dos-ink); font-variant-numeric:tabular-nums; text-align:right;\">${wD}</span>\n    <span style=\"font-size:clamp(12px,1.1cqw,13.5px); font-weight:700; color:var(--dos-accent); font-variant-numeric:tabular-nums; text-align:right;\">${kD}</span>\n  </div>`;\n]]]\n"
+        styles:
+          card:
+          - *id002
+          label:
+          - font-family: inherit
+          - text-align: left
+          - justify-self: stretch
+          - *id002
+          - white-space: normal
+          - overflow: visible
+      - type: custom:button-card
+        show_icon: false
+        show_name: false
+        show_state: false
+        show_label: true
+        tap_action:
+          action: none
+        label: '[[[ return `<div style="padding:9px 0 2px 0;"><span style="font-size:clamp(8.5px,0.82cqw,10px); color:var(--dos-quiet); text-transform:uppercase; letter-spacing:0.1em;">Device plugs · within circuits</span></div>`; ]]]
+
+          '
+        styles:
+          card:
+          - *id002
+          label:
+          - font-family: inherit
+          - text-align: left
+          - justify-self: stretch
+          - *id002
+          - white-space: normal
+          - overflow: visible
+      - type: custom:button-card
+        entity: sensor.tz3000_zloso4jk_ts011f_active_power_2
+        variables:
+          k: Fridge
+          e_now: sensor.tz3000_zloso4jk_ts011f_active_power_2
+          e_kwh: sensor.fridge_energy_today
+          kdiv: 1
+          last: false
+          sub: ''
+          muted: true
+        template: dos_energy_row
+      - type: custom:button-card
+        entity: sensor.pm2_active_power
+        variables:
+          k: Wine fridge
+          e_now: sensor.pm2_active_power
+          e_kwh: sensor.wine_fridge_energy_today
+          kdiv: 1
+          last: false
+          sub: ''
+          muted: true
+        template: dos_energy_row
+      - type: custom:button-card
+        entity: sensor.p6_t_beko_freezer_active_power
+        variables:
+          k: Freezer (Beko)
+          e_now: sensor.p6_t_beko_freezer_active_power
+          e_kwh: sensor.freezer_beko_energy_today
+          kdiv: 1
+          last: false
+          sub: ''
+          muted: true
+        template: dos_energy_row
+      - type: custom:button-card
+        entity: sensor.pm9_bauknecht_freezer_active_power
+        variables:
+          k: Freezer (Bauknecht)
+          e_now: sensor.pm9_bauknecht_freezer_active_power
+          e_kwh: sensor.freezer_bauknecht_energy_today
+          kdiv: 1
+          last: false
+          sub: ''
+          muted: true
+        template: dos_energy_row
+      - type: custom:button-card
+        entity: sensor.tz3000_gjnozsaz_ts011f_active_power_4
+        variables:
+          k: TV
+          e_now: sensor.tz3000_gjnozsaz_ts011f_active_power_4
+          e_kwh: sensor.tv_energy_today
+          kdiv: 1
+          last: false
+          sub: ''
+          muted: true
+        template: dos_energy_row
+      - type: custom:button-card
+        entity: sensor.p3t_waterbed_active_power
+        variables:
+          k: Waterbed
+          e_now: sensor.p3t_waterbed_active_power
+          e_kwh: sensor.waterbed_energy_today
+          kdiv: 1
+          last: true
+          sub: ''
+          muted: true
+        template: dos_energy_row
+    - type: custom:stack-in-card
+      mode: vertical
+      cards:
+      - type: custom:button-card
+        template: dos_section_header
+        variables:
+          title: Prices
+      - type: custom:button-card
+        styles:
+          card:
+          - padding: 10px 0 2px 0
+          label:
+          - font-family: inherit
+          - text-align: left
+          - justify-self: stretch
+          - *id002
+        template: dos_section_caption
+        variables:
+          title: Imbalance &amp; day-ahead &middot; 24h
+      - type: custom:apexcharts-card
+        graph_span: 24h
+        header: *id003
+        chart_type: line
+        all_series_config:
+          curve: smooth
+          show: *id009
+        series:
+        - entity: sensor.tennet_imbalance_sell_price
+          name: Sell
+          color: '#5d8499'
+          group_by:
+            func: avg
+            duration: 15min
+          stroke_width: 1.3
+          type: line
+        - entity: sensor.tennet_imbalance_buy_price
+          name: Buy
+          color: '#b5654d'
+          group_by:
+            func: avg
+            duration: 15min
+          stroke_width: 1.3
+          type: line
+        - name: Day-ahead
+          entity: sensor.average_electricity_price
+          type: line
+          color: '#8c887f'
+          data_generator: return (entity.attributes.prices || []).map(p => [new Date(p.time).getTime(), p.price*1000]);
+          stroke_width: 1.3
+        yaxis:
+        - decimals: 0
+          apex_config:
+            show: true
+            tickAmount: 3
+            labels:
+              offsetX: -2
+              style:
+                fontSize: 8px
+              formatter: 'EVAL:function(v){ if (v == null) return ''''; return Math.round(v) + ''''; }
+
+                '
+        apex_config:
+          colors:
+          - '#5d8499'
+          - '#b5654d'
+          chart:
+            height: 180
+            parentHeightOffset: 0
+            offsetX: -4
+            toolbar: *id003
+            animations: *id004
+            sparkline: *id004
+          grid:
+            show: true
+            strokeDashArray: 2
+            padding: *id005
+            xaxis: *id006
+            yaxis: *id007
+          legend: *id003
+          tooltip:
+            enabled: true
+            shared: true
+            x:
+              format: HH:mm
+          stroke:
+            width: *id010
+            curve: smooth
+            lineCap: round
+          annotations:
+            yaxis:
+            - y: 0
+              strokeDashArray: 3
+              borderColor: rgba(140,133,122,0.55)
+              opacity: 0.7
+              label:
+                text: '0'
+                position: left
+                textAnchor: start
+                offsetX: 2
+                borderWidth: 0
+                style:
+                  background: transparent
+                  color: rgba(140,133,122,0.9)
+                  fontSize: 8px
+          dataLabels: *id004
+          xaxis:
+            type: datetime
+            labels: *id003
+            axisBorder: *id003
+            axisTicks: *id003
+          markers: *id008
+        card_mod:
+          style: "ha-card {\n  padding: 0 !important; margin: 2px 0 4px 0 !important;\n}\n{% if states('sensor.tennet_imbalance_sell_price') in ['unavailable','unknown','none'] and states('sensor.tennet_imbalance_buy_price') in ['unavailable','unknown','none'] %}\n/* both series unavailable -> hide the apex error box; the fallback note below shows instead */\nha-card { display: none !important; }\n{% endif %}\n"
+      - type: custom:button-card
+        template: dos_chart_legend
+        variables:
+          rows:
+          - stroke: var(--dos-series1)
+            dash: '0'
+            label: Sell
+          - stroke: var(--dos-series2)
+            dash: 7 4
+            label: Buy
+          - stroke: var(--dos-series3)
+            dash: 1 4
+            label: Day-ahead
+          desc: TenneT imbalance sell/buy against the ENTSO-E day-ahead curve.
+      - type: custom:button-card
+        show_icon: false
+        show_name: false
+        show_state: false
+        show_label: true
+        tap_action:
+          action: none
+        label: '[[[ return `<span style="font-size:clamp(9.5px,0.85cqw,10.5px); color:var(--dos-quiet); letter-spacing:0.03em; font-style:italic;">Imbalance price data unavailable</span>`; ]]]
+
+          '
+        card_mod:
+          style: "ha-card {\n  padding: 6px 0 8px 0 !important;\n  display: none !important;\n}\n{% if states('sensor.tennet_imbalance_sell_price') in ['unavailable','unknown','none'] and states('sensor.tennet_imbalance_buy_price') in ['unavailable','unknown','none'] %}\nha-card { display: block !important; }\n{% endif %}\n"
+        styles:
+          card:
+          - *id002
+          label:
+          - font-family: inherit
+          - text-align: left
+          - justify-self: stretch
+          - *id002
+    - type: custom:stack-in-card
+      mode: vertical
+      cards:
+      - type: custom:button-card
+        template: dos_section_header
+        variables:
+          title: Energy management
+      - type: custom:button-card
+        entity: input_boolean.ems_enabled
+        tap_action:
+          action: toggle
+        hold_action:
+          action: more-info
+        variables:
+          k: Master switch
+        template: dos_toggle_row
+      - type: custom:button-card
+        entity: input_select.ems_state
+        show_icon: false
+        show_name: false
+        show_state: false
+        show_label: true
+        triggers_update: all
+        label: "[[[\n  const s = (states['input_select.ems_state']||{}).state || '—';\n  return `<div style=\"display:flex; justify-content:space-between; align-items:baseline; gap:8px; padding:clamp(5px,0.7cqw,7px) 0; border-bottom:0.6px solid var(--dos-line);\">\n    <span style=\"font-size:clamp(12px,1.1cqw,13.5px); color:var(--dos-text); white-space:nowrap;\">EMS state</span>\n    <span style=\"font-size:clamp(10px,0.95cqw,11.5px); letter-spacing:0.08em; text-transform:uppercase; font-weight:700; color:var(--dos-accent); font-variant-numeric:tabular-nums; white-space:nowrap;\">${s}</span></div>`;\n]]]\n"
+        styles:
+          card:
+          - *id002
+          label:
+          - font-family: inherit
+          - text-align: left
+          - justify-self: stretch
+          - *id002
+          - white-space: normal
+          - overflow: visible
+      - type: custom:button-card
+        entity: input_boolean.dash_ems_advanced
+        tap_action:
+          action: toggle
+        show_icon: false
+        show_name: false
+        show_state: false
+        show_label: true
+        triggers_update: all
+        label: "[[[\n  const on = (states['input_boolean.dash_ems_advanced']||{}).state === 'on';\n  const sign = on ? '−' : '+';\n  const txt = on ? 'Hide advanced' : 'Show advanced';\n  return `<div style=\"display:flex; justify-content:space-between; align-items:center; gap:8px; padding:clamp(7px,0.9cqw,10px) 0 clamp(5px,0.7cqw,7px) 0; margin-top:6px; border-top:0.8px solid var(--dos-line);\">\n    <span style=\"font-size:clamp(9px,0.85cqw,10.5px); color:var(--dos-quiet); letter-spacing:0.08em; text-transform:uppercase; font-weight:600;\">${txt}</span>\n    <span style=\"width:16px; height:16px; line-height:14px; text-align:center; border:0.8px solid var(--dos-soft); color:var(--dos-soft); font-size:12px; font-weight:600;\">${sign}</span></div>`;\n]]]\n"
+        styles:
+          card:
+          - *id002
+          label:
+          - font-family: inherit
+          - text-align: left
+          - justify-self: stretch
+          - *id002
+      - type: conditional
+        conditions:
+        - condition: state
+          entity: input_boolean.dash_ems_advanced
+          state: 'on'
+        card:
+          type: custom:stack-in-card
+          mode: vertical
+          cards:
+          - type: custom:button-card
+            entity: sensor.ems_ideal_state
+            show_icon: false
+            show_name: false
+            show_state: false
+            show_label: true
+            triggers_update: all
+            label: "[[[\n  const s = (states['sensor.ems_ideal_state']||{}).state || '—';\n  return `<div style=\"display:flex; justify-content:space-between; align-items:baseline; gap:8px; padding:clamp(5px,0.7cqw,7px) 0; border-bottom:0.6px solid var(--dos-line);\">\n    <span style=\"font-size:clamp(12px,1.1cqw,13.5px); color:var(--dos-text); white-space:nowrap;\">Ideal state</span>\n    <span style=\"font-size:clamp(10px,0.95cqw,11.5px); letter-spacing:0.08em; text-transform:uppercase; font-weight:600; color:var(--dos-ink); white-space:nowrap;\">${s}</span></div>`;\n]]]\n"
+            styles:
+              card:
+              - *id002
+              label:
+              - font-family: inherit
+              - text-align: left
+              - justify-self: stretch
+              - *id002
+              - white-space: normal
+              - overflow: visible
+          - type: custom:button-card
+            entity: sensor.ems_transition_spread
+            variables:
+              k: Transition spread
+              unit: ''
+              fmt: dec1
+              sub: ''
+              accent: false
+              last: false
+            template: dos_value_row
+          - type: custom:button-card
+            entity: timer.ems_slow
+            show_icon: false
+            show_name: false
+            show_state: false
+            show_label: true
+            triggers_update: all
+            label: "[[[\n  const s = (states['timer.ems_slow']||{}).state || '—';\n  const col = s === 'active' ? 'var(--dos-accent)' : 'var(--dos-quiet)';\n  return `<div style=\"display:flex; justify-content:space-between; align-items:baseline; gap:8px; padding:clamp(5px,0.7cqw,7px) 0; border-bottom:0.6px solid var(--dos-line);\">\n    <span style=\"font-size:clamp(12px,1.1cqw,13.5px); color:var(--dos-text); white-space:nowrap;\">Slow timer</span>\n    <span style=\"font-size:clamp(9px,0.85cqw,10.5px); letter-spacing:0.08em; text-transform:uppercase; font-weight:600; color:${col}; white-space:nowrap;\">${s}</span></div>`;\n]]]\n"
+            styles:
+              card:
+              - *id002
+              label:
+              - font-family: inherit
+              - text-align: left
+              - justify-self: stretch
+              - *id002
+              - white-space: normal
+              - overflow: visible
+          - type: custom:button-card
+            entity: timer.ems_fast
+            show_icon: false
+            show_name: false
+            show_state: false
+            show_label: true
+            triggers_update: all
+            label: "[[[\n  const s = (states['timer.ems_fast']||{}).state || '—';\n  const col = s === 'active' ? 'var(--dos-accent)' : 'var(--dos-quiet)';\n  return `<div style=\"display:flex; justify-content:space-between; align-items:baseline; gap:8px; padding:clamp(5px,0.7cqw,7px) 0; border-bottom:0.6px solid var(--dos-line);\">\n    <span style=\"font-size:clamp(12px,1.1cqw,13.5px); color:var(--dos-text); white-space:nowrap;\">Fast timer</span>\n    <span style=\"font-size:clamp(9px,0.85cqw,10.5px); letter-spacing:0.08em; text-transform:uppercase; font-weight:600; color:${col}; white-space:nowrap;\">${s}</span></div>`;\n]]]\n"
+            styles:
+              card:
+              - *id002
+              label:
+              - font-family: inherit
+              - text-align: left
+              - justify-self: stretch
+              - *id002
+              - white-space: normal
+              - overflow: visible
+          - type: custom:button-card
+            entity: binary_sensor.ems_dumpload_active
+            variables:
+              k: Dumpload active
+              on_txt: Active
+              off_txt: Idle
+              last: true
+            template: dos_binary_word_row
+          - type: custom:button-card
+            tap_action:
+              action: none
+            variables:
+              title: Enable / disable
+            template: dos_section_caption
+          - type: custom:button-card
+            entity: input_boolean.ems_sell_enabled
+            tap_action:
+              action: toggle
+            hold_action:
+              action: more-info
+            variables:
+              k: SELL — stop charge on spikes
+            template: dos_toggle_row
+          - type: custom:button-card
+            entity: input_boolean.ems_grid_use_enabled
+            tap_action:
+              action: toggle
+            hold_action:
+              action: more-info
+            variables:
+              k: GRID_USE — force grid draw
+            template: dos_toggle_row
+          - type: custom:button-card
+            entity: input_boolean.ems_dump_enabled
+            tap_action:
+              action: toggle
+            hold_action:
+              action: more-info
+            variables:
+              k: DUMP — grid + SmartLoad
+            template: dos_toggle_row
+          - type: custom:button-card
+            entity: input_select.gen_port_mode
+            variables:
+              k: GEN port mode
+            template: dos_state_string_row
+          - type: custom:button-card
+            tap_action:
+              action: none
+            variables:
+              title: SELL — price spike
+            template: dos_section_caption
+          - type: custom:stack-in-card
+            mode: horizontal
+            card_mod: !include _partials/stack-reset-underline.yaml
+            cards:
+            - type: custom:button-card
+              entity: input_number.sell_spike_spread
+              triggers_update: all
+              template: dos_energy_field_label
+              variables:
+                k: Spike spread
+            - type: custom:button-card
+              entity: input_number.sell_spike_spread
+              template:
+              - dos_stepper_minus_plain
+              - dos_step_number_minus
+              variables:
+                min: 5
+                step: 1
+            - type: custom:button-card
+              entity: input_number.sell_spike_spread
+              template: dos_energy_value
+              variables:
+                unit: ct
+                fmt: dec0
+            - type: custom:button-card
+              entity: input_number.sell_spike_spread
+              template:
+              - dos_stepper_plus_plain
+              - dos_step_number_plus
+              variables:
+                max: 100
+                step: 1
+          - type: custom:stack-in-card
+            mode: horizontal
+            card_mod: !include _partials/stack-reset-underline.yaml
+            cards:
+            - type: custom:button-card
+              entity: input_number.sell_spike_floor
+              template: dos_energy_field_label
+              variables:
+                k: Spike floor
+            - type: custom:button-card
+              entity: input_number.sell_spike_floor
+              template:
+              - dos_stepper_minus_plain
+              - dos_step_number_minus
+              variables:
+                min: 10
+                step: 5
+            - type: custom:button-card
+              entity: input_number.sell_spike_floor
+              template: dos_energy_value
+              variables:
+                unit: ct
+                fmt: dec0
+            - type: custom:button-card
+              entity: input_number.sell_spike_floor
+              template:
+              - dos_stepper_plus_plain
+              - dos_step_number_plus
+              variables:
+                max: 100
+                step: 5
+          - type: custom:button-card
+            entity: sensor.tennet_sell_price_24h_average
+            variables:
+              k: 24h sell average
+              unit: ''
+              fmt: dec1
+              sub: ''
+              accent: false
+              last: true
+            template: dos_value_row
+          - type: custom:button-card
+            tap_action:
+              action: none
+            variables:
+              title: DUMP — negative prices
+            template: dos_section_caption
+          - type: custom:button-card
+            entity: input_number.dumpload_profit_threshold
+            variables:
+              k: Profit threshold
+              unit: ct/kWh
+              fmt: dec1
+              last: false
+            template: dos_value_row
+          - type: custom:button-card
+            entity: input_number.dump_soc_entry
+            variables:
+              k: SOC entry
+              unit: '%'
+              fmt: dec0
+              last: false
+            template: dos_value_row
+          - type: custom:button-card
+            entity: input_number.dump_soc_fallback
+            variables:
+              k: SOC fallback
+              unit: '%'
+              fmt: dec0
+              last: true
+            template: dos_value_row
+          - type: custom:button-card
+            tap_action:
+              action: none
+            variables:
+              title: General
+            template: dos_section_caption
+          - type: custom:button-card
+            entity: input_number.provider_fee
+            variables:
+              k: Provider fee
+              unit: EUR/MWh
+              fmt: dec0
+              last: false
+            template: dos_value_row
+          - type: custom:button-card
+            entity: input_number.transition_hysteresis
+            variables:
+              k: Hysteresis
+              unit: ct
+              fmt: dec1
+              last: false
+            template: dos_value_row
+          - type: custom:button-card
+            entity: input_number.transition_fast_spread
+            variables:
+              k: Fast spread
+              unit: ct
+              fmt: dec1
+              last: false
+            template: dos_value_row
+          - type: custom:button-card
+            entity: input_number.transition_instant_spread
+            variables:
+              k: Instant spread
+              unit: ct
+              fmt: dec0
+              last: false
+            template: dos_value_row
+          - type: custom:button-card
+            entity: input_number.transition_slow_duration
+            variables:
+              k: Slow timer duration
+              unit: min
+              fmt: dec1
+              last: false
+            template: dos_value_row
+          - type: custom:button-card
+            entity: input_number.transition_fast_duration
+            variables:
+              k: Fast timer duration
+              unit: min
+              fmt: dec1
+              last: true
+            template: dos_value_row
+    - type: custom:stack-in-card
+      mode: vertical
+      cards:
+      - type: custom:button-card
+        template: dos_section_header
+        variables:
+          title: Morning export priority
+      - type: custom:button-card
+        entity: input_boolean.mep_enabled
+        tap_action:
+          action: toggle
+        hold_action:
+          action: more-info
+        variables:
+          k: Enabled (master)
+        template: dos_toggle_row
+      - type: custom:button-card
+        entity: binary_sensor.mep_defer_charging
+        variables:
+          k: Defer recommended?
+          on_txt: 'Yes'
+          off_txt: 'No'
+          last: false
+        template: dos_binary_word_row
+      - type: custom:button-card
+        entity: input_boolean.dash_mep_advanced
+        tap_action:
+          action: toggle
+        show_icon: false
+        show_name: false
+        show_state: false
+        show_label: true
+        triggers_update: all
+        label: "[[[\n  const on = (states['input_boolean.dash_mep_advanced']||{}).state === 'on';\n  const sign = on ? '−' : '+';\n  const txt = on ? 'Hide advanced' : 'Show advanced';\n  return `<div style=\"display:flex; justify-content:space-between; align-items:center; gap:8px; padding:clamp(7px,0.9cqw,10px) 0 clamp(5px,0.7cqw,7px) 0; margin-top:6px; border-top:0.8px solid var(--dos-line);\">\n    <span style=\"font-size:clamp(9px,0.85cqw,10.5px); color:var(--dos-quiet); letter-spacing:0.08em; text-transform:uppercase; font-weight:600;\">${txt}</span>\n    <span style=\"width:16px; height:16px; line-height:14px; text-align:center; border:0.8px solid var(--dos-soft); color:var(--dos-soft); font-size:12px; font-weight:600;\">${sign}</span></div>`;\n]]]\n"
+        styles:
+          card:
+          - *id002
+          label:
+          - font-family: inherit
+          - text-align: left
+          - justify-self: stretch
+          - *id002
+      - type: conditional
+        conditions:
+        - condition: state
+          entity: input_boolean.dash_mep_advanced
+          state: 'on'
+        card:
+          type: custom:stack-in-card
+          mode: vertical
+          cards:
+          - type: custom:button-card
+            entity: binary_sensor.mep_defer_charging
+            variables:
+              src: attr
+              fmt: dec1
+              k: Forecast PV (cheap window)
+              attr: forecast_pv
+              unit: kWh
+              last: false
+            template: dos_value_row
+          - type: custom:button-card
+            entity: binary_sensor.mep_defer_charging
+            variables:
+              src: attr
+              fmt: dec1
+              k: Capacity to fill
+              attr: to_full
+              unit: kWh
+              last: false
+            template: dos_value_row
+          - type: custom:button-card
+            entity: sensor.mep_margin
+            variables:
+              k: Margin (forecast − need)
+              unit: ''
+              fmt: dec1
+              sub: ''
+              accent: true
+              last: false
+            template: dos_value_row
+          - type: custom:button-card
+            entity: binary_sensor.mep_defer_charging
+            variables:
+              src: attr
+              fmt: dec1
+              k: Consumption buffer
+              attr: buffer
+              unit: kWh
+              last: false
+            template: dos_value_row
+          - type: custom:button-card
+            entity: sensor.mep_daily_avg_consumption
+            variables:
+              k: 14-day avg consumption
+              unit: kWh
+              fmt: dec1
+              sub: ''
+              accent: false
+              last: false
+            template: dos_value_row
+          - type: custom:button-card
+            entity: number.inverter_battery_max_charging_current
+            show_icon: false
+            show_name: false
+            show_state: false
+            show_label: true
+            triggers_update: all
+            label: "[[[\n  const e = states['number.inverter_battery_max_charging_current'];\n  const raw = e ? e.state : null;\n  const v = (raw==null||raw==='unavailable'||raw==='unknown') ? null : parseFloat(raw);\n  const disp = (v==null||isNaN(v)) ? '—' : v.toFixed(1).replace('.', ',');\n  const unit = (e && e.attributes && e.attributes.unit_of_measurement) ? e.attributes.unit_of_measurement : 'A';\n  return `<div style=\"display:flex; justify-content:space-between; align-items:baseline; gap:8px; padding:clamp(5px,0.7cqw,7px) 0; border-bottom:none;\">\n    <span style=\"font-size:clamp(12px,1.1cqw,13.5px); color:var(--dos-text); white-space:nowrap;\">Charge current<span style=\"color:var(--dos-quiet); margin-left:6px; font-size:clamp(10px,0.95cqw,12px);\">low = deferring</span></span>\n    <span style=\"font-size:clamp(12.5px,1.15cqw,14px); font-weight:600; color:var(--dos-accent2); font-variant-numeric:tabular-nums;\">${disp}<span style=\"font-size:clamp(8.5px,0.8cqw,10px); font-weight:400; color:var(--dos-soft); margin-left:2px;\">${unit}</span></span></div>`;\n]]]\n"
+            styles:
+              card:
+              - *id002
+              label:
+              - font-family: inherit
+              - text-align: left
+              - justify-self: stretch
+              - *id002
+          - type: custom:button-card
+            tap_action:
+              action: none
+            variables:
+              title: Tunables
+            template: dos_section_caption
+          - type: custom:stack-in-card
+            mode: horizontal
+            card_mod: !include _partials/stack-reset-underline.yaml
+            cards:
+            - type: custom:button-card
+              entity: input_number.mep_charge_floor_amps
+              template: dos_energy_field_label
+              variables:
+                k: Charge floor
+            - type: custom:button-card
+              entity: input_number.mep_charge_floor_amps
+              template:
+              - dos_stepper_minus_plain
+              - dos_step_number_minus
+              variables:
+                min: 0
+                step: 5
+            - type: custom:button-card
+              entity: input_number.mep_charge_floor_amps
+              template: dos_energy_value
+              variables:
+                unit: A
+                fmt: dec0
+            - type: custom:button-card
+              entity: input_number.mep_charge_floor_amps
+              template:
+              - dos_stepper_plus_plain
+              - dos_step_number_plus
+              variables:
+                max: 240
+                step: 5
+          - type: custom:stack-in-card
+            mode: horizontal
+            card_mod: !include _partials/stack-reset-underline.yaml
+            cards:
+            - type: custom:button-card
+              entity: input_number.mep_soc_floor
+              template: dos_energy_field_label
+              variables:
+                k: SOC floor
+            - type: custom:button-card
+              entity: input_number.mep_soc_floor
+              template:
+              - dos_stepper_minus_plain
+              - dos_step_number_minus
+              variables:
+                min: 0
+                step: 5
+            - type: custom:button-card
+              entity: input_number.mep_soc_floor
+              template: dos_value_int_span
+            - type: custom:button-card
+              entity: input_number.mep_soc_floor
+              template:
+              - dos_stepper_plus_plain
+              - dos_step_number_plus
+              variables:
+                max: 100
+                step: 5
+          - type: custom:button-card
+            entity: input_datetime.mep_window_start
+            variables:
+              k: Window start
+            template: dos_state_string_row
+          - type: custom:button-card
+            entity: input_datetime.mep_window_end
+            variables:
+              k: Window end
+            template: dos_state_string_row
+          - type: custom:stack-in-card
+            mode: horizontal
+            card_mod: !include _partials/stack-reset-underline.yaml
+            cards:
+            - type: custom:button-card
+              entity: input_number.mep_pv_weight_p10
+              template: dos_energy_field_label
+              variables:
+                k: PV weight P10
+            - type: custom:button-card
+              entity: input_number.mep_pv_weight_p10
+              template:
+              - dos_stepper_minus_plain
+              - dos_step_number_minus
+              variables:
+                min: 0
+                step: 5
+            - type: custom:button-card
+              entity: input_number.mep_pv_weight_p10
+              template: dos_value_int_span
+            - type: custom:button-card
+              entity: input_number.mep_pv_weight_p10
+              template:
+              - dos_stepper_plus_plain
+              - dos_step_number_plus
+              variables:
+                max: 100
+                step: 5
+          - type: custom:stack-in-card
+            mode: horizontal
+            cards:
+            - type: custom:button-card
+              entity: input_number.mep_pv_weight_p50
+              template: dos_energy_field_label
+              variables:
+                k: PV weight P50
+            - type: custom:button-card
+              entity: input_number.mep_pv_weight_p50
+              template:
+              - dos_stepper_minus_plain
+              - dos_step_number_minus
+              variables:
+                min: 0
+                step: 5
+            - type: custom:button-card
+              entity: input_number.mep_pv_weight_p50
+              template: dos_value_int_span
+            - type: custom:button-card
+              entity: input_number.mep_pv_weight_p50
+              template:
+              - dos_stepper_plus_plain
+              - dos_step_number_plus
+              variables:
+                max: 100
+                step: 5
+  - type: custom:button-card
+    show_icon: false
+    show_name: false
+    show_state: false
+    show_label: true
+    tap_action:
+      action: none
+    label: '[[[ return `<span style="font-variant:small-caps; text-transform:lowercase; letter-spacing:0.06em; font-weight:700; font-size:clamp(11.5px,1.05cqw,13px); color:var(--dos-ink);">EPEX price forecast &middot; 5 day</span>`; ]]]
+
+      '
+    styles:
+      card:
+      - border-bottom: 0.8px solid var(--dos-ink)
+      - padding: 0 0 6px 0
+      - margin: 22px 0 12px 0
+      label:
+      - font-family: inherit
+      - text-align: left
+      - justify-self: stretch
+      - *id002
+    card_mod:
+      style: "@media (max-width: 700px) {\n  :host { margin-left: -8px !important; margin-right: -8px !important; }\n}\n"
+  - type: custom:apexcharts-card
+    graph_span: 120h
+    span:
+      start: day
+    header: *id003
+    now:
+      show: true
+      color: rgba(140,133,122,0.55)
+    apex_config: *id015
+    yaxis: *id016
+    series: *id017
+    card_mod:
+      style: "ha-card {\n  background: var(--dos-paper) !important;\n  border: none !important;\n  border-radius: 0 !important; box-shadow: none !important;\n  padding: 10px 8px !important; margin: 0 0 4px 0 !important;\n  font-family: 'Nimbus Sans L','Nimbus Sans','Helvetica Neue',Helvetica,Arial,sans-serif !important;\n  color: var(--dos-text) !important;\n}\n/* hide the full-range chart when the sheet has collapsed to one column */\n@container dossier (max-width: 760px) { ha-card { display: none !important; } }\n@media (max-width: 700px) {\n  :host { margin-left: -8px !important; margin-right: -8px !important; }\n}\n"
+  - type: custom:apexcharts-card
+    graph_span: 48h
+    span:
+      start: day
+    header: *id003
+    now:
+      show: true
+      color: rgba(140,133,122,0.55)
+    apex_config: *id015
+    yaxis: *id016
+    series: *id017
+    card_mod:
+      style: "ha-card {\n  background: var(--dos-paper) !important;\n  border: none !important;\n  border-radius: 0 !important; box-shadow: none !important;\n  padding: 10px 8px !important; margin: 0 0 4px 0 !important;\n  font-family: 'Nimbus Sans L','Nimbus Sans','Helvetica Neue',Helvetica,Arial,sans-serif !important;\n  color: var(--dos-text) !important;\n  display: none !important;\n}\n/* show the truncated (noon-next-day) chart only when single-column */\n@container dossier (max-width: 760px) { ha-card { display: block !important; } }\n@media (max-width: 700px) {\n  :host { margin-left: -8px !important; margin-right: -8px !important; }\n}\n"
+  - type: custom:button-card
+    template: dos_chart_legend
+    variables:
+      rows:
+      - stroke: var(--dos-series1)
+        dash: '0'
+        label: Actual
+      - stroke: var(--dos-series2)
+        dash: 7 4
+        label: Day-Ahead
+      - stroke: var(--dos-series3)
+        dash: 1 4
+        label: Predictor
+      desc: ENTSO-E day-ahead and the LightGBM forecast against the realized imbalance price.
+  - !include _partials/footer.yaml

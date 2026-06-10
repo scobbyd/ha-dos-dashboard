@@ -1,0 +1,546 @@
+# _anchor_defs is not a lovelace/button-card key; it only hosts the YAML anchor
+# definitions shared across this file, so deleting/reordering cards can't break aliases.
+_anchor_defs:
+- &id001
+  border-radius: '0'
+- &id002
+  padding: '0'
+- &id103
+  show: false
+- &id104
+  enabled: false
+- &id110
+  - 1.3
+  - 1.3
+  - 1.3
+- &id105
+  left: 2
+  right: 8
+  top: 8
+  bottom: 0
+- &id106
+  lines: *id103
+- &id107
+  lines:
+    show: true
+- &id108
+  size: 0
+title: General
+path: dossier-general
+icon: mdi:home-outline
+type: panel
+theme: dos
+cards:
+- type: custom:stack-in-card
+  mode: vertical
+  card_mod: !include _partials/frame.yaml
+  cards:
+  - type: custom:stack-in-card
+    mode: horizontal
+    card_mod: !include _partials/header-bar.yaml
+    cards:
+    - type: custom:button-card
+      template: dos_view_header
+      variables:
+        title: 'At a Glance'
+    - type: custom:button-card
+      tap_action:
+        action: none
+      template: dos_clock_time
+  - type: custom:layout-card
+    layout_type: custom:masonry-layout
+    layout: !include _partials/masonry.yaml
+    cards:
+    - type: custom:stack-in-card
+      mode: vertical
+      cards:
+      - type: custom:button-card
+        template: dos_section_header
+        variables:
+          title: Overview
+      - type: custom:button-card
+        entity: sensor.total_pv_power
+        styles:
+          card:
+          - padding: 4px 0 8px 0
+          label:
+          - font-family: inherit
+          - text-align: left
+          - justify-self: stretch
+          - *id002
+          - white-space: normal
+          - overflow: visible
+        template: dos_gauge
+        variables:
+          txt: Solar production
+          col: var(--dos-accent)
+          ken: sensor.total_pv_energy_today
+          kcol: var(--dos-text)
+          mx: 14000
+          abs: false
+      - type: custom:button-card
+        entity: sensor.inverter_load_ups_power
+        styles:
+          card:
+          - padding: 4px 0 10px 0
+          label:
+          - font-family: inherit
+          - text-align: left
+          - justify-self: stretch
+          - *id002
+          - white-space: normal
+          - overflow: visible
+        template: dos_gauge
+        variables:
+          txt: House load
+          col: var(--dos-accent2)
+          ken: sensor.house_load_energy_today
+          kcol: var(--dos-accent2)
+          mx: 14000
+          abs: true
+      - type: custom:button-card
+        entity: sensor.inverter_grid_power
+        template: dos_gauge_grid
+        variables:
+          txt: Grid power
+          expen: sensor.inverter_today_energy_export
+          impen: sensor.inverter_today_energy_import
+    - !include _partials/fixes.yaml
+    - type: custom:stack-in-card
+      mode: vertical
+      cards:
+      - type: custom:button-card
+        show_icon: false
+        show_name: false
+        show_state: false
+        show_label: true
+        triggers_update: all
+        tap_action:
+          action: more-info
+          entity: sensor.solcast_pv_forecast_forecast_today
+        label: "[[[\n  const a = states['sensor.total_pv_energy_today'];\n  const f = states['sensor.solcast_pv_forecast_forecast_today'];\n  const num = (e) => (e && !isNaN(parseFloat(e.state))) ? parseFloat(e.state).toFixed(1).replace('.', ',') : '—';\n  return `<div style=\"display:flex; justify-content:space-between; align-items:baseline; gap:8px;\">\n    <span style=\"font-variant:small-caps; text-transform:lowercase; letter-spacing:0.06em; font-weight:700; font-size:clamp(11.5px,1.05cqw,13px); color:var(--dos-ink);\">Solar forecast, actual &amp; usage</span>\n    <span style=\"font-size:clamp(9.5px,0.9cqw,11px); color:var(--dos-quiet); font-variant-numeric:tabular-nums; white-space:nowrap;\">${num(a)} / ${num(f)} kWh</span></div>`;\n]]]\n"
+        styles:
+          card:
+          - border-bottom: 0.8px solid var(--dos-ink)
+          - padding: 0 0 6px 0
+          - margin: 0 0 12px 0
+          label:
+          - font-family: inherit
+          - text-align: left
+          - justify-self: stretch
+          - *id002
+      - type: custom:apexcharts-card
+        graph_span: 24h
+        span:
+          start: day
+        header: *id103
+        series:
+        - entity: sensor.total_pv_power
+          name: Produced
+          unit: kW
+          type: area
+          color: '#5d8499'
+          extend_to: now
+          group_by:
+            func: avg
+            duration: 10min
+          transform: 'return (x == null || x > 20000 || x < 0) ? null : x / 1000;'
+          stroke_width: 1.3
+        - entity: sensor.inverter_load_ups_power
+          name: Consumption
+          unit: kW
+          type: area
+          color: '#b5654d'
+          extend_to: now
+          group_by:
+            func: avg
+            duration: 10min
+          transform: 'return (x == null || x < 0 || x > 20000) ? null : x / 1000;'
+          stroke_width: 1.3
+        - entity: sensor.solcast_pv_forecast_forecast_today
+          name: Forecast
+          unit: kW
+          type: line
+          color: '#8c887f'
+          data_generator: 'return (entity.attributes.detailedForecast || []).map(function(p){ return [new Date(p.period_start).getTime(), p.pv_estimate]; });
+
+            '
+          stroke_width: 1.3
+        yaxis:
+        - min: 0
+          decimals: 1
+          apex_config:
+            show: true
+            tickAmount: 3
+            labels:
+              offsetX: -2
+              style:
+                fontSize: 8px
+              formatter: 'EVAL:function(v){ if (v == null) return ''''; return v.toFixed(1).replace(''.'', '','') + '' kW''; }
+
+                '
+        apex_config:
+          colors:
+          - '#5d8499'
+          - '#b5654d'
+          - '#8c887f'
+          chart:
+            height: 220
+            parentHeightOffset: 0
+            offsetX: -4
+            toolbar: *id103
+            animations: *id104
+          stroke:
+            width: *id110
+            dashArray:
+            - 0
+            - 0
+            - 2
+            curve: smooth
+            lineCap: round
+          fill:
+            type:
+            - solid
+            - pattern
+            - solid
+            opacity:
+            - 0.12
+            - 0.6
+            - 0
+            pattern:
+              style: slantedLines
+              width: 6
+              height: 6
+              strokeWidth: 1.1
+          grid:
+            show: true
+            strokeDashArray: 2
+            padding: *id105
+            xaxis: *id106
+            yaxis: *id107
+          legend: *id103
+          dataLabels: *id104
+          markers: *id108
+          tooltip:
+            enabled: true
+            x:
+              format: HH:mm
+          annotations:
+            yaxis:
+            - y: 0
+              strokeDashArray: 3
+              borderColor: rgba(140,133,122,0.55)
+              opacity: 0.7
+          xaxis:
+            type: datetime
+            labels:
+              show: true
+              style:
+                fontSize: 8px
+              format: HH
+            axisBorder: *id103
+            axisTicks: *id103
+        card_mod:
+          style: "ha-card {\n  padding: 0 !important; margin: 2px 0 8px 0 !important;\n}\n/* mixed area+line chart: apexcharts gives every series rel=\"1\", so the theme's\n   ordinal rules can't target by order here. Style by series name instead. */\n.apexcharts-series[seriesName=\"Produced\"] path.apexcharts-area { stroke:var(--dos-series1) !important; stroke-width:1.8px !important; stroke-dasharray:0 !important; }\n.apexcharts-series[seriesName=\"Consumption\"] path.apexcharts-area { stroke:var(--dos-series2) !important; stroke-width:1.3px !important; stroke-dasharray:0 !important; }\n.apexcharts-series[seriesName=\"Forecast\"] path.apexcharts-line { stroke:var(--dos-series3) !important; stroke-width:1.3px !important; stroke-dasharray:1 4 !important; stroke-linecap:round !important; }\n"
+      - type: custom:button-card
+        template: dos_chart_legend
+        variables:
+          rows:
+          - css: width:13px; height:9px; background:var(--dos-series1); opacity:0.65;
+            label: Actual
+          - css: width:13px; height:9px; background:var(--dos-series2); opacity:0.65;
+            label: Usage
+          - stroke: var(--dos-series3)
+            dash: 1 4
+            label: Forecast
+          desc: Solcast forecast against the panels' actual output today. The gap is what cloud cover cost.
+    - type: custom:stack-in-card
+      mode: vertical
+      cards:
+      - type: custom:button-card
+        template: dos_section_header
+        variables:
+          title: Climate
+      - type: custom:button-card
+        tap_action:
+          action: none
+        template: dos_table_header
+      - type: custom:stack-in-card
+        mode: horizontal
+        card_mod: !include _partials/stack-reset-underline.yaml
+        cards:
+        - type: custom:button-card
+          entity: climate.living_room_room_temperature
+          template: dos_climate_temp_row
+          variables:
+            name: Living Room
+        - type: custom:button-card
+          entity: climate.living_room_room_temperature
+          template:
+          - dos_stepper_minus_plain
+          - dos_step_climate_minus
+        - type: custom:button-card
+          entity: climate.living_room_room_temperature
+          template: dos_climate_setpoint
+        - type: custom:button-card
+          entity: climate.living_room_room_temperature
+          template:
+          - dos_stepper_plus_plain
+          - dos_step_climate_plus
+        - type: custom:button-card
+          entity: climate.living_room_room_temperature
+          template: dos_climate_mode
+      - type: custom:stack-in-card
+        mode: horizontal
+        card_mod: !include _partials/stack-reset-underline.yaml
+        cards:
+        - type: custom:button-card
+          entity: climate.bedroom_room_temperature
+          template: dos_climate_temp_row
+          variables:
+            name: Bedroom
+        - type: custom:button-card
+          entity: climate.bedroom_room_temperature
+          template:
+          - dos_stepper_minus_plain
+          - dos_step_climate_minus
+        - type: custom:button-card
+          entity: climate.bedroom_room_temperature
+          template: dos_climate_setpoint
+        - type: custom:button-card
+          entity: climate.bedroom_room_temperature
+          template:
+          - dos_stepper_plus_plain
+          - dos_step_climate_plus
+        - type: custom:button-card
+          entity: climate.bedroom_room_temperature
+          template: dos_climate_mode
+      - type: custom:stack-in-card
+        mode: horizontal
+        card_mod: !include _partials/stack-reset-underline.yaml
+        cards:
+        - type: custom:button-card
+          entity: climate.study_room_temperature
+          template: dos_climate_temp_row
+          variables:
+            name: Study
+        - type: custom:button-card
+          entity: climate.study_room_temperature
+          template:
+          - dos_stepper_minus_plain
+          - dos_step_climate_minus
+        - type: custom:button-card
+          entity: climate.study_room_temperature
+          template: dos_climate_setpoint
+        - type: custom:button-card
+          entity: climate.study_room_temperature
+          template:
+          - dos_stepper_plus_plain
+          - dos_step_climate_plus
+        - type: custom:button-card
+          entity: climate.study_room_temperature
+          template: dos_climate_mode
+      - type: custom:stack-in-card
+        mode: horizontal
+        card_mod: !include _partials/stack-reset-underline.yaml
+        cards:
+        - type: custom:button-card
+          entity: climate.attic_room_temperature
+          template: dos_climate_temp_row
+          variables:
+            name: Attic
+        - type: custom:button-card
+          entity: climate.attic_room_temperature
+          template:
+          - dos_stepper_minus_plain
+          - dos_step_climate_minus
+        - type: custom:button-card
+          entity: climate.attic_room_temperature
+          template: dos_climate_setpoint
+        - type: custom:button-card
+          entity: climate.attic_room_temperature
+          template:
+          - dos_stepper_plus_plain
+          - dos_step_climate_plus
+        - type: custom:button-card
+          entity: climate.attic_room_temperature
+          template: dos_climate_mode
+      - type: custom:button-card
+        entity: sensor.te01_waterbed_door_temperature
+        show_icon: false
+        show_name: false
+        show_state: false
+        show_label: true
+        label: "[[[\n  const cur = parseFloat((states['sensor.te01_waterbed_door_temperature']||{}).state);\n  const c = isNaN(cur) ? '—' : cur.toFixed(1).replace('.', ',');\n  const p = parseFloat((states['sensor.p3t_waterbed_active_power']||{}).state);\n  const on = !isNaN(p) && p > 0;\n  const mode = on ? 'heat' : 'off';\n  const col = on ? 'var(--dos-accent)' : 'var(--dos-quiet)';\n  return `<div style=\"display:flex; align-items:center;\">\n    <span style=\"flex:1; min-width:0; font-size:clamp(12px,1.1cqw,13.5px); color:var(--dos-text);\">Waterbed</span>\n    <span style=\"width:52px; text-align:right; font-size:clamp(12.5px,1.15cqw,14px); font-weight:600; color:var(--dos-ink); font-variant-numeric:tabular-nums;\">${c}&deg;</span>\n    <span style=\"width:88px; text-align:right; font-size:clamp(11.5px,1.05cqw,13px); color:var(--dos-quiet); font-variant-numeric:tabular-nums;\">&mdash;</span>\n    <span style=\"width:52px; text-align:right; font-size:clamp(9px,0.85cqw,10.5px); letter-spacing:0.08em; text-transform:uppercase; color:${col}; font-weight:600;\">${mode}</span></div>`;\n]]]\n"
+        styles:
+          card:
+          - padding: 5px 0
+          label:
+          - font-family: inherit
+          - text-align: left
+          - justify-self: stretch
+          - *id002
+    - type: custom:stack-in-card
+      mode: vertical
+      cards:
+      - type: custom:button-card
+        template: dos_section_header
+        variables:
+          title: Devices
+      - type: custom:layout-card
+        layout_type: custom:grid-layout
+        layout:
+          grid-template-columns: repeat(auto-fit, minmax(min(100%, 150px), 1fr))
+          grid-gap: 0 22px
+          margin: 0
+          padding: 0
+        cards:
+        - type: custom:button-card
+          entity: light.ecodim_bv_ecodim_zigbee_3_0_light
+          template: dos_dossier_device_toggle
+          variables:
+            k: Living Lights
+        - type: custom:button-card
+          entity: switch.pond_pump
+          template: dos_dossier_device_toggle
+          variables:
+            k: Pond Pump
+        - type: custom:button-card
+          entity: switch.pm1_boiler
+          template: dos_dossier_device_toggle
+          variables:
+            k: Boiler
+        - type: custom:button-card
+          entity: switch.tz3000_gjnozsaz_ts011f_switch
+          template: dos_dossier_device_toggle
+          variables:
+            k: Computer
+        - type: custom:button-card
+          entity: switch.htpc
+          template: dos_dossier_device_toggle
+          variables:
+            k: HTPC
+        - type: custom:button-card
+          entity: switch.tz3000_gjnozsaz_ts011f_switch_4
+          template: dos_dossier_device_toggle
+          variables:
+            k: TV
+        - type: custom:button-card
+          entity: switch.tz3000_zloso4jk_ts011f_switch_3
+          template: dos_dossier_device_toggle
+          variables:
+            k: Beko Freezer
+        - type: custom:button-card
+          entity: switch.tz3000_zloso4jk_ts011f_switch_2
+          template: dos_dossier_device_toggle
+          variables:
+            k: Fridge
+    - type: custom:stack-in-card
+      mode: vertical
+      cards:
+      - type: custom:button-card
+        entity: weather.forecast_thuis
+        show_icon: false
+        show_name: false
+        show_state: false
+        show_label: true
+        tap_action:
+          action: none
+        label: "[[[\n  const raw = (states['weather.forecast_thuis'] || {}).state || '';\n  const map = {\n    'clear-night':'Clear night','cloudy':'Cloudy','fog':'Fog','hail':'Hail',\n    'lightning':'Lightning','lightning-rainy':'Thundery showers','partlycloudy':'Partly cloudy',\n    'pouring':'Pouring','rainy':'Rainy','snowy':'Snowy','snowy-rainy':'Sleet',\n    'sunny':'Sunny','windy':'Windy','windy-variant':'Windy','exceptional':'Exceptional',\n    'unavailable':'—', 'unknown':'—', '':'—'\n  };\n  const cond = map[raw] || raw.replace(/[-_]/g,' ').replace(/\\b\\w/g, c => c.toUpperCase());\n  return `<div style=\"display:flex; justify-content:space-between; align-items:baseline; gap:8px;\">\n    <span style=\"font-variant:small-caps; text-transform:lowercase; letter-spacing:0.06em; font-weight:700; font-size:clamp(11.5px,1.05cqw,13px); color:var(--dos-ink);\">Environment</span>\n    <span style=\"font-size:clamp(10px,0.9cqw,11px); color:var(--dos-quiet); letter-spacing:0.04em; text-align:right;\">${cond}</span></div>`;\n]]]\n"
+        styles:
+          card:
+          - border-bottom: 0.8px solid var(--dos-ink)
+          - padding: 0 0 6px 0
+          - margin: 0 0 12px 0
+          label:
+          - font-family: inherit
+          - text-align: left
+          - justify-self: stretch
+          - *id002
+      - type: custom:button-card
+        entity: sensor.ts3t_living_temperature
+        variables:
+          k: Living Room
+          unit: °C
+          last: false
+        template: dos_value_row
+      - type: custom:button-card
+        entity: sensor.ts4t_bedroom_temperature
+        variables:
+          k: Bedroom
+          unit: °C
+          last: false
+        template: dos_value_row
+      - type: custom:button-card
+        entity: sensor.ts1t_study_temperature
+        variables:
+          k: Study
+          unit: °C
+          last: false
+        template: dos_value_row
+      - type: custom:button-card
+        entity: sensor.ts2t_bathroom_temperature
+        variables:
+          k: Bathroom
+          unit: °C
+          last: false
+        template: dos_value_row
+      - type: custom:button-card
+        entity: sensor.attic_climatecontrol_room_temperature
+        variables:
+          k: Attic
+          unit: °C
+          last: false
+        template: dos_value_row
+      - type: custom:button-card
+        entity: sensor.living_room_climatecontrol_outdoor_temperature
+        variables:
+          k: Outdoor
+          unit: °C
+          last: false
+        template: dos_value_row
+      - type: custom:button-card
+        entity: sensor.ts3t_living_humidity
+        variables:
+          k: Humidity
+          unit: '%'
+          last: true
+        template: dos_value_row
+    - type: custom:stack-in-card
+      mode: vertical
+      cards:
+      - type: custom:button-card
+        entity: weather.forecast_thuis
+        show_icon: false
+        show_name: false
+        show_state: false
+        show_label: true
+        label: "[[[\n  const e = (entity && entity.entity_id) ? states[entity.entity_id] : states['weather.forecast_thuis'];\n  const raw = (e && e.state!=null) ? e.state : null;\n  const map = {\n    'clear-night':'Clear night','cloudy':'Cloudy','fog':'Fog','hail':'Hail',\n    'lightning':'Lightning','lightning-rainy':'Thundery showers','partlycloudy':'Partly cloudy',\n    'pouring':'Pouring','rainy':'Rainy','snowy':'Snowy','snowy-rainy':'Sleet',\n    'sunny':'Sunny','windy':'Windy','windy-variant':'Windy','exceptional':'Exceptional'\n  };\n  let cond = '—';\n  if (raw && raw!=='unavailable' && raw!=='unknown') {\n    cond = map[raw] || raw.replace(/[-_]/g,' ').replace(/\\b\\w/g, c => c.toUpperCase());\n  }\n  const t = (e && e.attributes && e.attributes.temperature!=null) ? Number(e.attributes.temperature).toFixed(0).replace('.', ',') : '—';\n  return `<div style=\"display:flex; justify-content:space-between; align-items:baseline; gap:8px;\">\n    <span style=\"font-variant:small-caps; text-transform:lowercase; letter-spacing:0.06em; font-weight:700; font-size:clamp(11.5px,1.05cqw,13px); color:var(--dos-ink);\">Weather</span>\n    <span style=\"font-size:clamp(10px,0.9cqw,11px); color:var(--dos-quiet); letter-spacing:0.04em; font-variant-numeric:tabular-nums;\">${cond} &middot; ${t}&deg;</span>\n  </div>`;\n]]]\n"
+        styles:
+          card:
+          - border-bottom: 0.8px solid var(--dos-ink)
+          - padding: 0 0 6px 0
+          - margin: 0 0 12px 0
+          label:
+          - font-family: inherit
+          - text-align: left
+          - justify-self: stretch
+          - *id002
+      - type: weather-forecast
+        entity: weather.forecast_thuis
+        show_current: true
+        show_forecast: true
+        card_mod:
+          style: "ha-card {\n  background: var(--dos-paper) !important;\n  border: 0.8px solid var(--dos-line) !important;\n  border-radius: 0 !important; box-shadow: none !important;\n  font-family: 'Nimbus Sans L','Nimbus Sans','Helvetica Neue',Helvetica,Arial,sans-serif !important;\n  color: var(--dos-text) !important;\n  --primary-text-color: var(--dos-text);\n  --secondary-text-color: var(--dos-soft);\n  --card-background-color: var(--dos-paper);\n  --ha-card-background: var(--dos-paper);\n}\n"
+    - type: custom:stack-in-card
+      mode: vertical
+      cards:
+      - type: custom:button-card
+        template: dos_section_header
+        variables:
+          title: Media
+      - type: media-control
+        entity: media_player.spotify
+        card_mod:
+          style: "ha-card {\n  background: var(--dos-paper) !important;\n  border: 0.8px solid var(--dos-line) !important;\n  border-radius: 0 !important; box-shadow: none !important;\n  margin: 0 0 12px 0 !important;\n  font-family: 'Nimbus Sans L','Nimbus Sans','Helvetica Neue',Helvetica,Arial,sans-serif !important;\n  color: var(--dos-text) !important;\n  --primary-text-color: var(--dos-text);\n  --secondary-text-color: var(--dos-soft);\n  --card-background-color: var(--dos-paper);\n  --ha-card-background: var(--dos-paper);\n  --mdc-theme-primary: var(--dos-accent);\n}\n"
+  - !include _partials/footer.yaml

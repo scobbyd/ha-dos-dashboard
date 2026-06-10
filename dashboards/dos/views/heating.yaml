@@ -1,0 +1,1523 @@
+# _anchor_defs is not a lovelace/button-card key; it only hosts the YAML anchor
+# definitions shared across this file, so deleting/reordering cards can't break aliases.
+_anchor_defs:
+- &id001
+  border-radius: '0'
+- &id005
+  min-width: '0'
+- &id002
+  padding: '0'
+title: Adv. Heating
+path: dossier-heating
+icon: mdi:fire
+type: panel
+theme: dos
+cards:
+- type: custom:stack-in-card
+  mode: vertical
+  card_mod: !include _partials/frame.yaml
+  cards:
+  - type: custom:stack-in-card
+    mode: horizontal
+    card_mod: !include _partials/header-bar.yaml
+    cards:
+    - type: custom:button-card
+      template: dos_view_header
+      variables:
+        title: 'Adv. Heating'
+    - type: custom:button-card
+      tap_action:
+        action: none
+      template: dos_clock_time
+  - type: custom:button-card
+    show_icon: false
+    show_name: false
+    show_state: false
+    show_label: true
+    tap_action:
+      action: none
+    label: '[[[ return `<div style="font-size:clamp(11px,1.0cqw,12.5px); color:var(--dos-muted); letter-spacing:0.02em; line-height:1.5; max-width:78ch;">Strategic heating for the living room. Picks between the Daikin AC and the Micronova pellet stove based on forecast weather, EPEX prices, solar production, and battery SOC.</div>`; ]]]
+
+      '
+    styles:
+      card:
+      - padding: 0 0 18px 0
+      label:
+      - font-family: inherit
+      - text-align: left
+      - justify-self: stretch
+      - *id002
+      - white-space: normal
+  - type: custom:layout-card
+    layout_type: custom:masonry-layout
+    layout: !include _partials/masonry.yaml
+    cards:
+    - type: custom:stack-in-card
+      mode: vertical
+      cards:
+      - type: custom:button-card
+        template: dos_section_header
+        variables:
+          title: Status &amp; mode
+      - type: custom:button-card
+        entity: input_boolean.heating_system_enabled
+        tap_action:
+          action: toggle
+        hold_action:
+          action: more-info
+        variables:
+          k: Master Switch
+          last: false
+        template: dos_toggle_row
+      - type: custom:button-card
+        entity: input_select.heating_mode
+        triggers_update: all
+        show_icon: false
+        show_name: false
+        show_state: false
+        show_label: true
+        variables:
+          k: Mode
+          last: false
+        label: "[[[\n  const e = (entity && entity.entity_id) ? states[entity.entity_id] : null;\n  const raw = e ? e.state : null;\n  const disp = (raw==null||raw==='unavailable'||raw==='unknown') ? '—' : raw.replace(/_/g,' ');\n  const last = variables.last ? 'none' : '0.6px solid var(--dos-line)';\n  return `<div style=\"display:flex; justify-content:space-between; align-items:baseline; gap:8px; padding:clamp(5px,0.7cqw,7px) 0; border-bottom:${last};\">\n    <span style=\"font-size:clamp(12px,1.1cqw,13.5px); color:var(--dos-text); white-space:nowrap;\">${variables.k}</span>\n    <span style=\"font-size:clamp(9px,0.85cqw,10.5px); letter-spacing:0.08em; text-transform:uppercase; font-weight:600; color:var(--dos-accent); font-variant-numeric:tabular-nums; white-space:nowrap;\">${disp}</span></div>`;\n]]]\n"
+        styles:
+          card:
+          - *id002
+          label:
+          - font-family: inherit
+          - text-align: left
+          - justify-self: stretch
+          - *id002
+          - white-space: normal
+          - overflow: visible
+      - type: custom:button-card
+        entity: input_boolean.heating_ac_available
+        tap_action:
+          action: toggle
+        hold_action:
+          action: more-info
+        variables:
+          k: AC Available
+          last: false
+        template: dos_toggle_row
+      - type: custom:button-card
+        entity: input_boolean.heating_pellet_available
+        tap_action:
+          action: toggle
+        hold_action:
+          action: more-info
+        variables:
+          k: Pellet Available
+          last: false
+        template: dos_toggle_row
+      - type: custom:button-card
+        entity: input_boolean.heating_pellet_only_override
+        tap_action:
+          action: toggle
+        hold_action:
+          action: more-info
+        variables:
+          k: Pellet-Only Override
+          last: false
+        template: dos_toggle_row
+      - type: custom:button-card
+        entity: input_boolean.heating_pellet_fuel_exhausted
+        tap_action:
+          action: toggle
+        hold_action:
+          action: more-info
+        variables:
+          k: Fuel Exhausted
+          last: false
+        template: dos_toggle_row
+      - type: custom:button-card
+        entity: input_boolean.heating_external_pause
+        tap_action:
+          action: toggle
+        hold_action:
+          action: more-info
+        variables:
+          k: External Pause (manual AC off)
+          last: false
+        template: dos_toggle_row
+      - type: custom:button-card
+        template: dos_subheader
+        variables:
+          title: decision
+      - type: custom:button-card
+        entity: sensor.heating_active_plan_source
+        triggers_update: all
+        show_icon: false
+        show_name: false
+        show_state: false
+        show_label: true
+        variables:
+          k: Current Source
+          accent: true
+          last: false
+        label: "[[[\n  const e = (entity && entity.entity_id) ? states[entity.entity_id] : null;\n  const raw = e ? e.state : null;\n  const disp = (raw==null||raw==='unavailable'||raw==='unknown') ? '—' : raw.replace(/_/g,' ');\n  const last = variables.last ? 'none' : '0.6px solid var(--dos-line)';\n  const vcol = variables.accent ? 'var(--dos-accent)' : 'var(--dos-ink)';\n  return `<div style=\"display:flex; justify-content:space-between; align-items:baseline; gap:10px; padding:clamp(5px,0.7cqw,7px) 0; border-bottom:${last};\">\n    <span style=\"font-size:clamp(12px,1.1cqw,13.5px); color:var(--dos-text); white-space:nowrap;\">${variables.k}</span>\n    <span style=\"font-size:clamp(11px,1.0cqw,12.5px); font-weight:600; color:${vcol}; text-align:right; overflow:hidden; text-overflow:ellipsis;\">${disp}</span></div>`;\n]]]\n"
+        styles:
+          card:
+          - *id002
+          label:
+          - font-family: inherit
+          - text-align: left
+          - justify-self: stretch
+          - *id002
+          - white-space: normal
+          - overflow: visible
+      - type: custom:button-card
+        entity: sensor.heating_active_plan_reason
+        triggers_update: all
+        show_icon: false
+        show_name: false
+        show_state: false
+        show_label: true
+        label: "[[[\n  const s = states['sensor.heating_active_plan_reason'];\n  const raw = s ? s.state : null;\n  const disp = (raw==null||raw==='unavailable'||raw==='unknown') ? '—' : raw;\n  return `<div style=\"padding:clamp(5px,0.7cqw,7px) 0; border-bottom:0.6px solid var(--dos-line);\">\n    <div style=\"font-size:clamp(12px,1.1cqw,13.5px); color:var(--dos-text);\">Reason</div>\n    <div style=\"font-size:clamp(10.5px,0.95cqw,12px); color:var(--dos-muted); margin-top:3px; line-height:1.4;\">${disp}</div></div>`;\n]]]\n"
+        styles:
+          card:
+          - *id002
+          label:
+          - font-family: inherit
+          - text-align: left
+          - justify-self: stretch
+          - *id002
+          - white-space: normal
+          - overflow: visible
+      - type: custom:button-card
+        entity: sensor.heating_effective_target
+        variables:
+          k: Effective Target
+          unit: °C
+          fmt: dec1
+          sub: ''
+          accent: true
+          last: false
+        template: dos_value_row
+      - type: custom:button-card
+        entity: sensor.heating_indoor_temperature
+        variables:
+          k: Indoor (Zigbee)
+          unit: °C
+          fmt: dec1
+          sub: ''
+          accent: false
+          last: false
+        template: dos_value_row
+      - type: custom:button-card
+        entity: sensor.outdoor_temperature
+        variables:
+          k: Outdoor
+          unit: °C
+          fmt: dec1
+          sub: ''
+          accent: false
+          last: false
+        template: dos_value_row
+      - type: custom:button-card
+        entity: sensor.heating_outdoor_humidity
+        variables:
+          k: Outdoor Humidity
+          unit: '%'
+          fmt: dec0
+          sub: ''
+          accent: false
+          last: false
+        template: dos_value_row
+      - type: custom:button-card
+        entity: sensor.heating_cop_raw
+        variables:
+          k: COP (raw
+          EN 14825): null
+          unit: ''
+          fmt: dec1
+          sub: ''
+          accent: false
+          last: false
+        template: dos_value_row
+      - type: custom:button-card
+        entity: sensor.heating_humidity_penalty
+        variables:
+          k: Defrost Penalty
+          unit: ''
+          fmt: dec1
+          sub: ''
+          accent: false
+          last: false
+        template: dos_value_row
+      - type: custom:button-card
+        entity: sensor.heating_cop_estimate
+        variables:
+          k: COP (effective)
+          unit: ''
+          fmt: dec1
+          sub: ''
+          accent: true
+          last: false
+        template: dos_value_row
+      - type: custom:button-card
+        entity: sensor.heating_ac_effective_cost
+        variables:
+          k: AC Cost
+          unit: ct/kWh
+          fmt: dec1
+          sub: thermal
+          accent: false
+          last: false
+        template: dos_value_row
+      - type: custom:button-card
+        entity: sensor.heating_pellet_effective_cost
+        variables:
+          k: Pellet Cost
+          unit: ct/kWh
+          fmt: dec1
+          sub: thermal
+          accent: false
+          last: false
+        template: dos_value_row
+      - type: custom:button-card
+        entity: counter.heating_pellet_cycles_today
+        variables:
+          k: Pellet Cycles Today
+          unit: ''
+          fmt: dec0
+          sub: ''
+          accent: false
+          last: true
+        template: dos_value_row
+    - type: custom:stack-in-card
+      mode: vertical
+      cards:
+      - type: custom:button-card
+        template: dos_section_header
+        variables:
+          title: Schedule targets
+      - type: custom:stack-in-card
+        mode: horizontal
+        card_mod: !include _partials/stack-reset-underline-row.yaml
+        cards:
+        - type: custom:button-card
+          entity: input_number.heating_target_weekday_morning
+          template: dos_heating_target_key
+          variables:
+            k: Weekday morning
+            unit: °C
+        - type: custom:button-card
+          entity: input_number.heating_target_weekday_morning
+          variables:
+            min: 10
+            max: 22
+            step: 0.5
+          template:
+          - dos_stepper_minus
+          - dos_step_number_minus
+        - type: custom:button-card
+          entity: input_number.heating_target_weekday_morning
+          template: dos_heating_target_value
+          variables:
+            unit: °C
+            fmt: dec1
+        - type: custom:button-card
+          entity: input_number.heating_target_weekday_morning
+          variables:
+            min: 10
+            max: 22
+            step: 0.5
+          template:
+          - dos_stepper_plus
+          - dos_step_number_plus
+      - type: custom:stack-in-card
+        mode: horizontal
+        card_mod: !include _partials/stack-reset-underline-row.yaml
+        cards:
+        - type: custom:button-card
+          entity: input_number.heating_target_weekday_day
+          template: dos_heating_target_key
+          variables:
+            k: Weekday day
+            unit: °C
+        - type: custom:button-card
+          entity: input_number.heating_target_weekday_day
+          variables:
+            min: 10
+            max: 22
+            step: 0.5
+          template:
+          - dos_stepper_minus
+          - dos_step_number_minus
+        - type: custom:button-card
+          entity: input_number.heating_target_weekday_day
+          template: dos_heating_target_value
+          variables:
+            unit: °C
+            fmt: dec1
+        - type: custom:button-card
+          entity: input_number.heating_target_weekday_day
+          variables:
+            min: 10
+            max: 22
+            step: 0.5
+          template:
+          - dos_stepper_plus
+          - dos_step_number_plus
+      - type: custom:stack-in-card
+        mode: horizontal
+        card_mod: !include _partials/stack-reset-underline-row.yaml
+        cards:
+        - type: custom:button-card
+          entity: input_number.heating_target_weekday_evening
+          variables:
+            k: Weekday evening
+            unit: °C
+          template: dos_label_cell
+        - type: custom:button-card
+          entity: input_number.heating_target_weekday_evening
+          variables:
+            min: 10
+            max: 22
+            step: 0.5
+          template:
+          - dos_stepper_minus
+          - dos_step_number_minus
+        - type: custom:button-card
+          entity: input_number.heating_target_weekday_evening
+          variables:
+            unit: °C
+            fmt: dec1
+          template: dos_value_span
+        - type: custom:button-card
+          entity: input_number.heating_target_weekday_evening
+          variables:
+            min: 10
+            max: 22
+            step: 0.5
+          template:
+          - dos_stepper_plus
+          - dos_step_number_plus
+      - type: custom:stack-in-card
+        mode: horizontal
+        card_mod: !include _partials/stack-reset-underline-row.yaml
+        cards:
+        - type: custom:button-card
+          entity: input_number.heating_target_weekend_morning
+          variables:
+            k: Weekend morning
+            unit: °C
+          template: dos_label_cell
+        - type: custom:button-card
+          entity: input_number.heating_target_weekend_morning
+          variables:
+            min: 10
+            max: 22
+            step: 0.5
+          template:
+          - dos_stepper_minus
+          - dos_step_number_minus
+        - type: custom:button-card
+          entity: input_number.heating_target_weekend_morning
+          variables:
+            unit: °C
+            fmt: dec1
+          template: dos_value_span
+        - type: custom:button-card
+          entity: input_number.heating_target_weekend_morning
+          variables:
+            min: 10
+            max: 22
+            step: 0.5
+          template:
+          - dos_stepper_plus
+          - dos_step_number_plus
+      - type: custom:stack-in-card
+        mode: horizontal
+        card_mod: !include _partials/stack-reset-underline-row.yaml
+        cards:
+        - type: custom:button-card
+          entity: input_number.heating_target_weekend_day
+          variables:
+            k: Weekend day
+            unit: °C
+          template: dos_label_cell
+        - type: custom:button-card
+          entity: input_number.heating_target_weekend_day
+          variables:
+            min: 10
+            max: 22
+            step: 0.5
+          template:
+          - dos_stepper_minus
+          - dos_step_number_minus
+        - type: custom:button-card
+          entity: input_number.heating_target_weekend_day
+          variables:
+            unit: °C
+            fmt: dec1
+          template: dos_value_span
+        - type: custom:button-card
+          entity: input_number.heating_target_weekend_day
+          variables:
+            min: 10
+            max: 22
+            step: 0.5
+          template:
+          - dos_stepper_plus
+          - dos_step_number_plus
+      - type: custom:stack-in-card
+        mode: horizontal
+        card_mod: !include _partials/stack-reset-underline-row.yaml
+        cards:
+        - type: custom:button-card
+          entity: input_number.heating_target_weekend_evening
+          variables:
+            k: Weekend evening
+            unit: °C
+          template: dos_label_cell
+        - type: custom:button-card
+          entity: input_number.heating_target_weekend_evening
+          variables:
+            min: 10
+            max: 22
+            step: 0.5
+          template:
+          - dos_stepper_minus
+          - dos_step_number_minus
+        - type: custom:button-card
+          entity: input_number.heating_target_weekend_evening
+          variables:
+            unit: °C
+            fmt: dec1
+          template: dos_value_span
+        - type: custom:button-card
+          entity: input_number.heating_target_weekend_evening
+          variables:
+            min: 10
+            max: 22
+            step: 0.5
+          template:
+          - dos_stepper_plus
+          - dos_step_number_plus
+      - type: custom:stack-in-card
+        mode: horizontal
+        card_mod: !include _partials/stack-reset-underline-row.yaml
+        cards:
+        - type: custom:button-card
+          entity: input_number.heating_target_holiday
+          variables:
+            k: Holiday
+            unit: °C
+          template: dos_label_cell
+        - type: custom:button-card
+          entity: input_number.heating_target_holiday
+          variables:
+            min: 8
+            max: 15
+            step: 0.5
+          template:
+          - dos_stepper_minus
+          - dos_step_number_minus
+        - type: custom:button-card
+          entity: input_number.heating_target_holiday
+          variables:
+            unit: °C
+            fmt: dec1
+          template: dos_value_span
+        - type: custom:button-card
+          entity: input_number.heating_target_holiday
+          variables:
+            min: 8
+            max: 15
+            step: 0.5
+          template:
+          - dos_stepper_plus
+          - dos_step_number_plus
+      - type: custom:stack-in-card
+        mode: horizontal
+        card_mod: !include _partials/stack-reset-row.yaml
+        cards:
+        - type: custom:button-card
+          entity: input_number.heating_target_presence_away_offset
+          variables:
+            k: Presence-away offset
+            unit: °C
+          template: dos_label_cell
+        - type: custom:button-card
+          entity: input_number.heating_target_presence_away_offset
+          variables:
+            min: -8
+            max: 0
+            step: 0.5
+          template:
+          - dos_stepper_minus
+          - dos_step_number_minus
+        - type: custom:button-card
+          entity: input_number.heating_target_presence_away_offset
+          variables:
+            unit: °C
+            fmt: dec1
+          template: dos_value_span
+        - type: custom:button-card
+          entity: input_number.heating_target_presence_away_offset
+          variables:
+            min: -8
+            max: 0
+            step: 0.5
+          template:
+          - dos_stepper_plus
+          - dos_step_number_plus
+    - type: custom:stack-in-card
+      mode: vertical
+      cards:
+      - type: custom:button-card
+        template: dos_section_header
+        variables:
+          title: Strategy planner
+      - type: custom:stack-in-card
+        mode: horizontal
+        card_mod: !include _partials/stack-reset-underline-row.yaml
+        cards:
+        - type: custom:button-card
+          entity: input_number.heating_pellet_cutoff_temp
+          variables:
+            k: Pellet cutoff temp
+            unit: °C
+          template: dos_label_cell
+        - type: custom:button-card
+          entity: input_number.heating_pellet_cutoff_temp
+          variables:
+            min: 0
+            max: 15
+            step: 0.5
+          template:
+          - dos_stepper_minus
+          - dos_step_number_minus
+        - type: custom:button-card
+          entity: input_number.heating_pellet_cutoff_temp
+          variables:
+            unit: °C
+            fmt: dec1
+          template: dos_value_span
+        - type: custom:button-card
+          entity: input_number.heating_pellet_cutoff_temp
+          variables:
+            min: 0
+            max: 15
+            step: 0.5
+          template:
+          - dos_stepper_plus
+          - dos_step_number_plus
+      - type: custom:stack-in-card
+        mode: horizontal
+        card_mod: !include _partials/stack-reset-underline-row.yaml
+        cards:
+        - type: custom:button-card
+          entity: input_number.heating_pellet_cost_per_kwh
+          variables:
+            k: Pellet cost
+            unit: ct/kWh
+          template: dos_label_cell
+        - type: custom:button-card
+          entity: input_number.heating_pellet_cost_per_kwh
+          variables:
+            min: 2
+            max: 20
+            step: 0.1
+          template:
+          - dos_stepper_minus
+          - dos_step_number_minus
+        - type: custom:button-card
+          entity: input_number.heating_pellet_cost_per_kwh
+          variables:
+            unit: ct/kWh
+            fmt: dec1
+          template: dos_value_span
+        - type: custom:button-card
+          entity: input_number.heating_pellet_cost_per_kwh
+          variables:
+            min: 2
+            max: 20
+            step: 0.1
+          template:
+          - dos_stepper_plus
+          - dos_step_number_plus
+      - type: custom:stack-in-card
+        mode: horizontal
+        card_mod: !include _partials/stack-reset-underline-row.yaml
+        cards:
+        - type: custom:button-card
+          entity: input_number.heating_grid_tax
+          variables:
+            k: Grid tax
+            unit: ct/kWh
+          template: dos_label_cell
+        - type: custom:button-card
+          entity: input_number.heating_grid_tax
+          variables:
+            min: 0
+            max: 20
+            step: 0.1
+          template:
+          - dos_stepper_minus
+          - dos_step_number_minus
+        - type: custom:button-card
+          entity: input_number.heating_grid_tax
+          variables:
+            unit: ct/kWh
+            fmt: dec1
+          template: dos_value_span
+        - type: custom:button-card
+          entity: input_number.heating_grid_tax
+          variables:
+            min: 0
+            max: 20
+            step: 0.1
+          template:
+          - dos_stepper_plus
+          - dos_step_number_plus
+      - type: custom:stack-in-card
+        mode: horizontal
+        card_mod: !include _partials/stack-reset-underline-row.yaml
+        cards:
+        - type: custom:button-card
+          entity: input_number.heating_heat_loss_coeff
+          variables:
+            k: Heat-loss coeff
+            unit: W/°C
+          template: dos_label_cell
+        - type: custom:button-card
+          entity: input_number.heating_heat_loss_coeff
+          variables:
+            min: 100
+            max: 400
+            step: 10
+          template:
+          - dos_stepper_minus
+          - dos_step_number_minus
+        - type: custom:button-card
+          entity: input_number.heating_heat_loss_coeff
+          variables:
+            unit: W/°C
+            fmt: dec0
+          template: dos_value_span
+        - type: custom:button-card
+          entity: input_number.heating_heat_loss_coeff
+          variables:
+            min: 100
+            max: 400
+            step: 10
+          template:
+          - dos_stepper_plus
+          - dos_step_number_plus
+      - type: custom:stack-in-card
+        mode: horizontal
+        card_mod: !include _partials/stack-reset-underline-row.yaml
+        cards:
+        - type: custom:button-card
+          entity: input_number.heating_soc_floor
+          variables:
+            k: Battery SOC floor
+            unit: '%'
+          template: dos_label_cell
+        - type: custom:button-card
+          entity: input_number.heating_soc_floor
+          variables: &id003
+            min: 20
+            max: 80
+            step: 5
+          template:
+          - dos_stepper_minus
+          - dos_step_number_minus
+        - type: custom:button-card
+          entity: input_number.heating_soc_floor
+          variables:
+            unit: '%'
+            fmt: dec0
+          template: dos_value_span
+        - type: custom:button-card
+          entity: input_number.heating_soc_floor
+          variables: *id003
+          template:
+          - dos_stepper_plus
+          - dos_step_number_plus
+      - type: custom:stack-in-card
+        mode: horizontal
+        card_mod: !include _partials/stack-reset-underline-row.yaml
+        cards:
+        - type: custom:button-card
+          entity: input_number.heating_battery_capacity_kwh
+          variables:
+            k: Battery capacity
+            unit: kWh
+          template: dos_label_cell
+        - type: custom:button-card
+          entity: input_number.heating_battery_capacity_kwh
+          variables: &id004
+            min: 10
+            max: 100
+            step: 1
+          template:
+          - dos_stepper_minus
+          - dos_step_number_minus
+        - type: custom:button-card
+          entity: input_number.heating_battery_capacity_kwh
+          variables:
+            unit: kWh
+            fmt: dec0
+          template: dos_value_span
+        - type: custom:button-card
+          entity: input_number.heating_battery_capacity_kwh
+          variables: *id004
+          template:
+          - dos_stepper_plus
+          - dos_step_number_plus
+      - type: custom:stack-in-card
+        mode: horizontal
+        card_mod: !include _partials/stack-reset-underline-row.yaml
+        cards:
+        - type: custom:button-card
+          entity: input_number.heating_pellet_session_min_hours
+          variables:
+            k: Pellet session min
+            unit: h
+          template: dos_label_cell
+        - type: custom:button-card
+          entity: input_number.heating_pellet_session_min_hours
+          variables:
+            min: 2
+            max: 8
+            step: 0.5
+          template:
+          - dos_stepper_minus
+          - dos_step_number_minus
+        - type: custom:button-card
+          entity: input_number.heating_pellet_session_min_hours
+          variables:
+            unit: h
+            fmt: dec1
+          template: dos_value_span
+        - type: custom:button-card
+          entity: input_number.heating_pellet_session_min_hours
+          variables:
+            min: 2
+            max: 8
+            step: 0.5
+          template:
+          - dos_stepper_plus
+          - dos_step_number_plus
+      - type: custom:stack-in-card
+        mode: horizontal
+        card_mod: !include _partials/stack-reset-row.yaml
+        cards:
+        - type: custom:button-card
+          entity: input_number.heating_pellet_max_cycles_per_day
+          show_label: true
+          show_icon: false
+          show_name: false
+          show_state: false
+          triggers_update: all
+          variables:
+            k: Pellet max cycles/day
+            unit: ''
+          label: '[[[ return `<div style="flex:1; min-width:0; font-size:clamp(11.5px,1.05cqw,13px); color:var(--dos-text); line-height:1.25;">${variables.k}</div>`; ]]]'
+          styles:
+            card:
+            - padding: 6px 0
+            - *id005
+            label:
+            - font-family: inherit
+            - text-align: left
+            - justify-self: stretch
+            - *id002
+            - white-space: normal
+        - type: custom:button-card
+          entity: input_number.heating_pellet_max_cycles_per_day
+          variables: &id006
+            min: 1
+            max: 4
+            step: 1
+          template:
+          - dos_stepper_minus
+          - dos_step_number_minus
+        - type: custom:button-card
+          entity: input_number.heating_pellet_max_cycles_per_day
+          template: dos_heating_target_value
+          variables:
+            unit: ''
+            fmt: dec0
+        - type: custom:button-card
+          entity: input_number.heating_pellet_max_cycles_per_day
+          variables: *id006
+          template:
+          - dos_stepper_plus
+          - dos_step_number_plus
+    - type: custom:stack-in-card
+      mode: vertical
+      cards:
+      - type: custom:button-card
+        template: dos_section_header
+        variables:
+          title: Device calibration
+      - type: custom:stack-in-card
+        mode: horizontal
+        card_mod: !include _partials/stack-reset-underline-row.yaml
+        cards:
+        - type: custom:button-card
+          entity: input_number.heating_daikin_target_correction
+          variables:
+            k: Daikin — Sensor Correction
+            unit: °C
+          template: dos_label_cell
+        - type: custom:button-card
+          entity: input_number.heating_daikin_target_correction
+          variables:
+            min: -3
+            max: 3
+            step: 0.5
+          template:
+          - dos_stepper_minus
+          - dos_step_number_minus
+        - type: custom:button-card
+          entity: input_number.heating_daikin_target_correction
+          variables:
+            unit: °C
+            fmt: dec1
+          template: dos_value_span
+        - type: custom:button-card
+          entity: input_number.heating_daikin_target_correction
+          variables:
+            min: -3
+            max: 3
+            step: 0.5
+          template:
+          - dos_stepper_plus
+          - dos_step_number_plus
+      - type: custom:stack-in-card
+        mode: horizontal
+        card_mod: !include _partials/stack-reset-row.yaml
+        cards:
+        - type: custom:button-card
+          entity: input_number.heating_pellet_target_offset
+          variables:
+            k: Pellet — Target Offset
+            unit: °C
+          template: dos_label_cell
+        - type: custom:button-card
+          entity: input_number.heating_pellet_target_offset
+          variables:
+            min: -3
+            max: 3
+            step: 0.5
+          template:
+          - dos_stepper_minus
+          - dos_step_number_minus
+        - type: custom:button-card
+          entity: input_number.heating_pellet_target_offset
+          variables:
+            unit: °C
+            fmt: dec1
+          template: dos_value_span
+        - type: custom:button-card
+          entity: input_number.heating_pellet_target_offset
+          variables:
+            min: -3
+            max: 3
+            step: 0.5
+          template:
+          - dos_stepper_plus
+          - dos_step_number_plus
+    - type: custom:stack-in-card
+      mode: vertical
+      cards:
+      - type: custom:button-card
+        template: dos_section_header
+        variables:
+          title: Cost-elastic comfort
+      - type: custom:button-card
+        show_icon: false
+        show_name: false
+        show_state: false
+        show_label: true
+        tap_action:
+          action: none
+        label: '[[[ return `<span style="font-variant:small-caps; text-transform:lowercase; letter-spacing:0.05em; font-weight:600; font-size:clamp(9.5px,0.9cqw,11px); color:var(--dos-quiet);">cost breakpoints</span>`; ]]]'
+        styles:
+          card:
+          - padding: 0 0 4px 0
+          label:
+          - font-family: inherit
+          - text-align: left
+          - justify-self: stretch
+          - *id002
+      - type: custom:stack-in-card
+        mode: horizontal
+        card_mod: !include _partials/stack-reset-underline-row.yaml
+        cards:
+        - type: custom:button-card
+          entity: input_number.heating_cost_break_cheap_high
+          variables:
+            k: Break — Cheap/Moderate
+            unit: ct/kWh
+          template: dos_label_cell
+        - type: custom:button-card
+          entity: input_number.heating_cost_break_cheap_high
+          variables:
+            min: 0
+            max: 10
+            step: 0.5
+          template:
+          - dos_stepper_minus
+          - dos_step_number_minus
+        - type: custom:button-card
+          entity: input_number.heating_cost_break_cheap_high
+          variables:
+            unit: ct/kWh
+            fmt: dec1
+          template: dos_value_span
+        - type: custom:button-card
+          entity: input_number.heating_cost_break_cheap_high
+          variables:
+            min: 0
+            max: 10
+            step: 0.5
+          template:
+          - dos_stepper_plus
+          - dos_step_number_plus
+      - type: custom:stack-in-card
+        mode: horizontal
+        card_mod: !include _partials/stack-reset-underline-row.yaml
+        cards:
+        - type: custom:button-card
+          entity: input_number.heating_cost_break_moderate_high
+          variables:
+            k: Break — Moderate/Baseline
+            unit: ct/kWh
+          template: dos_label_cell
+        - type: custom:button-card
+          entity: input_number.heating_cost_break_moderate_high
+          variables:
+            min: 2
+            max: 15
+            step: 0.5
+          template:
+          - dos_stepper_minus
+          - dos_step_number_minus
+        - type: custom:button-card
+          entity: input_number.heating_cost_break_moderate_high
+          variables:
+            unit: ct/kWh
+            fmt: dec1
+          template: dos_value_span
+        - type: custom:button-card
+          entity: input_number.heating_cost_break_moderate_high
+          variables:
+            min: 2
+            max: 15
+            step: 0.5
+          template:
+          - dos_stepper_plus
+          - dos_step_number_plus
+      - type: custom:stack-in-card
+        mode: horizontal
+        card_mod: !include _partials/stack-reset-underline-row.yaml
+        cards:
+        - type: custom:button-card
+          entity: input_number.heating_cost_break_baseline_high
+          variables:
+            k: Break — Baseline/Expensive
+            unit: ct/kWh
+          template: dos_label_cell
+        - type: custom:button-card
+          entity: input_number.heating_cost_break_baseline_high
+          variables:
+            min: 4
+            max: 18
+            step: 0.5
+          template:
+          - dos_stepper_minus
+          - dos_step_number_minus
+        - type: custom:button-card
+          entity: input_number.heating_cost_break_baseline_high
+          variables:
+            unit: ct/kWh
+            fmt: dec1
+          template: dos_value_span
+        - type: custom:button-card
+          entity: input_number.heating_cost_break_baseline_high
+          variables:
+            min: 4
+            max: 18
+            step: 0.5
+          template:
+          - dos_stepper_plus
+          - dos_step_number_plus
+      - type: custom:stack-in-card
+        mode: horizontal
+        card_mod: !include _partials/stack-reset-underline-row.yaml
+        cards:
+        - type: custom:button-card
+          entity: input_number.heating_cost_break_expensive_high
+          variables:
+            k: Break — Expensive/Extreme
+            unit: ct/kWh
+          template: dos_label_cell
+        - type: custom:button-card
+          entity: input_number.heating_cost_break_expensive_high
+          variables:
+            min: 8
+            max: 25
+            step: 0.5
+          template:
+          - dos_stepper_minus
+          - dos_step_number_minus
+        - type: custom:button-card
+          entity: input_number.heating_cost_break_expensive_high
+          variables:
+            unit: ct/kWh
+            fmt: dec1
+          template: dos_value_span
+        - type: custom:button-card
+          entity: input_number.heating_cost_break_expensive_high
+          variables:
+            min: 8
+            max: 25
+            step: 0.5
+          template:
+          - dos_stepper_plus
+          - dos_step_number_plus
+      - type: custom:button-card
+        template: dos_subheader
+        variables:
+          title: preheat
+      - type: custom:stack-in-card
+        mode: horizontal
+        card_mod: !include _partials/stack-reset-underline-row.yaml
+        cards:
+        - type: custom:button-card
+          entity: input_number.heating_preheat_decay_halflife
+          variables:
+            k: Preheat — Decay Half-life
+            unit: h
+          template: dos_label_cell
+        - type: custom:button-card
+          entity: input_number.heating_preheat_decay_halflife
+          variables:
+            min: 2
+            max: 12
+            step: 0.5
+          template:
+          - dos_stepper_minus
+          - dos_step_number_minus
+        - type: custom:button-card
+          entity: input_number.heating_preheat_decay_halflife
+          variables:
+            unit: h
+            fmt: dec1
+          template: dos_value_span
+        - type: custom:button-card
+          entity: input_number.heating_preheat_decay_halflife
+          variables:
+            min: 2
+            max: 12
+            step: 0.5
+          template:
+          - dos_stepper_plus
+          - dos_step_number_plus
+      - type: custom:stack-in-card
+        mode: horizontal
+        card_mod: !include _partials/stack-reset-underline-row.yaml
+        cards:
+        - type: custom:button-card
+          entity: input_number.heating_preheat_max_current_cost
+          variables:
+            k: Preheat — Max Current Cost
+            unit: ct/kWh
+          template: dos_label_cell
+        - type: custom:button-card
+          entity: input_number.heating_preheat_max_current_cost
+          variables:
+            min: 1
+            max: 10
+            step: 0.5
+          template:
+          - dos_stepper_minus
+          - dos_step_number_minus
+        - type: custom:button-card
+          entity: input_number.heating_preheat_max_current_cost
+          variables:
+            unit: ct/kWh
+            fmt: dec1
+          template: dos_value_span
+        - type: custom:button-card
+          entity: input_number.heating_preheat_max_current_cost
+          variables:
+            min: 1
+            max: 10
+            step: 0.5
+          template:
+          - dos_stepper_plus
+          - dos_step_number_plus
+      - type: custom:stack-in-card
+        mode: horizontal
+        card_mod: !include _partials/stack-reset-underline-row.yaml
+        cards:
+        - type: custom:button-card
+          entity: input_number.heating_preheat_min_fold
+          variables:
+            k: Preheat — Min Delta
+            unit: x
+          template: dos_label_cell
+        - type: custom:button-card
+          entity: input_number.heating_preheat_min_fold
+          variables:
+            min: 1.0
+            max: 3.0
+            step: 0.05
+          template:
+          - dos_stepper_minus
+          - dos_step_number_minus
+        - type: custom:button-card
+          entity: input_number.heating_preheat_min_fold
+          variables:
+            unit: x
+            fmt: dec2
+          template: dos_value_span
+        - type: custom:button-card
+          entity: input_number.heating_preheat_min_fold
+          variables:
+            min: 1.0
+            max: 3.0
+            step: 0.05
+          template:
+          - dos_stepper_plus
+          - dos_step_number_plus
+      - type: custom:stack-in-card
+        mode: horizontal
+        card_mod: !include _partials/stack-reset-row.yaml
+        cards:
+        - type: custom:button-card
+          entity: input_number.heating_preheat_local_floor_tolerance
+          variables:
+            k: Preheat — Floor Tolerance
+            unit: x
+          template: dos_label_cell
+        - type: custom:button-card
+          entity: input_number.heating_preheat_local_floor_tolerance
+          variables:
+            min: 1.0
+            max: 1.5
+            step: 0.05
+          template:
+          - dos_stepper_minus
+          - dos_step_number_minus
+        - type: custom:button-card
+          entity: input_number.heating_preheat_local_floor_tolerance
+          variables:
+            unit: x
+            fmt: dec2
+          template: dos_value_span
+        - type: custom:button-card
+          entity: input_number.heating_preheat_local_floor_tolerance
+          variables:
+            min: 1.0
+            max: 1.5
+            step: 0.05
+          template:
+          - dos_stepper_plus
+          - dos_step_number_plus
+    - type: custom:stack-in-card
+      mode: vertical
+      cards:
+      - type: custom:button-card
+        template: dos_section_header
+        variables:
+          title: Thermal awareness
+      - type: custom:stack-in-card
+        mode: horizontal
+        card_mod: !include _partials/stack-reset-underline-row.yaml
+        cards:
+        - type: custom:button-card
+          entity: input_number.heating_coast_hysteresis
+          variables:
+            k: Coast hysteresis
+            unit: °C
+          template: dos_label_cell
+        - type: custom:button-card
+          entity: input_number.heating_coast_hysteresis
+          variables:
+            min: 0
+            max: 5
+            step: 0.5
+          template:
+          - dos_stepper_minus
+          - dos_step_number_minus
+        - type: custom:button-card
+          entity: input_number.heating_coast_hysteresis
+          variables:
+            unit: °C
+            fmt: dec1
+          template: dos_value_span
+        - type: custom:button-card
+          entity: input_number.heating_coast_hysteresis
+          variables:
+            min: 0
+            max: 5
+            step: 0.5
+          template:
+          - dos_stepper_plus
+          - dos_step_number_plus
+      - type: custom:stack-in-card
+        mode: horizontal
+        card_mod: !include _partials/stack-reset-underline-row.yaml
+        cards:
+        - type: custom:button-card
+          entity: input_number.heating_combined_trigger_gap
+          variables:
+            k: Combined trigger gap
+            unit: °C
+          template: dos_label_cell
+        - type: custom:button-card
+          entity: input_number.heating_combined_trigger_gap
+          variables:
+            min: 1.0
+            max: 5.0
+            step: 0.5
+          template:
+          - dos_stepper_minus
+          - dos_step_number_minus
+        - type: custom:button-card
+          entity: input_number.heating_combined_trigger_gap
+          variables:
+            unit: °C
+            fmt: dec1
+          template: dos_value_span
+        - type: custom:button-card
+          entity: input_number.heating_combined_trigger_gap
+          variables:
+            min: 1.0
+            max: 5.0
+            step: 0.5
+          template:
+          - dos_stepper_plus
+          - dos_step_number_plus
+      - type: custom:stack-in-card
+        mode: horizontal
+        card_mod: !include _partials/stack-reset-underline-row.yaml
+        cards:
+        - type: custom:button-card
+          entity: input_number.heating_combined_trigger_minutes
+          variables:
+            k: Combined trigger minutes
+            unit: min
+          template: dos_label_cell
+        - type: custom:button-card
+          entity: input_number.heating_combined_trigger_minutes
+          variables: &id007
+            min: 15
+            max: 120
+            step: 5
+          template:
+          - dos_stepper_minus
+          - dos_step_number_minus
+        - type: custom:button-card
+          entity: input_number.heating_combined_trigger_minutes
+          variables:
+            unit: min
+            fmt: dec0
+          template: dos_value_span
+        - type: custom:button-card
+          entity: input_number.heating_combined_trigger_minutes
+          variables: *id007
+          template:
+          - dos_stepper_plus
+          - dos_step_number_plus
+      - type: custom:stack-in-card
+        mode: horizontal
+        card_mod: !include _partials/stack-reset-underline-row.yaml
+        cards:
+        - type: custom:button-card
+          entity: input_number.heating_pellet_early_shutoff_minutes
+          variables:
+            k: Pellet early shutoff
+            unit: min
+          template: dos_label_cell
+        - type: custom:button-card
+          entity: input_number.heating_pellet_early_shutoff_minutes
+          variables: &id008
+            min: 10
+            max: 60
+            step: 5
+          template:
+          - dos_stepper_minus
+          - dos_step_number_minus
+        - type: custom:button-card
+          entity: input_number.heating_pellet_early_shutoff_minutes
+          variables:
+            unit: min
+            fmt: dec0
+          template: dos_value_span
+        - type: custom:button-card
+          entity: input_number.heating_pellet_early_shutoff_minutes
+          variables: *id008
+          template:
+          - dos_stepper_plus
+          - dos_step_number_plus
+      - type: custom:button-card
+        template: dos_subheader
+        variables:
+          title: live
+      - type: custom:button-card
+        entity: sensor.heating_temp_gap
+        variables:
+          k: Current Temp Gap
+          unit: °C
+          fmt: dec1
+          sub: ''
+          accent: false
+          last: false
+        template: dos_value_row
+      - type: custom:button-card
+        entity: sensor.heating_indoor_temp_trend
+        triggers_update: all
+        show_icon: false
+        show_name: false
+        show_state: false
+        show_label: true
+        label: "[[[\n  const s = states['sensor.heating_indoor_temp_trend'];\n  const raw = s ? s.state : null;\n  let disp = (raw==null||raw==='unavailable'||raw==='unknown') ? '—' : raw;\n  const u = (s && s.attributes && s.attributes.unit_of_measurement) ? s.attributes.unit_of_measurement : '';\n  const num = parseFloat(raw);\n  if (!isNaN(num)) disp = num.toFixed(2).replace('.', ',') + (u ? ' ' + u : '');\n  return `<div style=\"display:flex; justify-content:space-between; align-items:baseline; gap:8px; padding:clamp(5px,0.7cqw,7px) 0;\">\n    <span style=\"font-size:clamp(12px,1.1cqw,13.5px); color:var(--dos-text); white-space:nowrap;\">Indoor Trend</span>\n    <span style=\"font-size:clamp(12.5px,1.15cqw,14px); font-weight:600; color:var(--dos-ink); font-variant-numeric:tabular-nums; white-space:nowrap;\">${disp}</span></div>`;\n]]]\n"
+        styles:
+          card:
+          - *id002
+          label:
+          - font-family: inherit
+          - text-align: left
+          - justify-self: stretch
+          - *id002
+          - white-space: normal
+          - overflow: visible
+    - type: custom:stack-in-card
+      mode: vertical
+      cards:
+      - type: custom:button-card
+        template: dos_section_header
+        variables:
+          title: Override &amp; safety
+      - type: custom:stack-in-card
+        mode: horizontal
+        card_mod: !include _partials/stack-reset-underline-row.yaml
+        cards:
+        - type: custom:button-card
+          entity: input_number.heating_override_target_reduction
+          variables:
+            k: Override target reduction
+            unit: °C
+          template: dos_label_cell
+        - type: custom:button-card
+          entity: input_number.heating_override_target_reduction
+          variables:
+            min: 0
+            max: 5
+            step: 0.5
+          template:
+          - dos_stepper_minus
+          - dos_step_number_minus
+        - type: custom:button-card
+          entity: input_number.heating_override_target_reduction
+          variables:
+            unit: °C
+            fmt: dec1
+          template: dos_value_span
+        - type: custom:button-card
+          entity: input_number.heating_override_target_reduction
+          variables:
+            min: 0
+            max: 5
+            step: 0.5
+          template:
+          - dos_stepper_plus
+          - dos_step_number_plus
+      - type: custom:stack-in-card
+        mode: horizontal
+        card_mod: !include _partials/stack-reset-underline-row.yaml
+        cards:
+        - type: custom:button-card
+          entity: input_number.heating_extreme_cold_threshold
+          variables:
+            k: Extreme cold threshold
+            unit: °C
+          template: dos_label_cell
+        - type: custom:button-card
+          entity: input_number.heating_extreme_cold_threshold
+          variables:
+            min: -15
+            max: 0
+            step: 0.5
+          template:
+          - dos_stepper_minus
+          - dos_step_number_minus
+        - type: custom:button-card
+          entity: input_number.heating_extreme_cold_threshold
+          variables:
+            unit: °C
+            fmt: dec1
+          template: dos_value_span
+        - type: custom:button-card
+          entity: input_number.heating_extreme_cold_threshold
+          variables:
+            min: -15
+            max: 0
+            step: 0.5
+          template:
+          - dos_stepper_plus
+          - dos_step_number_plus
+      - type: custom:stack-in-card
+        mode: horizontal
+        card_mod: !include _partials/stack-reset-row.yaml
+        cards:
+        - type: custom:button-card
+          entity: input_number.heating_grid_outage_debounce_minutes
+          variables:
+            k: Grid-outage debounce
+            unit: min
+          template: dos_label_cell
+        - type: custom:button-card
+          entity: input_number.heating_grid_outage_debounce_minutes
+          variables: &id009
+            min: 5
+            max: 30
+            step: 1
+          template:
+          - dos_stepper_minus
+          - dos_step_number_minus
+        - type: custom:button-card
+          entity: input_number.heating_grid_outage_debounce_minutes
+          variables:
+            unit: min
+            fmt: dec0
+          template: dos_value_span
+        - type: custom:button-card
+          entity: input_number.heating_grid_outage_debounce_minutes
+          variables: *id009
+          template:
+          - dos_stepper_plus
+          - dos_step_number_plus
+      - type: custom:button-card
+        template: dos_subheader
+        variables:
+          title: status
+      - type: custom:button-card
+        entity: binary_sensor.heating_grid_available
+        variables:
+          k: Grid Available
+          on_word: Available
+          off_word: Down
+          on_accent: true
+          last: false
+        template: dos_binary_word_accent_row
+      - type: custom:button-card
+        entity: binary_sensor.heating_extreme_cold
+        variables:
+          k: Extreme Cold
+          on_word: Active
+          off_word: Clear
+          on_accent: false
+          last: true
+        template: dos_binary_word_accent_row
+  - !include _partials/footer.yaml
