@@ -8,4 +8,13 @@ views:
   - !include views/checks.yaml
   - !include views/heating.yaml
   - !include views/cooling.yaml
-  - !include views/fill-options.yaml
+  - !include views/yearly-trend.yaml
+  - !include views/chart-solar-day.yaml
+  - !include views/chart-battery-soc.yaml
+  - !include views/chart-nonsolar-14d.yaml
+  - !include views/chart-prices-24h.yaml
+  - !include views/chart-epex-5d.yaml
+  - !include views/chart-coldchain-12h.yaml
+  - !include views/chart-load-day.yaml
+  - !include views/chart-grid-day.yaml
+  - !include views/media-now.yaml

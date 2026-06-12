@@ -48,499 +48,748 @@ cards:
         action: none
       template: dos_clock_time
   - type: custom:layout-card
-    layout_type: custom:masonry-layout
-    layout: !include _partials/masonry.yaml
+    layout_type: custom:grid-layout
+    layout:
+      grid-template-columns: repeat(auto-fit, minmax(360px, 1fr))
+      grid-gap: '0'
+      margin: 0px -8px 0px -8px
+      padding: 0
     cards:
-    - type: custom:stack-in-card
-      mode: vertical
+    - type: custom:layout-card
+      layout_type: custom:masonry-layout
+      layout:
+        width: 360
+        max_cols: 1
+        card_margin: 0px 8px 26px 8px
+        margin: 0
+        padding: 0
       cards:
-      - type: custom:button-card
-        template: dos_section_header
-        variables:
-          title: Overview
-      - type: custom:button-card
-        entity: sensor.total_pv_power
-        styles:
-          card:
-          - padding: 4px 0 8px 0
-          label:
-          - font-family: inherit
-          - text-align: left
-          - justify-self: stretch
-          - *id002
-          - white-space: normal
-          - overflow: visible
-        template: dos_gauge
-        variables:
-          txt: Solar production
-          col: var(--dos-accent)
-          ken: sensor.total_pv_energy_today
-          kcol: var(--dos-text)
-          mx: 14000
-          abs: false
-      - type: custom:button-card
-        entity: sensor.inverter_load_ups_power
-        styles:
-          card:
-          - padding: 4px 0 10px 0
-          label:
-          - font-family: inherit
-          - text-align: left
-          - justify-self: stretch
-          - *id002
-          - white-space: normal
-          - overflow: visible
-        template: dos_gauge
-        variables:
-          txt: House load
-          col: var(--dos-accent2)
-          ken: sensor.house_load_energy_today
-          kcol: var(--dos-accent2)
-          mx: 14000
-          abs: true
-      - type: custom:button-card
-        entity: sensor.inverter_grid_power
-        template: dos_gauge_grid
-        variables:
-          txt: Grid power
-          expen: sensor.inverter_today_energy_export
-          impen: sensor.inverter_today_energy_import
-    - !include _partials/fixes.yaml
-    - type: custom:stack-in-card
-      mode: vertical
-      cards:
-      - type: custom:button-card
-        show_icon: false
-        show_name: false
-        show_state: false
-        show_label: true
-        triggers_update: all
-        tap_action:
-          action: more-info
-          entity: sensor.solcast_pv_forecast_forecast_today
-        label: "[[[\n  const a = states['sensor.total_pv_energy_today'];\n  const f = states['sensor.solcast_pv_forecast_forecast_today'];\n  const num = (e) => (e && !isNaN(parseFloat(e.state))) ? parseFloat(e.state).toFixed(1).replace('.', ',') : '—';\n  return `<div style=\"display:flex; justify-content:space-between; align-items:baseline; gap:8px;\">\n    <span style=\"font-variant:small-caps; text-transform:lowercase; letter-spacing:0.06em; font-weight:700; font-size:clamp(11.5px,1.05cqw,13px); color:var(--dos-ink);\">Solar forecast, actual &amp; usage</span>\n    <span style=\"font-size:clamp(9.5px,0.9cqw,11px); color:var(--dos-quiet); font-variant-numeric:tabular-nums; white-space:nowrap;\">${num(a)} / ${num(f)} kWh</span></div>`;\n]]]\n"
-        styles:
-          card:
-          - border-bottom: 0.8px solid var(--dos-ink)
-          - padding: 0 0 6px 0
-          - margin: 0 0 12px 0
-          label:
-          - font-family: inherit
-          - text-align: left
-          - justify-self: stretch
-          - *id002
-      - type: custom:apexcharts-card
-        graph_span: 24h
-        span:
-          start: day
-        header: *id103
-        series:
-        - entity: sensor.total_pv_power
-          name: Produced
-          unit: kW
-          type: area
-          color: '#5d8499'
-          extend_to: now
-          group_by:
-            func: avg
-            duration: 10min
-          transform: 'return (x == null || x > 20000 || x < 0) ? null : x / 1000;'
-          stroke_width: 1.3
-        - entity: sensor.inverter_load_ups_power
-          name: Consumption
-          unit: kW
-          type: area
-          color: '#b5654d'
-          extend_to: now
-          group_by:
-            func: avg
-            duration: 10min
-          transform: 'return (x == null || x < 0 || x > 20000) ? null : x / 1000;'
-          stroke_width: 1.3
-        - entity: sensor.solcast_pv_forecast_forecast_today
-          name: Forecast
-          unit: kW
-          type: line
-          color: '#8c887f'
-          data_generator: 'return (entity.attributes.detailedForecast || []).map(function(p){ return [new Date(p.period_start).getTime(), p.pv_estimate]; });
+      - type: custom:stack-in-card
+        mode: vertical
+        cards:
+        - type: custom:button-card
+          template: dos_section_header
+          variables:
+            title: Overview
+        - type: custom:button-card
+          entity: sensor.total_pv_power
+          styles:
+            card:
+            - padding: 4px 0 8px 0
+            label:
+            - font-family: inherit
+            - text-align: left
+            - justify-self: stretch
+            - *id002
+            - white-space: normal
+            - overflow: visible
+          template: dos_gauge
+          variables:
+            txt: Solar production
+            col: var(--dos-accent)
+            ken: sensor.total_pv_energy_today
+            kcol: var(--dos-text)
+            mx: 14000
+            abs: false
+          tap_action:
+            action: navigate
+            navigation_path: /dos-dashboard/chart-solar-day
+          hold_action:
+            action: more-info
+        - type: custom:button-card
+          entity: sensor.inverter_load_ups_power
+          styles:
+            card:
+            - padding: 4px 0 10px 0
+            label:
+            - font-family: inherit
+            - text-align: left
+            - justify-self: stretch
+            - *id002
+            - white-space: normal
+            - overflow: visible
+          template: dos_gauge
+          variables:
+            txt: House load
+            col: var(--dos-accent2)
+            ken: sensor.house_load_energy_today
+            kcol: var(--dos-accent2)
+            mx: 14000
+            abs: true
+          tap_action:
+            action: navigate
+            navigation_path: /dos-dashboard/chart-load-day
+          hold_action:
+            action: more-info
+        - type: custom:button-card
+          entity: sensor.inverter_grid_power
+          template: dos_gauge_grid
+          variables:
+            txt: Grid power
+            expen: sensor.inverter_today_energy_export
+            impen: sensor.inverter_today_energy_import
+          tap_action:
+            action: navigate
+            navigation_path: /dos-dashboard/chart-grid-day
+          hold_action:
+            action: more-info
+      - type: custom:stack-in-card
+        mode: vertical
+        cards:
+        - type: custom:button-card
+          show_icon: false
+          show_name: false
+          show_state: false
+          show_label: true
+          triggers_update: all
+          tap_action:
+            action: navigate
+            navigation_path: /dos-dashboard/chart-solar-day
+          hold_action:
+            action: more-info
+            entity: sensor.solcast_pv_forecast_forecast_today
+          label: "[[[\n  const a = states['sensor.total_pv_energy_today'];\n  const f = states['sensor.solcast_pv_forecast_forecast_today'];\n  const num = (e) => (e && !isNaN(parseFloat(e.state))) ? parseFloat(e.state).toFixed(1).replace('.', ',') : '—';\n  return `<div style=\"display:flex; justify-content:space-between; align-items:baseline; gap:8px;\">\n    <span style=\"font-variant:small-caps; text-transform:lowercase; letter-spacing:0.06em; font-weight:700; font-size:clamp(11.5px,1.05cqw,13px); color:var(--dos-ink);\">Solar forecast, actual &amp; usage</span>\n    <span style=\"font-size:clamp(9.5px,0.9cqw,11px); color:var(--dos-quiet); font-variant-numeric:tabular-nums; white-space:nowrap;\">${num(a)} / ${num(f)} kWh</span></div>`;\n]]]\n"
+          styles:
+            card:
+            - border-bottom: 0.8px solid var(--dos-ink)
+            - padding: 0 0 6px 0
+            - margin: 0 0 12px 0
+            label:
+            - font-family: inherit
+            - text-align: left
+            - justify-self: stretch
+            - *id002
+        - type: custom:apexcharts-card
+          graph_span: 24h
+          span:
+            start: day
+          header: *id103
+          series:
+          - entity: sensor.total_pv_power
+            name: Produced
+            unit: kW
+            type: area
+            color: '#5d8499'
+            extend_to: now
+            group_by:
+              func: avg
+              duration: 10min
+            transform: 'return (x == null || x > 20000 || x < 0) ? null : x / 1000;'
+            stroke_width: 1.3
+          - entity: sensor.inverter_load_ups_power
+            name: Consumption
+            unit: kW
+            type: area
+            color: '#b5654d'
+            extend_to: now
+            group_by:
+              func: avg
+              duration: 10min
+            transform: 'return (x == null || x < 0 || x > 20000) ? null : x / 1000;'
+            stroke_width: 1.3
+          - entity: sensor.solcast_pv_forecast_forecast_today
+            name: Forecast
+            unit: kW
+            type: line
+            color: '#8c887f'
+            data_generator: 'return (entity.attributes.detailedForecast || []).map(function(p){ return [new Date(p.period_start).getTime(), p.pv_estimate]; });
 
-            '
-          stroke_width: 1.3
-        yaxis:
-        - min: 0
-          decimals: 1
-          apex_config:
-            show: true
-            tickAmount: 3
-            labels:
-              offsetX: -2
-              style:
-                fontSize: 8px
-              formatter: 'EVAL:function(v){ if (v == null) return ''''; return v.toFixed(1).replace(''.'', '','') + '' kW''; }
-
-                '
-        apex_config:
-          colors:
-          - '#5d8499'
-          - '#b5654d'
-          - '#8c887f'
-          chart:
-            height: 220
-            parentHeightOffset: 0
-            offsetX: -4
-            toolbar: *id103
-            animations: *id104
-          stroke:
-            width: *id110
-            dashArray:
-            - 0
-            - 0
-            - 2
-            curve: smooth
-            lineCap: round
-          fill:
-            type:
-            - solid
-            - pattern
-            - solid
-            opacity:
-            - 0.12
-            - 0.6
-            - 0
-            pattern:
-              style: slantedLines
-              width: 6
-              height: 6
-              strokeWidth: 1.1
-          grid:
-            show: true
-            strokeDashArray: 2
-            padding: *id105
-            xaxis: *id106
-            yaxis: *id107
-          legend: *id103
-          dataLabels: *id104
-          markers: *id108
-          tooltip:
-            enabled: true
-            x:
-              format: HH:mm
-          annotations:
-            yaxis:
-            - y: 0
-              strokeDashArray: 3
-              borderColor: rgba(140,133,122,0.55)
-              opacity: 0.7
-          xaxis:
-            type: datetime
-            labels:
+              '
+            stroke_width: 1.3
+          yaxis:
+          - min: 0
+            decimals: 1
+            apex_config:
               show: true
-              style:
-                fontSize: 8px
-              format: HH
-            axisBorder: *id103
-            axisTicks: *id103
-        card_mod:
-          style: "ha-card {\n  padding: 0 !important; margin: 2px 0 8px 0 !important;\n}\n/* mixed area+line chart: apexcharts gives every series rel=\"1\", so the theme's\n   ordinal rules can't target by order here. Style by series name instead. */\n.apexcharts-series[seriesName=\"Produced\"] path.apexcharts-area { stroke:var(--dos-series1) !important; stroke-width:1.8px !important; stroke-dasharray:0 !important; }\n.apexcharts-series[seriesName=\"Consumption\"] path.apexcharts-area { stroke:var(--dos-series2) !important; stroke-width:1.3px !important; stroke-dasharray:0 !important; }\n.apexcharts-series[seriesName=\"Forecast\"] path.apexcharts-line { stroke:var(--dos-series3) !important; stroke-width:1.3px !important; stroke-dasharray:1 4 !important; stroke-linecap:round !important; }\n"
-      - type: custom:button-card
-        template: dos_chart_legend
-        variables:
-          rows:
-          - css: width:13px; height:9px; background:var(--dos-series1); opacity:0.65;
-            label: Actual
-          - css: width:13px; height:9px; background:var(--dos-series2); opacity:0.65;
-            label: Usage
-          - stroke: var(--dos-series3)
-            dash: 1 4
-            label: Forecast
-          desc: Solcast forecast against the panels' actual output today. The gap is what cloud cover cost.
-    - type: custom:stack-in-card
-      mode: vertical
-      cards:
-      - type: custom:button-card
-        template: dos_section_header
-        variables:
-          title: Climate
-      - type: custom:button-card
-        tap_action:
-          action: none
-        template: dos_table_header
+              tickAmount: 3
+              labels:
+                offsetX: -2
+                style:
+                  fontSize: 8px
+                formatter: 'EVAL:function(v){ if (v == null) return ''''; return v.toFixed(1).replace(''.'', '','') + '' kW''; }
+
+                  '
+          apex_config:
+            colors:
+            - '#5d8499'
+            - '#b5654d'
+            - '#8c887f'
+            chart:
+              height: 220
+              parentHeightOffset: 0
+              offsetX: -4
+              toolbar: *id103
+              animations: *id104
+            stroke:
+              width: *id110
+              dashArray:
+              - 0
+              - 0
+              - 2
+              curve: smooth
+              lineCap: round
+            fill:
+              type:
+              - solid
+              - pattern
+              - solid
+              opacity:
+              - 0.12
+              - 0.6
+              - 0
+              pattern:
+                style: slantedLines
+                width: 6
+                height: 6
+                strokeWidth: 1.1
+            grid:
+              show: true
+              strokeDashArray: 2
+              padding: *id105
+              xaxis: *id106
+              yaxis: *id107
+            legend: *id103
+            dataLabels: *id104
+            markers: *id108
+            tooltip:
+              enabled: true
+              x:
+                format: HH:mm
+            annotations:
+              yaxis:
+              - y: 0
+                strokeDashArray: 3
+                borderColor: rgba(140,133,122,0.55)
+                opacity: 0.7
+            xaxis:
+              type: datetime
+              labels:
+                show: true
+                style:
+                  fontSize: 8px
+                format: HH
+              axisBorder: *id103
+              axisTicks: *id103
+          card_mod:
+            style: "ha-card {\n  padding: 0 !important; margin: 2px 0 8px 0 !important;\n}\n/* mixed area+line chart: apexcharts gives every series rel=\"1\", so the theme's\n   ordinal rules can't target by order here. Style by series name instead. */\n.apexcharts-series[seriesName=\"Produced\"] path.apexcharts-area { stroke:var(--dos-series1) !important; stroke-width:1.8px !important; stroke-dasharray:0 !important; }\n.apexcharts-series[seriesName=\"Consumption\"] path.apexcharts-area { stroke:var(--dos-series2) !important; stroke-width:1.3px !important; stroke-dasharray:0 !important; }\n.apexcharts-series[seriesName=\"Forecast\"] path.apexcharts-line { stroke:var(--dos-series3) !important; stroke-width:1.3px !important; stroke-dasharray:1 4 !important; stroke-linecap:round !important; }\n"
+        - type: custom:button-card
+          template: dos_chart_legend
+          variables:
+            rows:
+            - css: width:13px; height:9px; background:var(--dos-series1); opacity:0.65;
+              label: Actual
+            - css: width:13px; height:9px; background:var(--dos-series2); opacity:0.65;
+              label: Usage
+            - stroke: var(--dos-series3)
+              dash: 1 4
+              label: Forecast
+            desc: Solcast forecast against the panels' actual output today. The gap is what cloud cover cost.
       - type: custom:stack-in-card
-        mode: horizontal
-        card_mod: !include _partials/stack-reset-underline.yaml
+        mode: vertical
         cards:
         - type: custom:button-card
-          entity: climate.living_room_room_temperature
-          template: dos_climate_temp_row
+          template: dos_section_header
           variables:
-            name: Living Room
+            title: Media
+        # dos console: art + track stack +
+        # progress; transport + volume controls hide when idle; the room
+        # row starts/stops music per room via script.music_room_toggle
+        # (ink fill = that room carries music now). Everything reads
+        # sensor.music_now (packages/media/music_rooms.yaml), which picks
+        # the active player: ma_marantz > ma_bathroom > spotify.
+        # Tapping the console (or the volume readout) opens the Now
+        # Playing subview (views/media-now.yaml).
         - type: custom:button-card
-          entity: climate.living_room_room_temperature
-          template:
-          - dos_stepper_minus_plain
-          - dos_step_climate_minus
-        - type: custom:button-card
-          entity: climate.living_room_room_temperature
-          template: dos_climate_setpoint
-        - type: custom:button-card
-          entity: climate.living_room_room_temperature
-          template:
-          - dos_stepper_plus_plain
-          - dos_step_climate_plus
-        - type: custom:button-card
-          entity: climate.living_room_room_temperature
-          template: dos_climate_mode
+          entity: sensor.music_now
+          show_icon: false
+          show_name: false
+          show_state: false
+          show_label: true
+          triggers_update: all
+          tap_action:
+            action: navigate
+            navigation_path: /dos-dashboard/media-now
+          label: |
+            [[[
+              const now = states['sensor.music_now'];
+              const st = now ? now.state : 'idle';
+              const player = now ? (now.attributes.player || '') : '';
+              const e = player ? states[player] : null;
+              const a = e ? e.attributes : {};
+              const playing = st === 'playing';
+              const where = now ? (now.attributes.rooms || '') : '';
+              const word = st;
+              const col = playing ? 'var(--dos-accent)' : 'var(--dos-quiet)';
+              if (st !== 'playing' && st !== 'paused') {
+                return `<div style="display:flex; justify-content:space-between; align-items:baseline; gap:8px; padding:7px 0;">
+                  <span style="font-size:clamp(12px,1.1cqw,13.5px); font-style:italic; color:var(--dos-quiet);">No media playing</span>
+                  <span style="font-size:clamp(9px,0.85cqw,10.5px); letter-spacing:0.08em; text-transform:uppercase; font-weight:600; color:var(--dos-quiet);">idle</span></div>`;
+              }
+              const fmt = (s) => { if (s==null||isNaN(s)) return null; s = Math.max(0, Math.round(s)); return Math.floor(s/60) + ':' + String(s%60).padStart(2,'0'); };
+              let pos = a.media_position;
+              if (pos!=null && a.media_position_updated_at && playing) pos += (Date.now() - Date.parse(a.media_position_updated_at))/1000;
+              if (pos!=null && a.media_duration) pos = Math.min(pos, a.media_duration);
+              const pct = (pos!=null && a.media_duration) ? Math.max(0, Math.min(100, pos / a.media_duration * 100)) : 0;
+              const el = fmt(pos) || '–:––';
+              const tot = fmt(a.media_duration) || '–:––';
+              const art = a.entity_picture
+                ? `<img src="${a.entity_picture}" style="width:88px; height:88px; object-fit:cover; filter:grayscale(1) sepia(0.5) hue-rotate(170deg) saturate(1.15) contrast(1.05); border:0.8px solid var(--dos-line); display:block; flex:none;">`
+                : `<span style="width:88px; height:88px; border:0.8px solid var(--dos-line); display:block; flex:none;"></span>`;
+              return `<div style="padding:2px 0 0 0;">
+                <div style="display:flex; align-items:stretch; gap:13px;">
+                  ${art}
+                  <span style="flex:1; min-width:0; display:flex; flex-direction:column; justify-content:space-between;">
+                    <span style="min-width:0;">
+                      <span style="display:block; font-size:clamp(13px,1.25cqw,15.5px); font-weight:700; color:var(--dos-ink); line-height:1.2; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${a.media_title || '—'}</span>
+                      <span style="display:block; font-size:clamp(11px,1.05cqw,13px); color:var(--dos-soft); margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${a.media_artist || ''}</span>
+                      <span style="display:block; font-size:clamp(9.5px,0.9cqw,11px); color:var(--dos-quiet); margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${a.media_album_name || ''}</span>
+                    </span>
+                    <span style="font-size:clamp(9px,0.85cqw,10.5px); letter-spacing:0.08em; text-transform:uppercase; font-weight:600; color:${col};">${word}<span style="color:var(--dos-quiet); font-weight:400; margin-left:8px;">${where}</span></span>
+                  </span>
+                </div>
+                <div style="height:3px; background:var(--dos-line); margin-top:10px; position:relative;">
+                  <div style="position:absolute; left:0; top:0; bottom:0; width:${pct}%; background:${col};"></div></div>
+                <div style="display:flex; justify-content:space-between; font-size:clamp(8.5px,0.8cqw,9.5px); color:var(--dos-quiet); letter-spacing:0.04em; margin-top:4px; font-variant-numeric:tabular-nums;"><span>${el}</span><span>${tot}</span></div></div>`;
+            ]]]
+          styles:
+            card:
+            - padding: '0'
+            label:
+            - font-family: inherit
+            - text-align: left
+            - justify-self: stretch
+            - padding: '0'
+            - min-width: '0'
+        - type: custom:stack-in-card
+          mode: horizontal
+          card_mod:
+            style: |
+              :host { {% if states('sensor.music_now') not in ['playing','paused'] %}display:none !important;{% endif %} }
+              :host > ha-card { background: transparent !important; margin: 10px 0 0 0 !important; --horizontal-stack-card-gap: 12px; }
+          cards:
+          - type: custom:stack-in-card
+            mode: horizontal
+            card_mod:
+              style: |
+                :host > ha-card { background: transparent !important; border: 1px solid var(--dos-line) !important; box-shadow: none !important; border-radius: 0 !important; --horizontal-stack-card-gap: 0px; }
+                :host { flex: 1 1 auto !important; }
+            cards:
+            - type: custom:button-card
+              template: dos_seg
+              tap_action:
+                action: perform-action
+                perform_action: media_player.media_previous_track
+                target:
+                  entity_id: '[[[ return (states["sensor.music_now"]||{attributes:{}}).attributes.player || "media_player.ma_marantz"; ]]]'
+              label: '[[[ return `<div style="height:100%; display:flex; align-items:center; justify-content:center;"><span style="font-size:10px; font-weight:700; letter-spacing:0.12em; text-transform:uppercase; line-height:1; color:var(--dos-quiet); white-space:nowrap;">prev</span></div>`; ]]]'
+            - type: custom:button-card
+              template: dos_seg
+              entity: sensor.music_now
+              triggers_update: all
+              tap_action:
+                action: perform-action
+                perform_action: media_player.media_play_pause
+                target:
+                  entity_id: '[[[ return (states["sensor.music_now"]||{attributes:{}}).attributes.player || "media_player.ma_marantz"; ]]]'
+              label: |
+                [[[
+                  const playing = (states['sensor.music_now']||{}).state === 'playing';
+                  return `<div style="height:100%; box-sizing:border-box; display:flex; align-items:center; justify-content:center; border-left:1px solid var(--dos-line); background:${playing ? 'var(--dos-ink)' : 'transparent'};"><span style="font-size:10px; font-weight:700; letter-spacing:0.12em; text-transform:uppercase; line-height:1; color:${playing ? 'var(--dos-paper)' : 'var(--dos-quiet)'}; white-space:nowrap;">${playing ? 'pause' : 'play'}</span></div>`;
+                ]]]
+            - type: custom:button-card
+              template: dos_seg
+              tap_action:
+                action: perform-action
+                perform_action: media_player.media_next_track
+                target:
+                  entity_id: '[[[ return (states["sensor.music_now"]||{attributes:{}}).attributes.player || "media_player.ma_marantz"; ]]]'
+              label: '[[[ return `<div style="height:100%; box-sizing:border-box; display:flex; align-items:center; justify-content:center; border-left:1px solid var(--dos-line);"><span style="font-size:10px; font-weight:700; letter-spacing:0.12em; text-transform:uppercase; line-height:1; color:var(--dos-quiet); white-space:nowrap;">next</span></div>`; ]]]'
+          - type: custom:stack-in-card
+            mode: horizontal
+            card_mod:
+              style: |
+                :host > ha-card { background: transparent !important; border: 1px solid var(--dos-line) !important; box-shadow: none !important; border-radius: 0 !important; --horizontal-stack-card-gap: 0px; }
+                :host { flex: 0 0 auto !important; }
+            cards:
+            - type: custom:button-card
+              template: dos_seg
+              extra_styles: ':host { flex: 0 0 auto !important; transition: opacity 80ms ease; } :host(:active) { opacity: 0.35; }'
+              tap_action:
+                action: perform-action
+                perform_action: media_player.volume_down
+                target:
+                  entity_id: '[[[ return (states["sensor.music_now"]||{attributes:{}}).attributes.player || "media_player.ma_marantz"; ]]]'
+              label: '[[[ return `<div style="height:100%; display:flex; align-items:center; justify-content:center; padding:0 13px;"><span style="font-size:13px; font-weight:400; line-height:1; color:var(--dos-quiet);">−</span></div>`; ]]]'
+            - type: custom:button-card
+              template: dos_seg
+              extra_styles: ':host { flex: 0 0 auto !important; transition: opacity 80ms ease; } :host(:active) { opacity: 0.35; }'
+              entity: sensor.music_now
+              triggers_update: all
+              tap_action:
+                action: navigate
+                navigation_path: /dos-dashboard/media-now
+              label: |
+                [[[
+                  const player = (states['sensor.music_now']||{attributes:{}}).attributes.player || '';
+                  const a = (player && states[player]) ? (states[player].attributes||{}) : {};
+                  const d = (a.volume_level==null) ? '—' : Math.round(a.volume_level*100) + '%';
+                  return `<div style="height:100%; box-sizing:border-box; display:flex; align-items:center; justify-content:center; border-left:1px solid var(--dos-line);"><span style="font-size:10px; font-weight:600; line-height:1; color:var(--dos-text); font-variant-numeric:tabular-nums; white-space:nowrap;">${d}</span></div>`;
+                ]]]
+              styles:
+                card:
+                - width: 46px
+            - type: custom:button-card
+              template: dos_seg
+              extra_styles: ':host { flex: 0 0 auto !important; transition: opacity 80ms ease; } :host(:active) { opacity: 0.35; }'
+              tap_action:
+                action: perform-action
+                perform_action: media_player.volume_up
+                target:
+                  entity_id: '[[[ return (states["sensor.music_now"]||{attributes:{}}).attributes.player || "media_player.ma_marantz"; ]]]'
+              label: '[[[ return `<div style="height:100%; box-sizing:border-box; display:flex; align-items:center; justify-content:center; padding:0 13px; border-left:1px solid var(--dos-line);"><span style="font-size:13px; font-weight:400; line-height:1; color:var(--dos-quiet);">+</span></div>`; ]]]'
+        - type: custom:stack-in-card
+          mode: horizontal
+          card_mod:
+            style: |
+              :host > ha-card { background: transparent !important; border: 1px solid var(--dos-line) !important; box-shadow: none !important; border-radius: 0 !important; --horizontal-stack-card-gap: 0px; margin: 8px 0 12px 0 !important; }
+          cards:
+          - type: custom:button-card
+            template: dos_seg
+            entity: sensor.music_now
+            triggers_update: all
+            tap_action:
+              action: perform-action
+              perform_action: script.music_room_toggle
+              data:
+                room: living
+            label: |
+              [[[
+                const active = !!((states['sensor.music_now']||{attributes:{}}).attributes.living);
+                return `<div style="height:100%; box-sizing:border-box; display:flex; align-items:center; justify-content:center; background:${active ? 'var(--dos-ink)' : 'transparent'};"><span style="font-size:10px; font-weight:700; letter-spacing:0.12em; text-transform:uppercase; line-height:1; color:${active ? 'var(--dos-paper)' : 'var(--dos-quiet)'}; white-space:nowrap;">living</span></div>`;
+              ]]]
+          - type: custom:button-card
+            template: dos_seg
+            entity: sensor.music_now
+            triggers_update: all
+            tap_action:
+              action: perform-action
+              perform_action: script.music_room_toggle
+              data:
+                room: bedroom
+            label: |
+              [[[
+                const active = !!((states['sensor.music_now']||{attributes:{}}).attributes.bedroom);
+                return `<div style="height:100%; box-sizing:border-box; display:flex; align-items:center; justify-content:center; border-left:1px solid var(--dos-line); background:${active ? 'var(--dos-ink)' : 'transparent'};"><span style="font-size:10px; font-weight:700; letter-spacing:0.12em; text-transform:uppercase; line-height:1; color:${active ? 'var(--dos-paper)' : 'var(--dos-quiet)'}; white-space:nowrap;">bedroom</span></div>`;
+              ]]]
+          - type: custom:button-card
+            template: dos_seg
+            entity: sensor.music_now
+            triggers_update: all
+            tap_action:
+              action: perform-action
+              perform_action: script.music_room_toggle
+              data:
+                room: bathroom
+            label: |
+              [[[
+                const active = !!((states['sensor.music_now']||{attributes:{}}).attributes.bathroom);
+                return `<div style="height:100%; box-sizing:border-box; display:flex; align-items:center; justify-content:center; border-left:1px solid var(--dos-line); background:${active ? 'var(--dos-ink)' : 'transparent'};"><span style="font-size:10px; font-weight:700; letter-spacing:0.12em; text-transform:uppercase; line-height:1; color:${active ? 'var(--dos-paper)' : 'var(--dos-quiet)'}; white-space:nowrap;">bathroom</span></div>`;
+              ]]]
+    - type: custom:layout-card
+      layout_type: custom:masonry-layout
+      layout:
+        width: 360
+        max_cols: 1
+        card_margin: 0px 8px 26px 8px
+        margin: 0
+        padding: 0
+      cards:
+      - !include _partials/fixes.yaml
       - type: custom:stack-in-card
-        mode: horizontal
-        card_mod: !include _partials/stack-reset-underline.yaml
+        mode: vertical
         cards:
         - type: custom:button-card
-          entity: climate.bedroom_room_temperature
-          template: dos_climate_temp_row
+          template: dos_section_header
           variables:
-            name: Bedroom
+            title: Climate
         - type: custom:button-card
-          entity: climate.bedroom_room_temperature
-          template:
-          - dos_stepper_minus_plain
-          - dos_step_climate_minus
+          tap_action:
+            action: none
+          template: dos_table_header
+        - type: custom:stack-in-card
+          mode: horizontal
+          card_mod: !include _partials/stack-reset-underline.yaml
+          cards:
+          - type: custom:button-card
+            entity: climate.living_room_room_temperature
+            template: dos_climate_temp_row
+            variables:
+              name: Living Room
+          - type: custom:button-card
+            entity: climate.living_room_room_temperature
+            template:
+            - dos_stepper_minus_plain
+            - dos_step_climate_minus
+          - type: custom:button-card
+            entity: climate.living_room_room_temperature
+            template: dos_climate_setpoint
+          - type: custom:button-card
+            entity: climate.living_room_room_temperature
+            template:
+            - dos_stepper_plus_plain
+            - dos_step_climate_plus
+          - type: custom:button-card
+            entity: climate.living_room_room_temperature
+            template: dos_climate_mode
+        - type: custom:stack-in-card
+          mode: horizontal
+          card_mod: !include _partials/stack-reset-underline.yaml
+          cards:
+          - type: custom:button-card
+            entity: climate.bedroom_room_temperature
+            template: dos_climate_temp_row
+            variables:
+              name: Bedroom
+          - type: custom:button-card
+            entity: climate.bedroom_room_temperature
+            template:
+            - dos_stepper_minus_plain
+            - dos_step_climate_minus
+          - type: custom:button-card
+            entity: climate.bedroom_room_temperature
+            template: dos_climate_setpoint
+          - type: custom:button-card
+            entity: climate.bedroom_room_temperature
+            template:
+            - dos_stepper_plus_plain
+            - dos_step_climate_plus
+          - type: custom:button-card
+            entity: climate.bedroom_room_temperature
+            template: dos_climate_mode
+        - type: custom:stack-in-card
+          mode: horizontal
+          card_mod: !include _partials/stack-reset-underline.yaml
+          cards:
+          - type: custom:button-card
+            entity: climate.study_room_temperature
+            template: dos_climate_temp_row
+            variables:
+              name: Study
+          - type: custom:button-card
+            entity: climate.study_room_temperature
+            template:
+            - dos_stepper_minus_plain
+            - dos_step_climate_minus
+          - type: custom:button-card
+            entity: climate.study_room_temperature
+            template: dos_climate_setpoint
+          - type: custom:button-card
+            entity: climate.study_room_temperature
+            template:
+            - dos_stepper_plus_plain
+            - dos_step_climate_plus
+          - type: custom:button-card
+            entity: climate.study_room_temperature
+            template: dos_climate_mode
+        - type: custom:stack-in-card
+          mode: horizontal
+          card_mod: !include _partials/stack-reset-underline.yaml
+          cards:
+          - type: custom:button-card
+            entity: climate.attic_room_temperature
+            template: dos_climate_temp_row
+            variables:
+              name: Attic
+          - type: custom:button-card
+            entity: climate.attic_room_temperature
+            template:
+            - dos_stepper_minus_plain
+            - dos_step_climate_minus
+          - type: custom:button-card
+            entity: climate.attic_room_temperature
+            template: dos_climate_setpoint
+          - type: custom:button-card
+            entity: climate.attic_room_temperature
+            template:
+            - dos_stepper_plus_plain
+            - dos_step_climate_plus
+          - type: custom:button-card
+            entity: climate.attic_room_temperature
+            template: dos_climate_mode
         - type: custom:button-card
-          entity: climate.bedroom_room_temperature
-          template: dos_climate_setpoint
-        - type: custom:button-card
-          entity: climate.bedroom_room_temperature
-          template:
-          - dos_stepper_plus_plain
-          - dos_step_climate_plus
-        - type: custom:button-card
-          entity: climate.bedroom_room_temperature
-          template: dos_climate_mode
+          entity: sensor.te01_waterbed_door_temperature
+          show_icon: false
+          show_name: false
+          show_state: false
+          show_label: true
+          label: "[[[\n  const cur = parseFloat((states['sensor.te01_waterbed_door_temperature']||{}).state);\n  const c = isNaN(cur) ? '—' : cur.toFixed(1).replace('.', ',');\n  const p = parseFloat((states['sensor.p3t_waterbed_active_power']||{}).state);\n  const on = !isNaN(p) && p > 0;\n  const mode = on ? 'heat' : 'off';\n  const col = on ? 'var(--dos-accent)' : 'var(--dos-quiet)';\n  return `<div style=\"display:flex; align-items:center;\">\n    <span style=\"flex:1; min-width:0; font-size:clamp(12px,1.1cqw,13.5px); color:var(--dos-text);\">Waterbed</span>\n    <span style=\"width:52px; text-align:right; font-size:clamp(12.5px,1.15cqw,14px); font-weight:600; color:var(--dos-ink); font-variant-numeric:tabular-nums;\">${c}&deg;</span>\n    <span style=\"width:88px; text-align:right; font-size:clamp(11.5px,1.05cqw,13px); color:var(--dos-quiet); font-variant-numeric:tabular-nums;\">&mdash;</span>\n    <span style=\"width:52px; text-align:right; font-size:clamp(9px,0.85cqw,10.5px); letter-spacing:0.08em; text-transform:uppercase; color:${col}; font-weight:600;\">${mode}</span></div>`;\n]]]\n"
+          styles:
+            card:
+            - padding: 5px 0
+            label:
+            - font-family: inherit
+            - text-align: left
+            - justify-self: stretch
+            - *id002
       - type: custom:stack-in-card
-        mode: horizontal
-        card_mod: !include _partials/stack-reset-underline.yaml
+        mode: vertical
         cards:
         - type: custom:button-card
-          entity: climate.study_room_temperature
-          template: dos_climate_temp_row
+          template: dos_section_header
           variables:
-            name: Study
-        - type: custom:button-card
-          entity: climate.study_room_temperature
-          template:
-          - dos_stepper_minus_plain
-          - dos_step_climate_minus
-        - type: custom:button-card
-          entity: climate.study_room_temperature
-          template: dos_climate_setpoint
-        - type: custom:button-card
-          entity: climate.study_room_temperature
-          template:
-          - dos_stepper_plus_plain
-          - dos_step_climate_plus
-        - type: custom:button-card
-          entity: climate.study_room_temperature
-          template: dos_climate_mode
+            title: Devices
+        - type: custom:layout-card
+          layout_type: custom:grid-layout
+          layout:
+            grid-template-columns: repeat(auto-fit, minmax(min(100%, 150px), 1fr))
+            grid-gap: 0 22px
+            margin: 0
+            padding: 0
+          cards:
+          - type: custom:button-card
+            entity: light.ecodim_bv_ecodim_zigbee_3_0_light
+            template: dos_dossier_device_toggle
+            variables:
+              k: Living Lights
+          - type: custom:button-card
+            entity: switch.pond_pump
+            template: dos_dossier_device_toggle
+            variables:
+              k: Pond Pump
+          - type: custom:button-card
+            entity: switch.pm1_boiler
+            template: dos_dossier_device_toggle
+            variables:
+              k: Boiler
+          - type: custom:button-card
+            entity: switch.tz3000_gjnozsaz_ts011f_switch
+            template: dos_dossier_device_toggle
+            variables:
+              k: Computer
+          - type: custom:button-card
+            entity: switch.htpc
+            template: dos_dossier_device_toggle
+            variables:
+              k: HTPC
+          - type: custom:button-card
+            entity: switch.tz3000_gjnozsaz_ts011f_switch_4
+            template: dos_dossier_device_toggle
+            variables:
+              k: TV
+          - type: custom:button-card
+            entity: switch.tz3000_zloso4jk_ts011f_switch_3
+            template: dos_dossier_device_toggle
+            variables:
+              k: Beko Freezer
+          - type: custom:button-card
+            entity: switch.tz3000_zloso4jk_ts011f_switch_2
+            template: dos_dossier_device_toggle
+            variables:
+              k: Fridge
+    - type: custom:layout-card
+      layout_type: custom:masonry-layout
+      layout:
+        width: 360
+        max_cols: 1
+        card_margin: 0px 8px 26px 8px
+        margin: 0
+        padding: 0
+      cards:
       - type: custom:stack-in-card
-        mode: horizontal
-        card_mod: !include _partials/stack-reset-underline.yaml
+        mode: vertical
         cards:
         - type: custom:button-card
-          entity: climate.attic_room_temperature
-          template: dos_climate_temp_row
+          entity: weather.forecast_thuis
+          show_icon: false
+          show_name: false
+          show_state: false
+          show_label: true
+          tap_action:
+            action: none
+          label: "[[[\n  const raw = (states['weather.forecast_thuis'] || {}).state || '';\n  const map = {\n    'clear-night':'Clear night','cloudy':'Cloudy','fog':'Fog','hail':'Hail',\n    'lightning':'Lightning','lightning-rainy':'Thundery showers','partlycloudy':'Partly cloudy',\n    'pouring':'Pouring','rainy':'Rainy','snowy':'Snowy','snowy-rainy':'Sleet',\n    'sunny':'Sunny','windy':'Windy','windy-variant':'Windy','exceptional':'Exceptional',\n    'unavailable':'—', 'unknown':'—', '':'—'\n  };\n  const cond = map[raw] || raw.replace(/[-_]/g,' ').replace(/\\b\\w/g, c => c.toUpperCase());\n  return `<div style=\"display:flex; justify-content:space-between; align-items:baseline; gap:8px;\">\n    <span style=\"font-variant:small-caps; text-transform:lowercase; letter-spacing:0.06em; font-weight:700; font-size:clamp(11.5px,1.05cqw,13px); color:var(--dos-ink);\">Environment</span>\n    <span style=\"font-size:clamp(10px,0.9cqw,11px); color:var(--dos-quiet); letter-spacing:0.04em; text-align:right;\">${cond}</span></div>`;\n]]]\n"
+          styles:
+            card:
+            - border-bottom: 0.8px solid var(--dos-ink)
+            - padding: 0 0 6px 0
+            - margin: 0 0 12px 0
+            label:
+            - font-family: inherit
+            - text-align: left
+            - justify-self: stretch
+            - *id002
+        - type: custom:button-card
+          entity: sensor.ts3t_living_temperature
           variables:
-            name: Attic
+            k: Living Room
+            unit: °C
+            last: false
+          template: dos_value_row
         - type: custom:button-card
-          entity: climate.attic_room_temperature
-          template:
-          - dos_stepper_minus_plain
-          - dos_step_climate_minus
+          entity: sensor.ts4t_bedroom_temperature
+          variables:
+            k: Bedroom
+            unit: °C
+            last: false
+          template: dos_value_row
         - type: custom:button-card
-          entity: climate.attic_room_temperature
-          template: dos_climate_setpoint
+          entity: sensor.ts1t_study_temperature
+          variables:
+            k: Study
+            unit: °C
+            last: false
+          template: dos_value_row
         - type: custom:button-card
-          entity: climate.attic_room_temperature
-          template:
-          - dos_stepper_plus_plain
-          - dos_step_climate_plus
+          entity: sensor.ts2t_bathroom_temperature
+          variables:
+            k: Bathroom
+            unit: °C
+            last: false
+          template: dos_value_row
         - type: custom:button-card
-          entity: climate.attic_room_temperature
-          template: dos_climate_mode
-      - type: custom:button-card
-        entity: sensor.te01_waterbed_door_temperature
-        show_icon: false
-        show_name: false
-        show_state: false
-        show_label: true
-        label: "[[[\n  const cur = parseFloat((states['sensor.te01_waterbed_door_temperature']||{}).state);\n  const c = isNaN(cur) ? '—' : cur.toFixed(1).replace('.', ',');\n  const p = parseFloat((states['sensor.p3t_waterbed_active_power']||{}).state);\n  const on = !isNaN(p) && p > 0;\n  const mode = on ? 'heat' : 'off';\n  const col = on ? 'var(--dos-accent)' : 'var(--dos-quiet)';\n  return `<div style=\"display:flex; align-items:center;\">\n    <span style=\"flex:1; min-width:0; font-size:clamp(12px,1.1cqw,13.5px); color:var(--dos-text);\">Waterbed</span>\n    <span style=\"width:52px; text-align:right; font-size:clamp(12.5px,1.15cqw,14px); font-weight:600; color:var(--dos-ink); font-variant-numeric:tabular-nums;\">${c}&deg;</span>\n    <span style=\"width:88px; text-align:right; font-size:clamp(11.5px,1.05cqw,13px); color:var(--dos-quiet); font-variant-numeric:tabular-nums;\">&mdash;</span>\n    <span style=\"width:52px; text-align:right; font-size:clamp(9px,0.85cqw,10.5px); letter-spacing:0.08em; text-transform:uppercase; color:${col}; font-weight:600;\">${mode}</span></div>`;\n]]]\n"
-        styles:
-          card:
-          - padding: 5px 0
-          label:
-          - font-family: inherit
-          - text-align: left
-          - justify-self: stretch
-          - *id002
-    - type: custom:stack-in-card
-      mode: vertical
-      cards:
-      - type: custom:button-card
-        template: dos_section_header
-        variables:
-          title: Devices
-      - type: custom:layout-card
-        layout_type: custom:grid-layout
-        layout:
-          grid-template-columns: repeat(auto-fit, minmax(min(100%, 150px), 1fr))
-          grid-gap: 0 22px
-          margin: 0
-          padding: 0
+          entity: sensor.attic_climatecontrol_room_temperature
+          variables:
+            k: Attic
+            unit: °C
+            last: false
+          template: dos_value_row
+        - type: custom:button-card
+          entity: sensor.living_room_climatecontrol_outdoor_temperature
+          variables:
+            k: Outdoor
+            unit: °C
+            last: false
+          template: dos_value_row
+        - type: custom:button-card
+          entity: sensor.ts3t_living_humidity
+          variables:
+            k: Humidity
+            unit: '%'
+            last: true
+          template: dos_value_row
+      - type: custom:stack-in-card
+        mode: vertical
         cards:
         - type: custom:button-card
-          entity: light.ecodim_bv_ecodim_zigbee_3_0_light
-          template: dos_dossier_device_toggle
-          variables:
-            k: Living Lights
-        - type: custom:button-card
-          entity: switch.pond_pump
-          template: dos_dossier_device_toggle
-          variables:
-            k: Pond Pump
-        - type: custom:button-card
-          entity: switch.pm1_boiler
-          template: dos_dossier_device_toggle
-          variables:
-            k: Boiler
-        - type: custom:button-card
-          entity: switch.tz3000_gjnozsaz_ts011f_switch
-          template: dos_dossier_device_toggle
-          variables:
-            k: Computer
-        - type: custom:button-card
-          entity: switch.htpc
-          template: dos_dossier_device_toggle
-          variables:
-            k: HTPC
-        - type: custom:button-card
-          entity: switch.tz3000_gjnozsaz_ts011f_switch_4
-          template: dos_dossier_device_toggle
-          variables:
-            k: TV
-        - type: custom:button-card
-          entity: switch.tz3000_zloso4jk_ts011f_switch_3
-          template: dos_dossier_device_toggle
-          variables:
-            k: Beko Freezer
-        - type: custom:button-card
-          entity: switch.tz3000_zloso4jk_ts011f_switch_2
-          template: dos_dossier_device_toggle
-          variables:
-            k: Fridge
-    - type: custom:stack-in-card
-      mode: vertical
-      cards:
-      - type: custom:button-card
-        entity: weather.forecast_thuis
-        show_icon: false
-        show_name: false
-        show_state: false
-        show_label: true
-        tap_action:
-          action: none
-        label: "[[[\n  const raw = (states['weather.forecast_thuis'] || {}).state || '';\n  const map = {\n    'clear-night':'Clear night','cloudy':'Cloudy','fog':'Fog','hail':'Hail',\n    'lightning':'Lightning','lightning-rainy':'Thundery showers','partlycloudy':'Partly cloudy',\n    'pouring':'Pouring','rainy':'Rainy','snowy':'Snowy','snowy-rainy':'Sleet',\n    'sunny':'Sunny','windy':'Windy','windy-variant':'Windy','exceptional':'Exceptional',\n    'unavailable':'—', 'unknown':'—', '':'—'\n  };\n  const cond = map[raw] || raw.replace(/[-_]/g,' ').replace(/\\b\\w/g, c => c.toUpperCase());\n  return `<div style=\"display:flex; justify-content:space-between; align-items:baseline; gap:8px;\">\n    <span style=\"font-variant:small-caps; text-transform:lowercase; letter-spacing:0.06em; font-weight:700; font-size:clamp(11.5px,1.05cqw,13px); color:var(--dos-ink);\">Environment</span>\n    <span style=\"font-size:clamp(10px,0.9cqw,11px); color:var(--dos-quiet); letter-spacing:0.04em; text-align:right;\">${cond}</span></div>`;\n]]]\n"
-        styles:
-          card:
-          - border-bottom: 0.8px solid var(--dos-ink)
-          - padding: 0 0 6px 0
-          - margin: 0 0 12px 0
-          label:
-          - font-family: inherit
-          - text-align: left
-          - justify-self: stretch
-          - *id002
-      - type: custom:button-card
-        entity: sensor.ts3t_living_temperature
-        variables:
-          k: Living Room
-          unit: °C
-          last: false
-        template: dos_value_row
-      - type: custom:button-card
-        entity: sensor.ts4t_bedroom_temperature
-        variables:
-          k: Bedroom
-          unit: °C
-          last: false
-        template: dos_value_row
-      - type: custom:button-card
-        entity: sensor.ts1t_study_temperature
-        variables:
-          k: Study
-          unit: °C
-          last: false
-        template: dos_value_row
-      - type: custom:button-card
-        entity: sensor.ts2t_bathroom_temperature
-        variables:
-          k: Bathroom
-          unit: °C
-          last: false
-        template: dos_value_row
-      - type: custom:button-card
-        entity: sensor.attic_climatecontrol_room_temperature
-        variables:
-          k: Attic
-          unit: °C
-          last: false
-        template: dos_value_row
-      - type: custom:button-card
-        entity: sensor.living_room_climatecontrol_outdoor_temperature
-        variables:
-          k: Outdoor
-          unit: °C
-          last: false
-        template: dos_value_row
-      - type: custom:button-card
-        entity: sensor.ts3t_living_humidity
-        variables:
-          k: Humidity
-          unit: '%'
-          last: true
-        template: dos_value_row
-    - type: custom:stack-in-card
-      mode: vertical
-      cards:
-      - type: custom:button-card
-        entity: weather.forecast_thuis
-        show_icon: false
-        show_name: false
-        show_state: false
-        show_label: true
-        label: "[[[\n  const e = (entity && entity.entity_id) ? states[entity.entity_id] : states['weather.forecast_thuis'];\n  const raw = (e && e.state!=null) ? e.state : null;\n  const map = {\n    'clear-night':'Clear night','cloudy':'Cloudy','fog':'Fog','hail':'Hail',\n    'lightning':'Lightning','lightning-rainy':'Thundery showers','partlycloudy':'Partly cloudy',\n    'pouring':'Pouring','rainy':'Rainy','snowy':'Snowy','snowy-rainy':'Sleet',\n    'sunny':'Sunny','windy':'Windy','windy-variant':'Windy','exceptional':'Exceptional'\n  };\n  let cond = '—';\n  if (raw && raw!=='unavailable' && raw!=='unknown') {\n    cond = map[raw] || raw.replace(/[-_]/g,' ').replace(/\\b\\w/g, c => c.toUpperCase());\n  }\n  const t = (e && e.attributes && e.attributes.temperature!=null) ? Number(e.attributes.temperature).toFixed(0).replace('.', ',') : '—';\n  return `<div style=\"display:flex; justify-content:space-between; align-items:baseline; gap:8px;\">\n    <span style=\"font-variant:small-caps; text-transform:lowercase; letter-spacing:0.06em; font-weight:700; font-size:clamp(11.5px,1.05cqw,13px); color:var(--dos-ink);\">Weather</span>\n    <span style=\"font-size:clamp(10px,0.9cqw,11px); color:var(--dos-quiet); letter-spacing:0.04em; font-variant-numeric:tabular-nums;\">${cond} &middot; ${t}&deg;</span>\n  </div>`;\n]]]\n"
-        styles:
-          card:
-          - border-bottom: 0.8px solid var(--dos-ink)
-          - padding: 0 0 6px 0
-          - margin: 0 0 12px 0
-          label:
-          - font-family: inherit
-          - text-align: left
-          - justify-self: stretch
-          - *id002
-      - type: weather-forecast
-        entity: weather.forecast_thuis
-        show_current: true
-        show_forecast: true
-        card_mod:
-          style: "ha-card {\n  background: var(--dos-paper) !important;\n  border: 0.8px solid var(--dos-line) !important;\n  border-radius: 0 !important; box-shadow: none !important;\n  font-family: 'Nimbus Sans L','Nimbus Sans','Helvetica Neue',Helvetica,Arial,sans-serif !important;\n  color: var(--dos-text) !important;\n  --primary-text-color: var(--dos-text);\n  --secondary-text-color: var(--dos-soft);\n  --card-background-color: var(--dos-paper);\n  --ha-card-background: var(--dos-paper);\n}\n"
-    - type: custom:stack-in-card
-      mode: vertical
-      cards:
-      - type: custom:button-card
-        template: dos_section_header
-        variables:
-          title: Media
-      - type: media-control
-        entity: media_player.spotify
-        card_mod:
-          style: "ha-card {\n  background: var(--dos-paper) !important;\n  border: 0.8px solid var(--dos-line) !important;\n  border-radius: 0 !important; box-shadow: none !important;\n  margin: 0 0 12px 0 !important;\n  font-family: 'Nimbus Sans L','Nimbus Sans','Helvetica Neue',Helvetica,Arial,sans-serif !important;\n  color: var(--dos-text) !important;\n  --primary-text-color: var(--dos-text);\n  --secondary-text-color: var(--dos-soft);\n  --card-background-color: var(--dos-paper);\n  --ha-card-background: var(--dos-paper);\n  --mdc-theme-primary: var(--dos-accent);\n}\n"
+          entity: weather.forecast_thuis
+          show_icon: false
+          show_name: false
+          show_state: false
+          show_label: true
+          label: "[[[\n  const e = (entity && entity.entity_id) ? states[entity.entity_id] : states['weather.forecast_thuis'];\n  const raw = (e && e.state!=null) ? e.state : null;\n  const map = {\n    'clear-night':'Clear night','cloudy':'Cloudy','fog':'Fog','hail':'Hail',\n    'lightning':'Lightning','lightning-rainy':'Thundery showers','partlycloudy':'Partly cloudy',\n    'pouring':'Pouring','rainy':'Rainy','snowy':'Snowy','snowy-rainy':'Sleet',\n    'sunny':'Sunny','windy':'Windy','windy-variant':'Windy','exceptional':'Exceptional'\n  };\n  let cond = '—';\n  if (raw && raw!=='unavailable' && raw!=='unknown') {\n    cond = map[raw] || raw.replace(/[-_]/g,' ').replace(/\\b\\w/g, c => c.toUpperCase());\n  }\n  const t = (e && e.attributes && e.attributes.temperature!=null) ? Number(e.attributes.temperature).toFixed(0).replace('.', ',') : '—';\n  return `<div style=\"display:flex; justify-content:space-between; align-items:baseline; gap:8px;\">\n    <span style=\"font-variant:small-caps; text-transform:lowercase; letter-spacing:0.06em; font-weight:700; font-size:clamp(11.5px,1.05cqw,13px); color:var(--dos-ink);\">Weather</span>\n    <span style=\"font-size:clamp(10px,0.9cqw,11px); color:var(--dos-quiet); letter-spacing:0.04em; font-variant-numeric:tabular-nums;\">${cond} &middot; ${t}&deg;</span>\n  </div>`;\n]]]\n"
+          styles:
+            card:
+            - border-bottom: 0.8px solid var(--dos-ink)
+            - padding: 0 0 6px 0
+            - margin: 0 0 12px 0
+            label:
+            - font-family: inherit
+            - text-align: left
+            - justify-self: stretch
+            - *id002
+        - type: weather-forecast
+          entity: weather.forecast_thuis
+          show_current: true
+          show_forecast: true
+          card_mod:
+            style: "ha-card {\n  background: var(--dos-paper) !important;\n  border: 0.8px solid var(--dos-line) !important;\n  border-radius: 0 !important; box-shadow: none !important;\n  font-family: 'Nimbus Sans L','Nimbus Sans','Helvetica Neue',Helvetica,Arial,sans-serif !important;\n  color: var(--dos-text) !important;\n  --primary-text-color: var(--dos-text);\n  --secondary-text-color: var(--dos-soft);\n  --card-background-color: var(--dos-paper);\n  --ha-card-background: var(--dos-paper);\n}\n"
   - !include _partials/footer.yaml

@@ -150,6 +150,11 @@ cards:
           kcol: var(--dos-text)
           mx: 14000
           abs: false
+        tap_action:
+          action: navigate
+          navigation_path: /dos-dashboard/chart-solar-day
+        hold_action:
+          action: more-info
       - type: custom:button-card
         entity: sensor.inverter_load_ups_power
         styles:
@@ -170,6 +175,11 @@ cards:
           kcol: var(--dos-accent2)
           mx: 14000
           abs: true
+        tap_action:
+          action: navigate
+          navigation_path: /dos-dashboard/chart-load-day
+        hold_action:
+          action: more-info
       - type: custom:button-card
         entity: sensor.inverter_grid_power
         template: dos_gauge_grid
@@ -177,6 +187,11 @@ cards:
           txt: Grid power
           expen: sensor.inverter_today_energy_export
           impen: sensor.inverter_today_energy_import
+        tap_action:
+          action: navigate
+          navigation_path: /dos-dashboard/chart-grid-day
+        hold_action:
+          action: more-info
     - type: custom:stack-in-card
       mode: vertical
       cards:
@@ -187,6 +202,9 @@ cards:
         show_label: true
         triggers_update: all
         tap_action:
+          action: navigate
+          navigation_path: /dos-dashboard/chart-solar-day
+        hold_action:
           action: more-info
           entity: sensor.solcast_pv_forecast_forecast_today
         label: "[[[\n  const a = states['sensor.total_pv_energy_today'];\n  const f = states['sensor.solcast_pv_forecast_forecast_today'];\n  const num = (e) => (e && !isNaN(parseFloat(e.state))) ? parseFloat(e.state).toFixed(1).replace('.', ',') : '—';\n  return `<div style=\"display:flex; justify-content:space-between; align-items:baseline; gap:8px;\">\n    <span style=\"font-variant:small-caps; text-transform:lowercase; letter-spacing:0.06em; font-weight:700; font-size:clamp(11.5px,1.05cqw,13px); color:var(--dos-ink);\">Solar forecast, actual &amp; usage</span>\n    <span style=\"font-size:clamp(9.5px,0.9cqw,11px); color:var(--dos-quiet); font-variant-numeric:tabular-nums; white-space:nowrap;\">${num(a)} / ${num(f)} kWh</span></div>`;\n]]]\n"
@@ -318,7 +336,7 @@ cards:
         variables:
           rows:
           - css: width:13px; height:9px; background:var(--dos-series1); opacity:0.65;
-            label: Actual
+            label: Produced
           - css: width:13px; height:9px; background:var(--dos-series2); opacity:0.65;
             label: Usage
           - stroke: var(--dos-series3)
@@ -329,11 +347,209 @@ cards:
       mode: vertical
       cards:
       - type: custom:button-card
+        show_icon: false
+        show_name: false
+        show_state: false
+        show_label: true
+        triggers_update: all
+        tap_action:
+          action: navigate
+          navigation_path: /dos-dashboard/yearly-trend
+        hold_action:
+          action: more-info
+          entity: sensor.solar_production_7d_ma
+        label: "[[[\n  const p = states['sensor.solar_production_7d_ma'];\n  const u = states['sensor.house_consumption_7d_ma'];\n  const num = (e) => (e && !isNaN(parseFloat(e.state))) ? parseFloat(e.state).toFixed(1).replace('.', ',') : '\u2014';\n  return `<div style=\"display:flex; justify-content:space-between; align-items:baseline; gap:8px;\">\n    <span style=\"font-variant:small-caps; text-transform:lowercase; letter-spacing:0.06em; font-weight:700; font-size:clamp(11.5px,1.05cqw,13px); color:var(--dos-ink);\">Solar &amp; usage &middot; 7-day trend</span>\n    <span style=\"font-size:clamp(9.5px,0.9cqw,11px); color:var(--dos-quiet); font-variant-numeric:tabular-nums; white-space:nowrap;\">${num(p)} / ${num(u)} kWh</span></div>`;\n]]]\n"
+        styles:
+          card:
+          - border-bottom: 0.8px solid var(--dos-ink)
+          - padding: 0 0 6px 0
+          - margin: 0 0 12px 0
+          label:
+          - font-family: inherit
+          - text-align: left
+          - justify-self: stretch
+          - padding: '0'
+      - type: custom:apexcharts-card
+        graph_span: 370d
+        header:
+          show: false
+        series:
+        - entity: sensor.solar_production_7d_ma
+          name: Produced
+          color: '#5d8499'
+          type: area
+          stroke_width: 1.3
+          curve: smooth
+          statistics:
+            type: mean
+            period: day
+        - entity: sensor.house_consumption_7d_ma
+          name: Consumption
+          color: '#b5654d'
+          type: area
+          stroke_width: 1.3
+          curve: smooth
+          statistics:
+            type: mean
+            period: day
+        - entity: sensor.solar_production_7d_ma
+          name: Produced last year
+          color: '#8c887f'
+          type: line
+          stroke_width: 1.3
+          curve: smooth
+          offset: '-365d'
+          show:
+            offset_in_name: false
+          statistics:
+            type: mean
+            period: day
+        - entity: sensor.house_consumption_7d_ma
+          name: Usage last year
+          color: '#6b7a52'
+          type: line
+          stroke_width: 1.3
+          curve: smooth
+          offset: '-365d'
+          show:
+            offset_in_name: false
+          statistics:
+            type: mean
+            period: day
+        yaxis:
+        - min: 0
+          decimals: 0
+          apex_config:
+            show: true
+            tickAmount: 3
+            labels:
+              offsetX: -2
+              style:
+                fontSize: 8px
+              formatter: 'EVAL:function(v){ if (v == null) return ''''; return Math.round(v) + '' kWh''; }
+
+                '
+        apex_config:
+          colors:
+          - '#5d8499'
+          - '#b5654d'
+          - '#8c887f'
+          - '#6b7a52'
+          chart:
+            height: 220
+            parentHeightOffset: 0
+            offsetX: -4
+            toolbar:
+              show: false
+            animations:
+              enabled: false
+          stroke:
+            width:
+            - 1.3
+            - 1.3
+            - 1.3
+            - 1.3
+            dashArray:
+            - 0
+            - 0
+            - 2
+            - 2
+            curve: smooth
+            lineCap: round
+          fill:
+            type:
+            - solid
+            - pattern
+            - solid
+            - solid
+            opacity:
+            - 0.12
+            - 0.6
+            - 0
+            - 0
+            pattern:
+              style: slantedLines
+              width: 6
+              height: 6
+              strokeWidth: 1.1
+          grid:
+            show: true
+            strokeDashArray: 2
+            padding:
+              left: 2
+              right: 8
+              top: 8
+              bottom: 0
+            xaxis:
+              lines:
+                show: false
+            yaxis:
+              lines:
+                show: true
+          legend:
+            show: false
+          dataLabels:
+            enabled: false
+          markers:
+            size: 0
+          tooltip:
+            enabled: true
+            x:
+              format: dd MMM
+          annotations:
+            yaxis:
+            - y: 0
+              strokeDashArray: 3
+              borderColor: rgba(140,133,122,0.55)
+              opacity: 0.7
+          xaxis:
+            type: datetime
+            labels:
+              show: true
+              style:
+                fontSize: 8px
+              format: MMM
+            axisBorder:
+              show: false
+            axisTicks:
+              show: false
+        card_mod:
+          style: "ha-card {\n  padding: 0 !important; margin: 2px 0 8px 0 !important;\n}\n.apexcharts-series[seriesName=\"Produced\"] path.apexcharts-area { stroke:var(--dos-series1) !important; stroke-width:1.8px !important; stroke-dasharray:0 !important; }\n.apexcharts-series[seriesName=\"Consumption\"] path.apexcharts-area { stroke:var(--dos-series2) !important; stroke-width:1.3px !important; stroke-dasharray:0 !important; }\n.apexcharts-series[seriesName=\"Producedxlastxyear\"] path.apexcharts-line { stroke:var(--dos-series3) !important; stroke-width:1.3px !important; stroke-dasharray:1 4 !important; stroke-linecap:round !important; }\n.apexcharts-series[seriesName=\"Usagexlastxyear\"] path.apexcharts-line { stroke:var(--dos-series4) !important; stroke-width:1.3px !important; stroke-dasharray:8 3 1 3 !important; stroke-linecap:round !important; }\n"
+      - type: custom:button-card
+        template: dos_chart_legend
+        variables:
+          rows:
+          - css: width:13px; height:9px; background:var(--dos-series1); opacity:0.65;
+            label: Produced
+          - css: width:13px; height:9px; background:var(--dos-series2); opacity:0.65;
+            label: Usage
+          - stroke: var(--dos-series3)
+            dash: 1 4
+            label: Produced last year
+          - stroke: var(--dos-series4)
+            dash: 8 3 1 3
+            label: Usage last year
+          desc: Trailing 7-day means of production and house load across the year, one point per day. Dotted lines repeat the same weeks one year earlier. Pre-Deye history stitched from SolarEdge and IoTaWatt.
+    - type: custom:stack-in-card
+      mode: vertical
+      cards:
+      - type: custom:button-card
         template: dos_section_header
         variables:
           title: Battery
+        tap_action:
+          action: navigate
+          navigation_path: /dos-dashboard/chart-battery-soc
+        hold_action:
+          action: more-info
+          entity: sensor.inverter_battery
       - type: custom:button-card
         entity: sensor.inverter_battery
+        tap_action:
+          action: navigate
+          navigation_path: /dos-dashboard/chart-battery-soc
+        hold_action:
+          action: more-info
         show_icon: false
         show_name: false
         show_state: false
@@ -465,6 +681,12 @@ cards:
         template: dos_section_header
         variables:
           title: Non-solar consumption
+        tap_action:
+          action: navigate
+          navigation_path: /dos-dashboard/chart-nonsolar-14d
+        hold_action:
+          action: more-info
+          entity: sensor.inverter_today_load_consumption
       - type: custom:button-card
         styles:
           card:
@@ -769,6 +991,12 @@ cards:
         template: dos_section_header
         variables:
           title: Prices
+        tap_action:
+          action: navigate
+          navigation_path: /dos-dashboard/chart-prices-24h
+        hold_action:
+          action: more-info
+          entity: sensor.tennet_imbalance_sell_price
       - type: custom:button-card
         styles:
           card:
@@ -1496,7 +1724,11 @@ cards:
     show_state: false
     show_label: true
     tap_action:
-      action: none
+      action: navigate
+      navigation_path: /dos-dashboard/chart-epex-5d
+    hold_action:
+      action: more-info
+      entity: sensor.tennet_imbalance_sell_price
     label: '[[[ return `<span style="font-variant:small-caps; text-transform:lowercase; letter-spacing:0.06em; font-weight:700; font-size:clamp(11.5px,1.05cqw,13px); color:var(--dos-ink);">EPEX price forecast &middot; 5 day</span>`; ]]]
 
       '

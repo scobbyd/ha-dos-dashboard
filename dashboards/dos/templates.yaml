@@ -203,22 +203,43 @@ dos_energy_row:
     - *pad0
     label: *label_left_wrap
   label: "[[[\n  const vr = variables || {};\n  const num = (id) => { if(!id) return null; const s = states[id]; const r = s ? s.state : null;\n    return (r==null||r==='unavailable'||r==='unknown') ? null : parseFloat(r); };\n  const w = num(vr.e_now);\n  let k = num(vr.e_kwh);\n  if (k!=null && !isNaN(k) && vr.kdiv) k = k / vr.kdiv;\n  const wD = (w==null||isNaN(w)) ? '—' : Math.round(w).toLocaleString('de-DE');\n  const kD = (k==null||isNaN(k)) ? '—' : k.toFixed(2).replace('.', ',');\n  const border = vr.last ? 'none' : '0.6px solid var(--dos-line)';\n  const sub = vr.sub ? `<span style=\"color:var(--dos-quiet); margin-left:6px; font-size:clamp(9px,0.85cqw,10.5px);\">${vr.sub}</span>` : '';\n  const kCol = 'var(--dos-accent2)';\n  return `<div style=\"display:grid; grid-template-columns:1fr 50px 52px; column-gap:6px; align-items:baseline; padding:clamp(5px,0.7cqw,7px) 0; border-bottom:${border};\">\n    <span style=\"font-size:clamp(12px,1.1cqw,13.5px); color:var(--dos-text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;\">${vr.k}${sub}</span>\n    <span style=\"font-size:clamp(12px,1.1cqw,13.5px); font-weight:600; color:var(--dos-ink); font-variant-numeric:tabular-nums; text-align:right; white-space:nowrap;\">${wD}</span>\n    <span style=\"font-size:clamp(12px,1.1cqw,13.5px); font-weight:600; color:${kCol}; font-variant-numeric:tabular-nums; text-align:right; white-space:nowrap;\">${kD}</span>\n  </div>`;\n]]]\n"
+# Day/night chips: fill and separator are painted on a full-bleed div INSIDE
+# the label, never on ha-card: stack-in-card strips child ha-card chrome with
+# inline styles after render, so card-level fills silently vanish. Fixed
+# height keeps the pair aligned. Colors stay hardcoded night-aware (the
+# footer sits under the global theme, not the per-view dos tokens).
 dos_daynight_toggle_day:
   <<: *show_label_only
   triggers_update: all
+  extra_styles: ':host { flex: 0 0 auto !important; }'
   styles:
     card:
     - *pad0
-    label: *label_center
-  label: "[[[\n  const night = (states['input_boolean.dossier_night_mode'] || {}).state === 'on';\n  const ink = night ? '#f2efe8' : '#0d1b2a';\n  const paper = night ? '#17140f' : '#f5f5f4';\n  const quiet = night ? '#6e6a62' : '#8a8a8a';\n  const active = !night;\n  return `<span style=\"display:block; background:${active ? ink : 'transparent'}; color:${active ? paper : quiet}; font-family:inherit; font-size:9px; font-weight:700; letter-spacing:0.14em; text-transform:uppercase; line-height:1.4; padding:3px 11px; white-space:nowrap;\">Day</span>`;\n]]]\n"
+    - height: 20px
+    - border-radius: '0'
+    label:
+    - font-family: inherit
+    - text-align: center
+    - justify-self: stretch
+    - align-self: stretch
+    - *pad0
+  label: "[[[\n  const night = (states['input_boolean.dossier_night_mode'] || {}).state === 'on';\n  return `<div style=\"height:100%; box-sizing:border-box; display:flex; align-items:center; justify-content:center; padding:0 11px; background:${night ? 'transparent' : '#0d1b2a'};\"><span style=\"color:${night ? '#6e6a62' : '#f5f5f4'}; font-family:inherit; font-size:9px; font-weight:700; letter-spacing:0.14em; text-transform:uppercase; line-height:1; white-space:nowrap;\">Day</span></div>`;\n]]]\n"
 dos_daynight_toggle_night:
   <<: *show_label_only
   triggers_update: all
+  extra_styles: ':host { flex: 0 0 auto !important; }'
   styles:
     card:
     - *pad0
-    label: *label_center
-  label: "[[[\n  const night = (states['input_boolean.dossier_night_mode'] || {}).state === 'on';\n  const ink = night ? '#f2efe8' : '#0d1b2a';\n  const paper = night ? '#17140f' : '#f5f5f4';\n  const quiet = night ? '#6e6a62' : '#8a8a8a';\n  const line = night ? '#38332c' : '#d4d4d4';\n  const active = night;\n  return `<span style=\"display:block; background:${active ? ink : 'transparent'}; color:${active ? paper : quiet}; font-family:inherit; font-size:9px; font-weight:700; letter-spacing:0.14em; text-transform:uppercase; line-height:1.4; padding:3px 11px; white-space:nowrap; border-left:1px solid ${line};\">Night</span>`;\n]]]\n"
+    - height: 20px
+    - border-radius: '0'
+    label:
+    - font-family: inherit
+    - text-align: center
+    - justify-self: stretch
+    - align-self: stretch
+    - *pad0
+  label: "[[[\n  const night = (states['input_boolean.dossier_night_mode'] || {}).state === 'on';\n  return `<div style=\"height:100%; box-sizing:border-box; display:flex; align-items:center; justify-content:center; padding:0 11px; background:${night ? '#f2efe8' : 'transparent'}; border-left:1px solid ${night ? '#38332c' : '#d4d4d4'};\"><span style=\"color:${night ? '#17140f' : '#8a8a8a'}; font-family:inherit; font-size:9px; font-weight:700; letter-spacing:0.14em; text-transform:uppercase; line-height:1; white-space:nowrap;\">Night</span></div>`;\n]]]\n"
 dos_state_text_row:
   tap_action:
     action: more-info
@@ -408,6 +429,24 @@ dos_gauge_grid:
     card:
     - padding: 4px 0 8px 0
     label: *label_left_wrap
+dos_chart_header:
+  <<: *show_label_only
+  triggers_update: all
+  variables:
+    subview: ''
+    value: ''
+  label: "[[[\n  const v = variables.value ? `<span style=\"font-size:clamp(9.5px,0.9cqw,11px); color:var(--dos-quiet); font-variant-numeric:tabular-nums; white-space:nowrap;\">${variables.value}</span>` : '';\n  return `<div style=\"display:flex; justify-content:space-between; align-items:baseline; gap:8px;\">\n    <span style=\"font-variant:small-caps; text-transform:lowercase; letter-spacing:0.06em; font-weight:700; font-size:clamp(11.5px,1.05cqw,13px); color:var(--dos-ink);\">${variables.title}</span>${v}</div>`;\n]]]\n"
+  tap_action:
+    action: '[[[ return variables.subview ? "navigate" : "none"; ]]]'
+    navigation_path: '[[[ return variables.subview; ]]]'
+  hold_action:
+    action: more-info
+  styles:
+    card:
+    - border-bottom: 0.8px solid var(--dos-ink)
+    - padding: 0 0 6px 0
+    - margin: 0 0 12px 0
+    label: *label_left
 dos_chart_legend:
   <<: *show_label_only
   label: "[[[\n  const sw = (r) => r.stroke ? `<svg width=\"20\" height=\"8\" style=\"vertical-align:middle; margin-right:5px; overflow:visible;\"><line x1=\"0\" y1=\"4\" x2=\"20\" y2=\"4\" stroke=\"${r.stroke}\" stroke-width=\"2\" stroke-dasharray=\"${r.dash==null?'0':r.dash}\" stroke-linecap=\"${r.cap||'round'}\"></line></svg>` : `<span style=\"display:inline-block; ${r.css} vertical-align:middle; margin-right:5px;\"></span>`;\n  const rows = variables.rows.map((r, i) => `${i ? '&nbsp;&nbsp;' : ''}${sw(r)}${r.label}`).join('\\n    ');\n  return `<div style=\"font-size:clamp(9.5px,0.85cqw,10.5px); color:var(--dos-quiet); letter-spacing:0.03em; line-height:1.5;\">\n    ${rows}\n    <br>${variables.desc}</div>`;\n]]]\n"
@@ -537,6 +576,35 @@ dos_dossier_device_toggle:
     action: toggle
   hold_action:
     action: more-info
+# ---- Segmented controls ---------------------------------------------
+# dos_seg: base segment for bordered switchers/chipboxes (media transport,
+# specimens). The segment card carries only the fixed HEIGHT; fills and
+# border-left separators must be painted on a full-bleed div inside the
+# label (stack-in-card strips child ha-card chrome with inline styles
+# after render, so card-level fills silently vanish). The BOX wrapping
+# the segments kills the stack gap via --horizontal-stack-card-gap: 0px
+# on its ha-card; natural-width chips additionally override the stack's
+# flex with extra_styles ':host { flex: 0 0 auto !important; }'.
+dos_seg:
+  <<: *show_label_only
+  variables:
+    sep: false
+  # instant press feedback: the real state (ink fill) can lag seconds
+  # behind (AVR boot, polling), so the tap itself must visibly register
+  extra_styles: |
+    :host { transition: opacity 80ms ease; }
+    :host(:active) { opacity: 0.35; }
+  styles:
+    card:
+    - *pad0
+    - height: 30px
+    - border-radius: '0'
+    label:
+    - font-family: inherit
+    - text-align: center
+    - justify-self: stretch
+    - align-self: stretch
+    - *pad0
 # ---- Plan view (floor plan) templates ------------------------------
 # dos_plan_floor_tab: one segment of the Ground/First/Attic switcher.
 # variables: lab (display text), opt (input_select option), sep (left rule).
@@ -546,8 +614,15 @@ dos_plan_floor_tab:
   styles:
     card:
     - *pad0
-    label: *label_center
-  label: "[[[\n  const cur = (states['input_select.dossier_plan_floor']||{}).state || 'ground';\n  const active = cur === variables.opt;\n  const sep = variables.sep ? 'border-left:1px solid var(--dos-line);' : '';\n  return `<span style=\"display:block; background:${active ? 'var(--dos-ink)' : 'transparent'}; color:${active ? 'var(--dos-paper)' : 'var(--dos-quiet)'}; font-family:inherit; font-size:11px; font-weight:700; letter-spacing:0.12em; text-transform:uppercase; line-height:1.2; padding:9px 0; white-space:nowrap; text-align:center; ${sep}\">${variables.lab}</span>`;\n]]]\n"
+    - height: 32px
+    - border-radius: '0'
+    label:
+    - font-family: inherit
+    - text-align: center
+    - justify-self: stretch
+    - align-self: stretch
+    - *pad0
+  label: "[[[\n  const cur = (states['input_select.dossier_plan_floor']||{}).state || 'ground';\n  const active = cur === variables.opt;\n  const sep = variables.sep ? 'border-left:1px solid var(--dos-line);' : '';\n  return `<div style=\"height:100%; box-sizing:border-box; display:flex; align-items:center; justify-content:center; ${sep} background:${active ? 'var(--dos-ink)' : 'transparent'};\"><span style=\"color:${active ? 'var(--dos-paper)' : 'var(--dos-quiet)'}; font-family:inherit; font-size:11px; font-weight:700; letter-spacing:0.12em; text-transform:uppercase; line-height:1; white-space:nowrap;\">${variables.lab}</span></div>`;\n]]]\n"
 # dos_plan_room: one room cell overlaid on the floor-plan underlay
 # (picture-elements element). Ports RoomCell + TintLayer from the design
 # prototype: small-caps room name, big tabular temp with drift arrow,
@@ -570,6 +645,7 @@ dos_plan_room:
     co2_entity: null
     switch_entity: null
     light_entity: null
+    music_room: null
     small: false
   styles:
     card:
@@ -578,7 +654,7 @@ dos_plan_room:
     - height: 100%
     - background: "[[[\n  const V = variables;\n  const layers = [];\n  const lt = V.light_entity ? states[V.light_entity] : null;\n  if (lt && lt.state === 'on') {\n    const bri = (lt.attributes && lt.attributes.brightness != null) ? (lt.attributes.brightness / 255) : 1;\n    layers.push(`color-mix(in srgb, var(--dos-glow) ${Math.round(4 + 18 * bri)}%, transparent)`);\n  }\n  const cl = V.climate_entity ? states[V.climate_entity] : null;\n  if (cl && (cl.state === 'heat' || cl.state === 'cool') && cl.attributes) {\n    const cur = parseFloat(cl.attributes.current_temperature);\n    const set = parseFloat(cl.attributes.temperature);\n    if (!isNaN(cur) && !isNaN(set)) {\n      const d = cur - set;\n      const effort = cl.state === 'heat' ? Math.max(0, Math.min((4 - d) / 6, 1)) : Math.max(0, Math.min((d + 1.5) / 4.5, 1));\n      const tok = cl.state === 'heat' ? '--dos-accent2' : '--dos-accent';\n      layers.push(`color-mix(in srgb, var(${tok}) ${Math.round(6 + effort * 30)}%, transparent)`);\n    }\n  }\n  if (!layers.length) return 'transparent';\n  return layers.map((c) => `linear-gradient(${c}, ${c})`).join(', ');\n]]]"
     label: *label_center
-  label: "[[[\n  const V = variables;\n  const get = (id) => id ? states[id] : null;\n  const num = (s) => {\n    if (!s || s.state == null || s.state === 'unavailable' || s.state === 'unknown') return null;\n    const v = parseFloat(s.state);\n    return isNaN(v) ? null : v;\n  };\n  const cl = get(V.climate_entity);\n  let temp = V.temp_entity ? num(get(V.temp_entity)) : null;\n  if (temp == null && cl && cl.attributes) {\n    const ct = parseFloat(cl.attributes.current_temperature);\n    if (!isNaN(ct)) temp = ct;\n  }\n  const target = (cl && cl.attributes) ? parseFloat(cl.attributes.temperature) : NaN;\n  const mode = cl ? cl.state : null;\n  const sw = get(V.switch_entity);\n  const lt = get(V.light_entity);\n  const co2 = num(get(V.co2_entity));\n  const nameSz = V.small ? 'clamp(5.5px,1.8cqw,10px)' : 'clamp(6.5px,2.2cqw,12px)';\n  const tempSz = V.small ? 'clamp(8px,3.1cqw,15px)' : 'clamp(10px,4.7cqw,22px)';\n  let arrow = '';\n  if (temp != null && !isNaN(target) && Math.abs(temp - target) >= 0.7) {\n    arrow = `<span style=\"font-size:55%; color:var(--dos-soft); vertical-align:middle; margin-left:1px;\">${temp > target ? '\\u25B2' : '\\u25BC'}</span>`;\n  }\n  let mid = '';\n  if (temp != null) {\n    mid = `<div style=\"font-size:${tempSz}; font-weight:600; color:var(--dos-ink); font-variant-numeric:tabular-nums; margin-top:1px; line-height:1.1;\">${temp.toFixed(1).replace('.', ',')}&deg;${arrow}</div>`;\n  } else if (V.kind === 'sensor') {\n    mid = `<div style=\"font-size:${nameSz}; color:var(--dos-quiet); margin-top:2px;\">${V.temp_entity ? '\\u2014' : 'no sensor'}</div>`;\n  }\n  const chips = [];\n  if (mode === 'heat' || mode === 'cool') {\n    chips.push(`<span style=\"width:5px; height:5px; border-radius:50%; background:var(${mode === 'heat' ? '--dos-accent2' : '--dos-accent'});\"></span>`);\n  }\n  if (lt && lt.state === 'on') {\n    chips.push(`<span style=\"width:7px; height:7px; border-radius:50%; border:1px solid var(--dos-soft); background:var(--dos-glow);\"></span>`);\n  }\n  if (sw) {\n    const on = sw.state === 'on';\n    chips.push(`<span style=\"font-size:${V.small ? 'clamp(5px,1.5cqw,8px)' : 'clamp(6px,1.8cqw,10px)'}; letter-spacing:0.06em; text-transform:uppercase; font-weight:700; color:var(${on ? '--dos-ink' : '--dos-quiet'}); border:0.8px solid var(${on ? '--dos-ink' : '--dos-line'}); padding:0 3px;\">${on ? 'On' : 'Off'}</span>`);\n  }\n  if (co2 != null) {\n    chips.push(`<span style=\"font-size:clamp(6px,1.8cqw,10px); color:var(${co2 > 800 ? '--dos-accent2' : '--dos-quiet'}); font-variant-numeric:tabular-nums;\">${Math.round(co2)} CO&#8322;</span>`);\n  }\n  const chipRow = chips.length ? `<div style=\"display:flex; gap:4px; justify-content:center; align-items:center; margin-top:2px; flex-wrap:wrap;\">${chips.join('')}</div>` : '';\n  return `<div style=\"display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; line-height:1.1; overflow:hidden;\">\n    <div style=\"font-size:${nameSz}; letter-spacing:0.09em; text-transform:uppercase; color:var(--dos-quiet); font-weight:700; white-space:nowrap;\">${V.name}</div>${mid}${chipRow}</div>`;\n]]]\n"
+  label: "[[[\n  const V = variables;\n  const get = (id) => id ? states[id] : null;\n  const num = (s) => {\n    if (!s || s.state == null || s.state === 'unavailable' || s.state === 'unknown') return null;\n    const v = parseFloat(s.state);\n    return isNaN(v) ? null : v;\n  };\n  const cl = get(V.climate_entity);\n  let temp = V.temp_entity ? num(get(V.temp_entity)) : null;\n  if (temp == null && cl && cl.attributes) {\n    const ct = parseFloat(cl.attributes.current_temperature);\n    if (!isNaN(ct)) temp = ct;\n  }\n  const target = (cl && cl.attributes) ? parseFloat(cl.attributes.temperature) : NaN;\n  const mode = cl ? cl.state : null;\n  const sw = get(V.switch_entity);\n  const lt = get(V.light_entity);\n  const co2 = num(get(V.co2_entity));\n  const nameSz = V.small ? 'clamp(5.5px,1.8cqw,10px)' : 'clamp(6.5px,2.2cqw,12px)';\n  const tempSz = V.small ? 'clamp(8px,3.1cqw,15px)' : 'clamp(10px,4.7cqw,22px)';\n  let arrow = '';\n  if (temp != null && !isNaN(target) && Math.abs(temp - target) >= 0.7) {\n    arrow = `<span style=\"font-size:55%; color:var(--dos-soft); vertical-align:middle; margin-left:1px;\">${temp > target ? '\\u25B2' : '\\u25BC'}</span>`;\n  }\n  let mid = '';\n  if (temp != null) {\n    mid = `<div style=\"font-size:${tempSz}; font-weight:600; color:var(--dos-ink); font-variant-numeric:tabular-nums; margin-top:1px; line-height:1.1;\">${temp.toFixed(1).replace('.', ',')}&deg;${arrow}</div>`;\n  } else if (V.kind === 'sensor') {\n    mid = `<div style=\"font-size:${nameSz}; color:var(--dos-quiet); margin-top:2px;\">${V.temp_entity ? '\\u2014' : 'no sensor'}</div>`;\n  }\n  const chips = [];\n  if (mode === 'heat' || mode === 'cool') {\n    chips.push(`<span style=\"width:5px; height:5px; border-radius:50%; background:var(${mode === 'heat' ? '--dos-accent2' : '--dos-accent'});\"></span>`);\n  }\n  if (lt && lt.state === 'on') {\n    chips.push(`<span style=\"width:7px; height:7px; border-radius:50%; border:1px solid var(--dos-soft); background:var(--dos-glow);\"></span>`);\n  }\n  const musicHere = V.music_room && !!(((states['sensor.music_now']||{attributes:{}}).attributes)[V.music_room]);\n  if (musicHere) {\n    chips.push(`<span style=\"font-size:${V.small ? 'clamp(7px,2.0cqw,10px)' : 'clamp(8px,2.4cqw,12px)'}; color:var(--dos-accent); line-height:1;\">&#9834;</span>`);\n  }\n  if (sw) {\n    const on = sw.state === 'on';\n    chips.push(`<span style=\"font-size:${V.small ? 'clamp(5px,1.5cqw,8px)' : 'clamp(6px,1.8cqw,10px)'}; letter-spacing:0.06em; text-transform:uppercase; font-weight:700; color:var(${on ? '--dos-ink' : '--dos-quiet'}); border:0.8px solid var(${on ? '--dos-ink' : '--dos-line'}); padding:0 3px;\">${on ? 'On' : 'Off'}</span>`);\n  }\n  if (co2 != null) {\n    chips.push(`<span style=\"font-size:clamp(6px,1.8cqw,10px); color:var(${co2 > 800 ? '--dos-accent2' : '--dos-quiet'}); font-variant-numeric:tabular-nums;\">${Math.round(co2)} CO&#8322;</span>`);\n  }\n  const chipRow = chips.length ? `<div style=\"display:flex; gap:4px; justify-content:center; align-items:center; margin-top:2px; flex-wrap:wrap;\">${chips.join('')}</div>` : '';\n  return `<div style=\"display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; line-height:1.1; overflow:hidden;\">\n    <div style=\"font-size:${nameSz}; letter-spacing:0.09em; text-transform:uppercase; color:var(--dos-quiet); font-weight:700; white-space:nowrap;\">${V.name}</div>${mid}${chipRow}</div>`;\n]]]\n"
 # dos_plan_close: right-aligned small-caps control that clears the
 # selected plan room (detail bar close button).
 dos_plan_close:
@@ -590,20 +666,12 @@ dos_plan_close:
     - align-self: center
     label: *label_right
   label: '[[[ return `<span style="font-variant:small-caps; text-transform:lowercase; letter-spacing:0.08em; font-weight:600; font-size:clamp(10px,0.95cqw,12px); color:var(--dos-quiet);">close &times;</span>`; ]]]'
-# dos_plan_rail_header: landscape-rail masthead — the active floor's
-# title, typeset identically to dos_view_header so the Plan view reads
-# like the other views.
+# dos_plan_rail_header: dos_view_header with the title derived from the
+# active floor; typography and padding inherit, only the title is computed.
 dos_plan_rail_header:
-  <<: *show_label_only
-  triggers_update: all
-  tap_action:
-    action: none
-  styles:
-    card:
-    - *pad0
-    - min-width: '0'
-    label: *label_left
-  label: "[[[\n  const titles = { ground: 'Ground Floor', first: 'First Floor', attic: 'Attic' };\n  const cur = (states['input_select.dossier_plan_floor']||{}).state || 'ground';\n  return `\n    <div style=\"min-width:0;\">\n      <div style=\"font-size:clamp(20px,2.4cqw,32px); font-weight:700; color:var(--dos-ink); letter-spacing:-0.01em; line-height:1.05;\">${titles[cur] || titles.ground}</div>\n    </div>`;\n]]]\n"
+  template: dos_view_header
+  variables:
+    title: '[[[ const titles = { ground: "Ground Floor", first: "First Floor", attic: "Attic" }; return titles[(states["input_select.dossier_plan_floor"]||{}).state] || titles.ground; ]]]'
 # dos_footer_generated: footer timestamp + section numeral, used by the
 # shared _partials/footer.yaml. The numeral derives from the view path so
 # the partial needs no per-view configuration; keep the map in sync with

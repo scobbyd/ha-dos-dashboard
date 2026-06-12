@@ -1,6 +1,6 @@
 # DOS Dashboard for Home Assistant
 
-A print-inspired Home Assistant dashboard built around a "dossier" aesthetic: flat ink-on-paper cards, tabular numerals, hairline rules, and no card chrome at all. Nine YAML-mode views cover an at-a-glance overview, an interactive floor plan, climate, energy, garden, system checks, heating, cooling, and a settings page. A single input_boolean flips the whole dashboard between a paper day palette and a dark night palette.
+A print-inspired Home Assistant dashboard built around a "dossier" aesthetic: flat ink-on-paper cards, tabular numerals, hairline rules, and no card chrome at all. Eight YAML-mode views cover an at-a-glance overview, an interactive floor plan, climate, energy, garden, system checks, heating, and cooling. Ten subviews extend them: a Now Playing music console with inline Spotify search, a yearly trend page, and full-screen expansions of the dashboard's charts, so tapping a gauge or chart tile zooms into the underlying data with pan and selection zoom. A single input_boolean flips the whole dashboard between a paper day palette and a dark night palette.
 
 Everything is plain YAML plus a theme file. There is no custom JavaScript resource; the look comes from theme variables, card-mod, and button-card templates.
 
@@ -95,6 +95,8 @@ Installed through HACS:
 ## Adapting it to your home
 
 The views reference the entities of my house (Deye inverter, ESPHome P1 meter, Daikin units, plant sensors, and so on), so the dashboard will not light up out of the box. The intended use is as a reference: take the theme, the partials, and the templates as-is, then rebuild the view content against your own entities. The value-row and section templates in `templates.yaml` are generic; most of the adaptation work is swapping entity ids in the view files.
+
+The Now Playing subview additionally expects a small backend that is not part of this repo: a `sensor.music_now` that aggregates the active player, an `input_text.music_search_query`, and a `sensor.music_search_results` populated by a search script (mine queries Spotify through Music Assistant). The view degrades gracefully when those are absent, but search and the room chips will stay empty.
 
 For the floor plan you will need your own geometry. Room shapes and entity bindings live in `tools/floorplan/plan-geo.js`; the architectural line-work (walls, doors, windows, stairs) is in `tools/floorplan/floorplan-svg.js`. After editing them, regenerate the SVGs:
 

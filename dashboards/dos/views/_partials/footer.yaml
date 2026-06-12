@@ -11,6 +11,7 @@ card_mod:
     ha-card {
       border-top: 0.8px solid var(--dos-line) !important;
       margin: 22px 0 0 0 !important; padding: 8px 0 0 0 !important;
+      --horizontal-stack-card-gap: 12px;
     }
     #root { align-items: center !important; justify-content: flex-end !important; gap: 12px !important; flex-wrap: wrap !important; }
 cards:
@@ -22,9 +23,8 @@ cards:
     mode: horizontal
     card_mod:
       style: |
-        :host > ha-card { border: 1px solid var(--dos-line) !important; }
+        :host > ha-card { border: 1px solid var(--dos-line) !important; --horizontal-stack-card-gap: 0px; }
         :host { flex: 0 0 auto !important; }
-        #root { gap: 0 !important; }
     cards:
     - type: custom:button-card
       entity: input_boolean.dossier_night_mode

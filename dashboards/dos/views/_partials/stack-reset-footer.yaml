@@ -1,5 +1,7 @@
 # Right-aligned footer toolbar row. Card chrome is stripped theme-wide by
 # dos. !include'd as `card_mod:` by the footer link bar on each view.
-style: '#root { align-items: center !important; justify-content: flex-end !important; gap: 12px !important; }
+style: ':host > ha-card { --horizontal-stack-card-gap: 12px; }
+
+  #root { align-items: center !important; justify-content: flex-end !important; gap: 12px !important; }
 
   '

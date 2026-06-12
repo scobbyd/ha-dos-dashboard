@@ -1,0 +1,130 @@
+title: EPEX price forecast 5 day
+path: chart-epex-5d
+icon: mdi:chart-areaspline
+type: panel
+subview: true
+theme: dos
+cards:
+- type: custom:stack-in-card
+  mode: vertical
+  card_mod: !include _partials/frame.yaml
+  cards:
+  - type: custom:button-card
+    show_icon: false
+    show_name: false
+    show_state: false
+    show_label: true
+    tap_action:
+      action: none
+    label: "[[[\n  return `<div style=\"border-bottom:1.4px solid var(--dos-ink); margin:0 0 22px 0; padding:0 0 16px 0;\">\n    <div style=\"font-size:clamp(20px,2.4cqw,32px); font-weight:700; color:var(--dos-ink); letter-spacing:-0.01em; line-height:1.05;\">EPEX price forecast &middot; 5 day</div>\n    <div style=\"font-size:clamp(10.5px,1.05cqw,13.5px); color:var(--dos-muted); margin-top:5px; letter-spacing:0.02em;\">Day-ahead prices and the EpexPredictor forecast</div>\n  </div>`;\n]]]\n"
+    styles:
+      card:
+      - border-radius: '0'
+      - padding: '0'
+      label:
+      - font-family: inherit
+      - text-align: left
+      - justify-self: stretch
+      - padding: '0'
+  - type: custom:apexcharts-card
+    graph_span: 120h
+    span:
+      start: day
+    header: &id001
+      show: false
+    now:
+      show: true
+      color: rgba(140,133,122,0.55)
+    apex_config:
+      chart:
+        height: 560
+        toolbar:
+          show: true
+          tools:
+            download: false
+            selection: true
+            zoom: true
+            zoomin: true
+            zoomout: true
+            pan: false
+            reset: true
+        zoom:
+          enabled: true
+          type: x
+          autoScaleYaxis: true
+          allowMouseWheelZoom: true
+        animations:
+          enabled: false
+        offsetX: -4
+      stroke:
+        width:
+        - 1.3
+        - 1.3
+        - 1.3
+        curve: smooth
+        lineCap: round
+      legend:
+        show: false
+        position: bottom
+        horizontalAlign: center
+        fontSize: 11px
+      tooltip:
+        enabled: true
+        shared: true
+        y:
+          formatter: EVAL:function(val) { if (val == null) return ''; return '€' + val.toFixed(2).replace('.', ',') + '/kWh'; }
+      grid:
+        show: true
+        strokeDashArray: 2
+        xaxis:
+          lines: *id001
+        yaxis:
+          lines:
+            show: true
+        padding:
+          left: 2
+          right: 8
+          top: 8
+          bottom: 0
+      annotations:
+        yaxis:
+        - y: 0
+          borderColor: rgba(140,133,122,0.55)
+          strokeDashArray: 2
+    yaxis:
+    - id: price
+      apex_config:
+        stepSize: 0.1
+        labels:
+          formatter: EVAL:function(val) { if (val == null) return ''; return '€' + val.toFixed(2).replace('.', ','); }
+    series:
+    - entity: sensor.tennet_imbalance_sell_price
+      name: Imbalance Sell (actual)
+      type: line
+      color: '#5d8499'
+      yaxis_id: price
+      extend_to: false
+      float_precision: 2
+      unit: ' EUR/kWh'
+      transform: return x / 1000;
+      stroke_width: 1.3
+    - entity: sensor.average_electricity_price
+      name: Day-Ahead (ENTSO-E)
+      type: line
+      color: '#b5654d'
+      yaxis_id: price
+      extend_to: false
+      float_precision: 2
+      data_generator: return (entity.attributes.prices || []).map(p => [new Date(p.time).getTime(), p.price]);
+      stroke_width: 1.3
+    - entity: sensor.epex_predictor_nl
+      name: EpexPredictor (LightGBM)
+      type: line
+      color: '#8c887f'
+      yaxis_id: price
+      extend_to: false
+      float_precision: 2
+      data_generator: return (entity.attributes.forecast || []).map(p => [new Date(p.datetime).getTime(), p.value]);
+      stroke_width: 1.3
+    card_mod:
+      style: "ha-card {\n  background: var(--dos-paper) !important;\n  border: none !important;\n  border-radius: 0 !important; box-shadow: none !important;\n  padding: 10px 8px !important; margin: 0 0 4px 0 !important;\n  font-family: 'Nimbus Sans L','Nimbus Sans','Helvetica Neue',Helvetica,Arial,sans-serif !important;\n  color: var(--dos-text) !important;\n}\n"

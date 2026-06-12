@@ -1,0 +1,163 @@
+title: History cold chain
+path: chart-coldchain-12h
+icon: mdi:chart-areaspline
+type: panel
+subview: true
+theme: dos
+cards:
+- type: custom:stack-in-card
+  mode: vertical
+  card_mod: !include _partials/frame.yaml
+  cards:
+  - type: custom:button-card
+    show_icon: false
+    show_name: false
+    show_state: false
+    show_label: true
+    tap_action:
+      action: none
+    label: "[[[\n  return `<div style=\"border-bottom:1.4px solid var(--dos-ink); margin:0 0 22px 0; padding:0 0 16px 0;\">\n    <div style=\"font-size:clamp(20px,2.4cqw,32px); font-weight:700; color:var(--dos-ink); letter-spacing:-0.01em; line-height:1.05;\">History &middot; cold chain</div>\n    <div style=\"font-size:clamp(10.5px,1.05cqw,13.5px); color:var(--dos-muted); margin-top:5px; letter-spacing:0.02em;\">Cold-chain temperatures over the last 12 hours</div>\n  </div>`;\n]]]\n"
+    styles:
+      card:
+      - border-radius: '0'
+      - padding: '0'
+      label:
+      - font-family: inherit
+      - text-align: left
+      - justify-self: stretch
+      - padding: '0'
+  - type: custom:apexcharts-card
+    graph_span: 7d
+    header: &id001
+      show: false
+    chart_type: line
+    all_series_config:
+      curve: smooth
+      show:
+        legend_value: false
+    series:
+    - entity: sensor.te10_fridge_temperature
+      name: Fridge
+      color: '#5d8499'
+      stroke_width: 1.4
+      group_by:
+        func: avg
+        duration: 15min
+    - entity: sensor.t4_t_bauknecht_freezer_temperature
+      name: Bauknecht
+      color: '#b5654d'
+      stroke_width: 1.4
+      group_by:
+        func: avg
+        duration: 15min
+    - entity: sensor.te11_beko_freezer_temperature
+      name: Beko
+      color: '#8c887f'
+      stroke_width: 1.4
+      group_by:
+        func: avg
+        duration: 15min
+    - entity: sensor.ts6t_winefridge_temperature
+      name: Wine
+      color: '#6b7a52'
+      stroke_width: 1.4
+      group_by:
+        func: avg
+        duration: 15min
+    yaxis:
+    - min: -25
+      max: 20
+      decimals: 0
+      apex_config:
+        show: true
+        tickAmount: 3
+        labels:
+          offsetX: -2
+          style:
+            fontSize: 8px
+          formatter: "EVAL:function(v){\n  if (v == null) return '';\n  return Math.round(v) + ' °C';\n}\n"
+    apex_config:
+      colors:
+      - '#5d8499'
+      - '#b5654d'
+      - '#8c887f'
+      - '#6b7a52'
+      chart:
+        height: 560
+        parentHeightOffset: 0
+        offsetX: -4
+        toolbar:
+          show: true
+          tools:
+            download: false
+            selection: true
+            zoom: true
+            zoomin: true
+            zoomout: true
+            pan: false
+            reset: true
+        zoom:
+          enabled: true
+          type: x
+          autoScaleYaxis: true
+          allowMouseWheelZoom: true
+        events:
+          mounted: 'EVAL:function(c){ const e=Date.now(); const a=e-43200000; c._dz=[a,e]; setTimeout(function(){ c.zoomX(a,e); }, 80); }'
+          zoomed: 'EVAL:function(c, x){ if(x && x.xaxis && x.xaxis.min){ c._dz=[x.xaxis.min, x.xaxis.max]; } else { c._dz=null; } }'
+          updated: 'EVAL:function(c){ if(c._dz && c.w && c.w.globals){ const g=c.w.globals; if(Math.abs(g.minX-c._dz[0])>60000 || Math.abs(g.maxX-c._dz[1])>60000){ c.zoomX(c._dz[0], c._dz[1]); } } }'
+        animations: &id002
+          enabled: false
+        sparkline: *id002
+      grid:
+        show: true
+        strokeDashArray: 2
+        padding:
+          left: 2
+          right: 58
+          top: 8
+          bottom: 0
+        xaxis:
+          lines: *id001
+        yaxis:
+          lines:
+            show: true
+      legend: *id001
+      tooltip:
+        enabled: true
+        x:
+          format: HH:mm
+      stroke:
+        width:
+        - 1.4
+        - 1.4
+        - 1.4
+        - 1.4
+        curve: smooth
+        lineCap: round
+      dataLabels: *id002
+      xaxis:
+        type: datetime
+        labels: *id001
+        axisBorder: *id001
+        axisTicks: *id001
+      markers:
+        size: 0
+    card_mod:
+      style: "ha-card {\n  padding: 0 !important; margin: 0 0 6px 0 !important;\n}\n"
+  - type: custom:button-card
+    template: dos_chart_legend
+    variables:
+      rows:
+      - stroke: var(--dos-series1)
+        dash: '0'
+        label: Fridge
+      - stroke: var(--dos-series2)
+        dash: 7 4
+        label: Bauknecht
+      - stroke: var(--dos-series3)
+        dash: 1 4
+        label: Beko
+      - stroke: var(--dos-series4)
+        dash: 8 3 1 3
+        label: Wine
+      desc: Four cold-chain temperatures over the last 12 hours; remaining units listed below.

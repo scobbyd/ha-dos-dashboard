@@ -550,6 +550,12 @@ cards:
         template: dos_section_header
         variables:
           title: History &middot; cold chain
+        tap_action:
+          action: navigate
+          navigation_path: /dos-dashboard/chart-coldchain-12h
+        hold_action:
+          action: more-info
+          entity: sensor.te10_fridge_temperature
       - type: custom:apexcharts-card
         graph_span: 12h
         header: *id003
@@ -675,4 +681,123 @@ cards:
           accent: false
           last: true
         template: dos_value_row
+    - type: custom:stack-in-card
+      mode: vertical
+      cards:
+      - type: custom:button-card
+        template: dos_section_header
+        variables:
+          title: Cold chain &middot; per-device stacked
+      - type: custom:apexcharts-card
+        graph_span: 14d
+        header:
+          show: false
+        series:
+        - entity: sensor.tz3000_zloso4jk_ts011f_summation_delivered_2
+          name: Fridge
+          color: '#5d8499'
+          type: column
+          group_by:
+            func: diff
+            duration: 1d
+        - entity: sensor.pm2_summation_delivered
+          name: Wine
+          color: '#b5654d'
+          type: column
+          group_by:
+            func: diff
+            duration: 1d
+        - entity: sensor.p6_t_beko_freezer_summation_delivered
+          name: Beko
+          color: '#8c887f'
+          type: column
+          group_by:
+            func: diff
+            duration: 1d
+        - entity: sensor.pm9_bauknecht_freezer_summation_delivered
+          name: Bauknecht
+          color: '#6b7a52'
+          type: column
+          group_by:
+            func: diff
+            duration: 1d
+        yaxis:
+        - min: 0
+          decimals: 0
+          apex_config:
+            show: true
+            tickAmount: 3
+            labels:
+              offsetX: -2
+              style:
+                fontSize: 8px
+              formatter: 'EVAL:function(v){ if (v == null) return ''''; return Math.round(v) + '' kWh''; }
+
+                '
+        apex_config:
+          colors:
+          - '#5d8499'
+          - '#b5654d'
+          - '#8c887f'
+          - '#6b7a52'
+          chart:
+            height: 180
+            parentHeightOffset: 0
+            offsetX: -4
+            toolbar:
+              show: false
+            animations:
+              enabled: false
+            stacked: true
+          plotOptions:
+            bar:
+              columnWidth: 65%
+              borderRadius: 0
+          fill:
+            opacity: 0.85
+          grid:
+            show: true
+            strokeDashArray: 2
+            padding:
+              left: 2
+              right: 8
+              top: 8
+              bottom: 0
+            xaxis:
+              lines:
+                show: false
+            yaxis:
+              lines:
+                show: true
+          legend:
+            show: true
+            position: bottom
+            fontSize: 9px
+            labels:
+              colors: rgba(140,133,122,0.95)
+          dataLabels:
+            enabled: false
+          tooltip:
+            enabled: true
+            x:
+              format: ddd dd
+          annotations:
+            yaxis:
+            - y: 0
+              strokeDashArray: 3
+              borderColor: rgba(140,133,122,0.55)
+              opacity: 0.7
+          xaxis:
+            type: datetime
+            labels:
+              show: true
+              style:
+                fontSize: 8px
+              format: dd
+            axisBorder:
+              show: false
+            axisTicks:
+              show: false
+        card_mod:
+          style: "ha-card {\n  padding: 0 !important; margin: 2px 0 14px 0 !important;\n}\n"
   - !include _partials/footer.yaml

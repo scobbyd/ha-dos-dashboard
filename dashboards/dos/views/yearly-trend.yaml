@@ -1,0 +1,206 @@
+title: Yearly trend
+path: yearly-trend
+icon: mdi:chart-areaspline
+type: panel
+subview: true
+theme: dos
+cards:
+- type: custom:stack-in-card
+  mode: vertical
+  card_mod: !include _partials/frame.yaml
+  cards:
+  - type: custom:button-card
+    show_icon: false
+    show_name: false
+    show_state: false
+    show_label: true
+    tap_action:
+      action: none
+    label: "[[[\n  return `<div style=\"border-bottom:1.4px solid var(--dos-ink); margin:0 0 22px 0; padding:0 0 16px 0;\">\n    <div style=\"font-size:clamp(20px,2.4cqw,32px); font-weight:700; color:var(--dos-ink); letter-spacing:-0.01em; line-height:1.05;\">Solar &amp; usage &middot; 7-day trend</div>\n    <div style=\"font-size:clamp(10.5px,1.05cqw,13.5px); color:var(--dos-muted); margin-top:5px; letter-spacing:0.02em;\">Trailing 7-day means of production and house load; dotted lines repeat the same weeks one year earlier</div>\n  </div>`;\n]]]\n"
+    styles:
+      card:
+      - border-radius: '0'
+      - padding: '0'
+      label:
+      - font-family: inherit
+      - text-align: left
+      - justify-self: stretch
+      - padding: '0'
+  - type: custom:apexcharts-card
+    graph_span: 4100d
+    header:
+      show: false
+    series:
+    - entity: sensor.solar_production_7d_ma
+      name: Produced
+      color: '#5d8499'
+      type: area
+      stroke_width: 1.3
+      curve: smooth
+      statistics:
+        type: mean
+        period: day
+    - entity: sensor.house_consumption_7d_ma
+      name: Consumption
+      color: '#b5654d'
+      type: area
+      stroke_width: 1.3
+      curve: smooth
+      statistics:
+        type: mean
+        period: day
+    - entity: sensor.solar_production_7d_ma
+      name: Produced last year
+      color: '#8c887f'
+      type: line
+      stroke_width: 1.3
+      curve: smooth
+      offset: '-365d'
+      show:
+        offset_in_name: false
+      statistics:
+        type: mean
+        period: day
+    - entity: sensor.house_consumption_7d_ma
+      name: Usage last year
+      color: '#6b7a52'
+      type: line
+      stroke_width: 1.3
+      curve: smooth
+      offset: '-365d'
+      show:
+        offset_in_name: false
+      statistics:
+        type: mean
+        period: day
+    yaxis:
+    - min: 0
+      decimals: 0
+      apex_config:
+        show: true
+        tickAmount: 3
+        labels:
+          offsetX: -2
+          style:
+            fontSize: 8px
+          formatter: 'EVAL:function(v){ if (v == null) return ''''; return Math.round(v) + '' kWh''; }
+
+            '
+    apex_config:
+      colors:
+      - '#5d8499'
+      - '#b5654d'
+      - '#8c887f'
+      - '#6b7a52'
+      chart:
+        height: 560
+        parentHeightOffset: 0
+        offsetX: -4
+        toolbar:
+          show: true
+          tools:
+            download: false
+            selection: true
+            zoom: true
+            zoomin: true
+            zoomout: true
+            pan: false
+            reset: true
+        zoom:
+          enabled: true
+          type: x
+          autoScaleYaxis: true
+          allowMouseWheelZoom: true
+        events:
+          mounted: 'EVAL:function(c){ const e=Date.now(); const a=e-31536000000; c._dz=[a,e]; setTimeout(function(){ c.zoomX(a,e); }, 80); }'
+          zoomed: 'EVAL:function(c, x){ if(x && x.xaxis && x.xaxis.min){ c._dz=[x.xaxis.min, x.xaxis.max]; } else { c._dz=null; } }'
+          updated: 'EVAL:function(c){ if(c._dz && c.w && c.w.globals){ const g=c.w.globals; if(Math.abs(g.minX-c._dz[0])>60000 || Math.abs(g.maxX-c._dz[1])>60000){ c.zoomX(c._dz[0], c._dz[1]); } } }'
+        animations:
+          enabled: false
+      stroke:
+        width:
+        - 1.3
+        - 1.3
+        - 1.3
+        - 1.3
+        dashArray:
+        - 0
+        - 0
+        - 2
+        - 2
+        curve: smooth
+        lineCap: round
+      fill:
+        type:
+        - solid
+        - pattern
+        - solid
+        - solid
+        opacity:
+        - 0.12
+        - 0.6
+        - 0
+        - 0
+        pattern:
+          style: slantedLines
+          width: 6
+          height: 6
+          strokeWidth: 1.1
+      grid:
+        show: true
+        strokeDashArray: 2
+        padding:
+          left: 2
+          right: 8
+          top: 8
+          bottom: 0
+        xaxis:
+          lines:
+            show: false
+        yaxis:
+          lines:
+            show: true
+      legend:
+        show: false
+      dataLabels:
+        enabled: false
+      markers:
+        size: 0
+      tooltip:
+        enabled: true
+        x:
+          format: dd MMM
+      annotations:
+        yaxis:
+        - y: 0
+          strokeDashArray: 3
+          borderColor: rgba(140,133,122,0.55)
+          opacity: 0.7
+      xaxis:
+        type: datetime
+        labels:
+          show: true
+          style:
+            fontSize: 8px
+          format: MMM
+        axisBorder:
+          show: false
+        axisTicks:
+          show: false
+    card_mod:
+      style: "ha-card {\n  padding: 0 !important; margin: 2px 0 8px 0 !important;\n}\n.apexcharts-series[seriesName=\"Produced\"] path.apexcharts-area { stroke:var(--dos-series1) !important; stroke-width:1.8px !important; stroke-dasharray:0 !important; }\n.apexcharts-series[seriesName=\"Consumption\"] path.apexcharts-area { stroke:var(--dos-series2) !important; stroke-width:1.3px !important; stroke-dasharray:0 !important; }\n.apexcharts-series[seriesName=\"Producedxlastxyear\"] path.apexcharts-line { stroke:var(--dos-series3) !important; stroke-width:1.3px !important; stroke-dasharray:1 4 !important; stroke-linecap:round !important; }\n.apexcharts-series[seriesName=\"Usagexlastxyear\"] path.apexcharts-line { stroke:var(--dos-series4) !important; stroke-width:1.3px !important; stroke-dasharray:8 3 1 3 !important; stroke-linecap:round !important; }\n"
+  - type: custom:button-card
+    template: dos_chart_legend
+    variables:
+      rows:
+      - css: width:13px; height:9px; background:var(--dos-series1); opacity:0.65;
+        label: Produced
+      - css: width:13px; height:9px; background:var(--dos-series2); opacity:0.65;
+        label: Usage
+      - stroke: var(--dos-series3)
+        dash: 1 4
+        label: Produced last year
+      - stroke: var(--dos-series4)
+        dash: 8 3 1 3
+        label: Usage last year
+      desc: Trailing 7-day means of production and house load across the year, one point per day. Dotted lines repeat the same weeks one year earlier. Pre-Deye history stitched from SolarEdge and IoTaWatt.

@@ -17,4 +17,8 @@ style: |
     container-type: inline-size;
     container-name: dossier;
     width: 100%;
+    /* paper must reach the bottom of the viewport even when the content is
+       shorter (browser zoomed out / sparse views); otherwise the default HA
+       view background shows below the sheet */
+    min-height: calc(100vh - var(--header-height, 56px));
   }

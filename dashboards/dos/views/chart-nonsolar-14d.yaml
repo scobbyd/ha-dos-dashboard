@@ -1,0 +1,119 @@
+title: Non-solar consumption per day
+path: chart-nonsolar-14d
+icon: mdi:chart-areaspline
+type: panel
+subview: true
+theme: dos
+cards:
+- type: custom:stack-in-card
+  mode: vertical
+  card_mod: !include _partials/frame.yaml
+  cards:
+  - type: custom:button-card
+    show_icon: false
+    show_name: false
+    show_state: false
+    show_label: true
+    tap_action:
+      action: none
+    label: "[[[\n  return `<div style=\"border-bottom:1.4px solid var(--dos-ink); margin:0 0 22px 0; padding:0 0 16px 0;\">\n    <div style=\"font-size:clamp(20px,2.4cqw,32px); font-weight:700; color:var(--dos-ink); letter-spacing:-0.01em; line-height:1.05;\">Non-solar consumption &middot; per day</div>\n    <div style=\"font-size:clamp(10.5px,1.05cqw,13.5px); color:var(--dos-muted); margin-top:5px; letter-spacing:0.02em;\">Daily non-solar energy over the last 14 days</div>\n  </div>`;\n]]]\n"
+    styles:
+      card:
+      - border-radius: '0'
+      - padding: '0'
+      label:
+      - font-family: inherit
+      - text-align: left
+      - justify-self: stretch
+      - padding: '0'
+  - type: custom:apexcharts-card
+    graph_span: 14d
+    header: &id001
+      show: false
+    series:
+    - entity: sensor.inverter_today_load_consumption
+      name: Daily
+      color: '#5d8499'
+      type: column
+      group_by:
+        func: max
+        duration: 1d
+    yaxis:
+    - min: 0
+      decimals: 0
+      apex_config:
+        show: true
+        tickAmount: 3
+        labels:
+          offsetX: -2
+          style:
+            fontSize: 8px
+          formatter: 'EVAL:function(v){ if (v == null) return ''''; return Math.round(v) + '' kWh''; }
+
+            '
+    apex_config:
+      colors:
+      - '#5d8499'
+      chart:
+        height: 560
+        parentHeightOffset: 0
+        offsetX: -4
+        toolbar:
+          show: true
+          tools:
+            download: false
+            selection: true
+            zoom: true
+            zoomin: true
+            zoomout: true
+            pan: false
+            reset: true
+        zoom:
+          enabled: true
+          type: x
+          autoScaleYaxis: true
+          allowMouseWheelZoom: true
+        animations: &id002
+          enabled: false
+      plotOptions:
+        bar:
+          columnWidth: 65%
+          borderRadius: 0
+      fill:
+        opacity: 0.85
+      grid:
+        show: true
+        strokeDashArray: 2
+        padding:
+          left: 2
+          right: 8
+          top: 8
+          bottom: 0
+        xaxis:
+          lines: *id001
+        yaxis:
+          lines:
+            show: true
+      legend: *id001
+      dataLabels: *id002
+      tooltip:
+        enabled: true
+        x:
+          format: ddd dd
+      annotations:
+        yaxis:
+        - y: 0
+          strokeDashArray: 3
+          borderColor: rgba(140,133,122,0.55)
+          opacity: 0.7
+      xaxis:
+        type: datetime
+        labels:
+          show: true
+          style:
+            fontSize: 8px
+          format: dd
+        axisBorder: *id001
+        axisTicks: *id001
+    card_mod:
+      style: "ha-card {\n  padding: 0 !important; margin: 2px 0 14px 0 !important;\n}\n.apexcharts-bar-area { fill:#5d8499 !important; }\n"

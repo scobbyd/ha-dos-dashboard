@@ -1,0 +1,146 @@
+title: Grid power today
+path: chart-grid-day
+icon: mdi:chart-areaspline
+type: panel
+subview: true
+theme: dos
+cards:
+- type: custom:stack-in-card
+  mode: vertical
+  card_mod: !include _partials/frame.yaml
+  cards:
+  - type: custom:button-card
+    show_icon: false
+    show_name: false
+    show_state: false
+    show_label: true
+    tap_action:
+      action: none
+    label: "[[[\n  return `<div style=\"border-bottom:1.4px solid var(--dos-ink); margin:0 0 22px 0; padding:0 0 16px 0;\">\n    <div style=\"font-size:clamp(20px,2.4cqw,32px); font-weight:700; color:var(--dos-ink); letter-spacing:-0.01em; line-height:1.05;\">Grid power &middot; today</div>\n    <div style=\"font-size:clamp(10.5px,1.05cqw,13.5px); color:var(--dos-muted); margin-top:5px; letter-spacing:0.02em;\">Import (positive) and export (negative) at the meter, 10-minute averages</div>\n  </div>`;\n]]]\n"
+    styles:
+      card:
+      - border-radius: '0'
+      - padding: '0'
+      label:
+      - font-family: inherit
+      - text-align: left
+      - justify-self: stretch
+      - padding: '0'
+  - type: custom:apexcharts-card
+    graph_span: 7d
+    header:
+      show: false
+    series:
+    - entity: sensor.inverter_grid_power
+      name: Grid
+      unit: kW
+      type: area
+      color: '#8c887f'
+      extend_to: now
+      group_by:
+        func: avg
+        duration: 10min
+      transform: 'return (x == null || x > 20000 || x < -20000) ? null : x / 1000;'
+      stroke_width: 1.3
+    yaxis:
+    - decimals: 1
+      apex_config:
+        show: true
+        tickAmount: 3
+        labels:
+          offsetX: -2
+          style:
+            fontSize: 8px
+          formatter: 'EVAL:function(v){ if (v == null) return ''''; return v.toFixed(1).replace(''.'', '','') + '' kW''; }
+
+            '
+    apex_config:
+      colors:
+      - '#8c887f'
+      chart:
+        height: 560
+        parentHeightOffset: 0
+        offsetX: -4
+        toolbar:
+          show: true
+          tools:
+            download: false
+            selection: true
+            zoom: true
+            zoomin: true
+            zoomout: true
+            pan: false
+            reset: true
+        animations:
+          enabled: false
+        zoom:
+          enabled: true
+          type: x
+          autoScaleYaxis: true
+          allowMouseWheelZoom: true
+        events:
+          mounted: 'EVAL:function(c){ const s=new Date(); s.setHours(0,0,0,0); const a=s.getTime(); const e=a+86400000; c._dz=[a,e]; setTimeout(function(){ c.zoomX(a,e); }, 80); }'
+          zoomed: 'EVAL:function(c, x){ if(x && x.xaxis && x.xaxis.min){ c._dz=[x.xaxis.min, x.xaxis.max]; } else { c._dz=null; } }'
+          updated: 'EVAL:function(c){ if(c._dz && c.w && c.w.globals){ const g=c.w.globals; if(Math.abs(g.minX-c._dz[0])>60000 || Math.abs(g.maxX-c._dz[1])>60000){ c.zoomX(c._dz[0], c._dz[1]); } } }'
+      stroke:
+        width:
+        - 1.3
+        dashArray:
+        - 0
+        curve: smooth
+        lineCap: round
+      fill:
+        type:
+        - solid
+        opacity:
+        - 0.12
+      grid:
+        show: true
+        strokeDashArray: 2
+        padding:
+          left: 2
+          right: 8
+          top: 8
+          bottom: 0
+        xaxis:
+          lines:
+            show: false
+        yaxis:
+          lines:
+            show: true
+      legend:
+        show: false
+      dataLabels:
+        enabled: false
+      markers:
+        size: 0
+      tooltip:
+        enabled: true
+        x:
+          format: HH:mm
+      annotations:
+        yaxis:
+        - y: 0
+          strokeDashArray: 3
+          borderColor: rgba(140,133,122,0.55)
+          opacity: 0.7
+      xaxis:
+        type: datetime
+        labels:
+          show: true
+          style:
+            fontSize: 8px
+          format: HH
+        axisBorder:
+          show: false
+        axisTicks:
+          show: false
+    card_mod:
+      style: "ha-card {\n  padding: 0 !important; margin: 2px 0 8px 0 !important;\n}\n.apexcharts-series[seriesName=\"Grid\"] path.apexcharts-area { stroke:var(--dos-series3) !important; stroke-width:1.3px !important; stroke-dasharray:0 !important; }\n"
+  - type: custom:button-card
+    template: dos_chart_legend
+    variables:
+      rows:
+      - css: width:13px; height:9px; background:var(--dos-series3); opacity:0.65;
+        label: Grid
+      desc: 'Grid power through the day: positive is import, negative is export. 10-minute averages.'

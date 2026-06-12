@@ -1,0 +1,632 @@
+# Now Playing subview: the "big" media card. Opened by tapping the Media
+# console on General (and reachable by URL like the chart subviews). Large
+# art + track stack + progress, full-width transport, Spotify search
+# (packages/media/music_search.yaml), room start/stop row, and per-room
+# volume (living = marantz_1, bedroom = marantz_2, bathroom = the Philips
+# speaker's own hardware volume). Everything reads sensor.music_now
+# (packages/media/music_rooms.yaml).
+_anchor_defs:
+# One search result row. Instances below only set variables.idx; the row
+# reads items[idx] from sensor.music_search_results and hides itself when
+# there is no item or the live query is under 2 characters (results in
+# the sensor are then stale leftovers by design, see the package file).
+- &search_row
+  type: custom:button-card
+  show_icon: false
+  show_name: false
+  show_state: false
+  show_label: true
+  entity: sensor.music_search_results
+  triggers_update: all
+  extra_styles: ':host { transition: opacity 80ms ease; } :host(:active) { opacity: 0.35; }'
+  tap_action:
+    action: perform-action
+    perform_action: script.music_play_search
+    data:
+      media_id: '[[[ const it = (((states["sensor.music_search_results"]||{attributes:{}}).attributes.items)||[])[variables.idx]; return it ? it.uri : ""; ]]]'
+      media_type: '[[[ const it = (((states["sensor.music_search_results"]||{attributes:{}}).attributes.items)||[])[variables.idx]; return it ? it.type : ""; ]]]'
+  label: |
+    [[[
+      const q = ((states['input_text.music_search_query']||{state:''}).state||'').trim();
+      const items = ((states['sensor.music_search_results']||{attributes:{}}).attributes.items)||[];
+      const it = items[variables.idx];
+      if (!it || q.length < 2) return '';
+      const sub = it.sub ? `<span style="color:var(--dos-quiet); margin-left:7px; font-size:clamp(10px,0.95cqw,12px);">${it.sub}</span>` : '';
+      return `<div style="display:flex; justify-content:space-between; align-items:baseline; gap:10px; padding:8px 0; border-bottom:0.6px solid var(--dos-line);">
+        <span style="min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:clamp(12px,1.1cqw,13.5px); color:var(--dos-text);">${it.name}${sub}</span>
+        <span style="font-size:clamp(8.5px,0.8cqw,10px); letter-spacing:0.08em; text-transform:uppercase; font-weight:600; color:var(--dos-quiet); white-space:nowrap;">${it.type}</span></div>`;
+    ]]]
+  styles:
+    card:
+    - padding: '0'
+    - display: '[[[ const q = ((states["input_text.music_search_query"]||{state:""}).state||"").trim(); const items = ((states["sensor.music_search_results"]||{attributes:{}}).attributes.items)||[]; return (items[variables.idx] && q.length >= 2) ? "block" : "none"; ]]]'
+    label:
+    - font-family: inherit
+    - text-align: left
+    - justify-self: stretch
+    - padding: '0'
+    - min-width: '0'
+title: Now Playing
+path: media-now
+icon: mdi:music-box-outline
+type: panel
+subview: true
+theme: dos
+cards:
+- type: custom:stack-in-card
+  mode: vertical
+  card_mod: !include _partials/frame.yaml
+  cards:
+  - type: custom:button-card
+    show_icon: false
+    show_name: false
+    show_state: false
+    show_label: true
+    tap_action:
+      action: none
+    label: |
+      [[[
+        return `<div style="border-bottom:1.4px solid var(--dos-ink); margin:0 0 22px 0; padding:0 0 16px 0;">
+          <div style="font-size:clamp(20px,2.4cqw,32px); font-weight:700; color:var(--dos-ink); letter-spacing:-0.01em; line-height:1.05;">Now Playing</div>
+          <div style="font-size:clamp(10.5px,1.05cqw,13.5px); color:var(--dos-muted); margin-top:5px; letter-spacing:0.02em;">Track, transport, rooms and volume for whatever is on</div>
+        </div>`;
+      ]]]
+    styles:
+      card:
+      - border-radius: '0'
+      - padding: '0'
+      label:
+      - font-family: inherit
+      - text-align: left
+      - justify-self: stretch
+      - padding: '0'
+  # Large console: scaled-up version of the General media console.
+  # Hold opens the native more-info dialog as an escape hatch.
+  - type: custom:button-card
+    entity: sensor.music_now
+    show_icon: false
+    show_name: false
+    show_state: false
+    show_label: true
+    triggers_update: all
+    tap_action:
+      action: none
+    hold_action:
+      action: more-info
+      entity: '[[[ return (states["sensor.music_now"]||{attributes:{}}).attributes.player || "sensor.music_now"; ]]]'
+    label: |
+      [[[
+        const now = states['sensor.music_now'];
+        const st = now ? now.state : 'idle';
+        const player = now ? (now.attributes.player || '') : '';
+        const e = player ? states[player] : null;
+        const a = e ? e.attributes : {};
+        const playing = st === 'playing';
+        const where = now ? (now.attributes.rooms || '') : '';
+        const col = playing ? 'var(--dos-accent)' : 'var(--dos-quiet)';
+        if (st !== 'playing' && st !== 'paused') {
+          return `<div style="display:flex; flex-direction:column; gap:14px; padding:6px 0 2px 0;">
+            <span style="width:clamp(140px,34cqw,240px); height:clamp(140px,34cqw,240px); border:0.8px solid var(--dos-line); display:flex; align-items:center; justify-content:center;">
+              <span style="font-size:clamp(11px,1.05cqw,13px); font-style:italic; color:var(--dos-quiet);">no art</span></span>
+            <span style="font-size:clamp(13px,1.25cqw,16px); font-style:italic; color:var(--dos-quiet);">No media playing</span>
+            <span style="font-size:clamp(9px,0.85cqw,10.5px); letter-spacing:0.08em; text-transform:uppercase; font-weight:600; color:var(--dos-quiet);">idle &mdash; pick a room below to start</span></div>`;
+        }
+        const fmt = (s) => { if (s==null||isNaN(s)) return null; s = Math.max(0, Math.round(s)); return Math.floor(s/60) + ':' + String(s%60).padStart(2,'0'); };
+        let pos = a.media_position;
+        if (pos!=null && a.media_position_updated_at && playing) pos += (Date.now() - Date.parse(a.media_position_updated_at))/1000;
+        if (pos!=null && a.media_duration) pos = Math.min(pos, a.media_duration);
+        const pct = (pos!=null && a.media_duration) ? Math.max(0, Math.min(100, pos / a.media_duration * 100)) : 0;
+        const el = fmt(pos) || '–:––';
+        const tot = fmt(a.media_duration) || '–:––';
+        const art = a.entity_picture
+          ? `<img src="${a.entity_picture}" style="width:clamp(140px,34cqw,240px); height:clamp(140px,34cqw,240px); object-fit:cover; border:0.8px solid var(--dos-line); display:block; flex:none;">`
+          : `<span style="width:clamp(140px,34cqw,240px); height:clamp(140px,34cqw,240px); border:0.8px solid var(--dos-line); display:block; flex:none;"></span>`;
+        return `<div style="padding:2px 0 0 0;">
+          <div style="display:flex; align-items:stretch; gap:clamp(14px,2cqw,24px);">
+            ${art}
+            <span style="flex:1; min-width:0; display:flex; flex-direction:column; justify-content:space-between;">
+              <span style="min-width:0;">
+                <span style="display:block; font-size:clamp(17px,2.1cqw,28px); font-weight:700; color:var(--dos-ink); line-height:1.15; overflow:hidden; text-overflow:ellipsis; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical;">${a.media_title || '—'}</span>
+                <span style="display:block; font-size:clamp(13px,1.5cqw,19px); color:var(--dos-soft); margin-top:5px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${a.media_artist || ''}</span>
+                <span style="display:block; font-size:clamp(11px,1.15cqw,14px); color:var(--dos-quiet); margin-top:4px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${a.media_album_name || ''}</span>
+              </span>
+              <span style="font-size:clamp(9.5px,0.95cqw,12px); letter-spacing:0.08em; text-transform:uppercase; font-weight:600; color:${col};">${st}<span style="color:var(--dos-quiet); font-weight:400; margin-left:9px;">${where}</span></span>
+            </span>
+          </div>
+          <div style="height:4px; background:var(--dos-line); margin-top:14px; position:relative;">
+            <div style="position:absolute; left:0; top:0; bottom:0; width:${pct}%; background:${col};"></div></div>
+          <div style="display:flex; justify-content:space-between; font-size:clamp(9.5px,0.9cqw,11px); color:var(--dos-quiet); letter-spacing:0.04em; margin-top:5px; font-variant-numeric:tabular-nums;"><span>${el}</span><span>${tot}</span></div></div>`;
+      ]]]
+    styles:
+      card:
+      - padding: '0'
+      label:
+      - font-family: inherit
+      - text-align: left
+      - justify-self: stretch
+      - padding: '0'
+      - min-width: '0'
+  # Full-width transport; hides when nothing is playing or paused.
+  - type: custom:stack-in-card
+    mode: horizontal
+    card_mod:
+      style: |
+        :host { {% if states('sensor.music_now') not in ['playing','paused'] %}display:none !important;{% endif %} }
+        :host > ha-card { background: transparent !important; border: 1px solid var(--dos-line) !important; box-shadow: none !important; border-radius: 0 !important; --horizontal-stack-card-gap: 0px; margin: 16px 0 0 0 !important; }
+    cards:
+    - type: custom:button-card
+      template: dos_seg
+      styles:
+        card:
+        - height: 44px
+      tap_action:
+        action: perform-action
+        perform_action: media_player.media_previous_track
+        target:
+          entity_id: '[[[ return (states["sensor.music_now"]||{attributes:{}}).attributes.player || "media_player.ma_marantz"; ]]]'
+      label: '[[[ return `<div style="height:100%; display:flex; align-items:center; justify-content:center;"><span style="font-size:11px; font-weight:700; letter-spacing:0.12em; text-transform:uppercase; line-height:1; color:var(--dos-quiet); white-space:nowrap;">prev</span></div>`; ]]]'
+    - type: custom:button-card
+      template: dos_seg
+      entity: sensor.music_now
+      triggers_update: all
+      styles:
+        card:
+        - height: 44px
+      tap_action:
+        action: perform-action
+        perform_action: media_player.media_play_pause
+        target:
+          entity_id: '[[[ return (states["sensor.music_now"]||{attributes:{}}).attributes.player || "media_player.ma_marantz"; ]]]'
+      label: |
+        [[[
+          const playing = (states['sensor.music_now']||{}).state === 'playing';
+          return `<div style="height:100%; box-sizing:border-box; display:flex; align-items:center; justify-content:center; border-left:1px solid var(--dos-line); background:${playing ? 'var(--dos-ink)' : 'transparent'};"><span style="font-size:11px; font-weight:700; letter-spacing:0.12em; text-transform:uppercase; line-height:1; color:${playing ? 'var(--dos-paper)' : 'var(--dos-quiet)'}; white-space:nowrap;">${playing ? 'pause' : 'play'}</span></div>`;
+        ]]]
+    - type: custom:button-card
+      template: dos_seg
+      styles:
+        card:
+        - height: 44px
+      tap_action:
+        action: perform-action
+        perform_action: media_player.media_next_track
+        target:
+          entity_id: '[[[ return (states["sensor.music_now"]||{attributes:{}}).attributes.player || "media_player.ma_marantz"; ]]]'
+      label: '[[[ return `<div style="height:100%; box-sizing:border-box; display:flex; align-items:center; justify-content:center; border-left:1px solid var(--dos-line);"><span style="font-size:11px; font-weight:700; letter-spacing:0.12em; text-transform:uppercase; line-height:1; color:var(--dos-quiet); white-space:nowrap;">next</span></div>`; ]]]'
+  # Spotify search: query box writes input_text.music_search_query, the
+  # backend in packages/media/music_search.yaml does the rest. Result
+  # rows play on the AVR via script.music_play_search (bathroom cannot
+  # take MA streams).
+  - type: custom:button-card
+    template: dos_section_header
+    variables:
+      title: find music
+    card_mod:
+      style: |
+        ha-card { margin-top: 28px !important; }
+  - type: entities
+    entities:
+    - entity: input_text.music_search_query
+      name: Search Spotify
+    card_mod:
+      style: |
+        ha-card { padding: 0 !important; margin: 0 0 6px 0 !important; }
+        #states { padding: 0 !important; }
+  - <<: *search_row
+    variables:
+      idx: 0
+  - <<: *search_row
+    variables:
+      idx: 1
+  - <<: *search_row
+    variables:
+      idx: 2
+  - <<: *search_row
+    variables:
+      idx: 3
+  - <<: *search_row
+    variables:
+      idx: 4
+  - <<: *search_row
+    variables:
+      idx: 5
+  - <<: *search_row
+    variables:
+      idx: 6
+  - <<: *search_row
+    variables:
+      idx: 7
+  - <<: *search_row
+    variables:
+      idx: 8
+  - <<: *search_row
+    variables:
+      idx: 9
+  - <<: *search_row
+    variables:
+      idx: 10
+  - <<: *search_row
+    variables:
+      idx: 11
+  # quiet empty-state line: live query, search done, nothing came back
+  - type: custom:button-card
+    show_icon: false
+    show_name: false
+    show_state: false
+    show_label: true
+    entity: sensor.music_search_results
+    triggers_update: all
+    tap_action:
+      action: none
+    label: |
+      [[[
+        const q = ((states['input_text.music_search_query']||{state:''}).state||'').trim();
+        const s = states['sensor.music_search_results']||{attributes:{}};
+        const items = (s.attributes.items)||[];
+        if (q.length < 2 || items.length > 0 || (s.attributes.query||'') !== q) return '';
+        return `<span style="font-style:italic; color:var(--dos-quiet); font-size:clamp(11px,1.05cqw,13px);">No results for "${q}"</span>`;
+      ]]]
+    styles:
+      card:
+      - padding: '0'
+      - display: '[[[ const q = ((states["input_text.music_search_query"]||{state:""}).state||"").trim(); const s = states["sensor.music_search_results"]||{attributes:{}}; const items = (s.attributes.items)||[]; return (q.length >= 2 && items.length === 0 && (s.attributes.query||"") === q) ? "block" : "none"; ]]]'
+      label:
+      - font-family: inherit
+      - text-align: left
+      - justify-self: stretch
+      - padding: '0'
+  # Room start/stop row (script.music_room_toggle, same as General).
+  - type: custom:button-card
+    template: dos_section_header
+    variables:
+      title: rooms
+    card_mod:
+      style: |
+        ha-card { margin-top: 28px !important; }
+  - type: custom:stack-in-card
+    mode: horizontal
+    card_mod:
+      style: |
+        :host > ha-card { background: transparent !important; border: 1px solid var(--dos-line) !important; box-shadow: none !important; border-radius: 0 !important; --horizontal-stack-card-gap: 0px; }
+    cards:
+    - type: custom:button-card
+      template: dos_seg
+      entity: sensor.music_now
+      triggers_update: all
+      styles:
+        card:
+        - height: 38px
+      tap_action:
+        action: perform-action
+        perform_action: script.music_room_toggle
+        data:
+          room: living
+      label: |
+        [[[
+          const active = !!((states['sensor.music_now']||{attributes:{}}).attributes.living);
+          return `<div style="height:100%; box-sizing:border-box; display:flex; align-items:center; justify-content:center; background:${active ? 'var(--dos-ink)' : 'transparent'};"><span style="font-size:11px; font-weight:700; letter-spacing:0.12em; text-transform:uppercase; line-height:1; color:${active ? 'var(--dos-paper)' : 'var(--dos-quiet)'}; white-space:nowrap;">living</span></div>`;
+        ]]]
+    - type: custom:button-card
+      template: dos_seg
+      entity: sensor.music_now
+      triggers_update: all
+      styles:
+        card:
+        - height: 38px
+      tap_action:
+        action: perform-action
+        perform_action: script.music_room_toggle
+        data:
+          room: bedroom
+      label: |
+        [[[
+          const active = !!((states['sensor.music_now']||{attributes:{}}).attributes.bedroom);
+          return `<div style="height:100%; box-sizing:border-box; display:flex; align-items:center; justify-content:center; border-left:1px solid var(--dos-line); background:${active ? 'var(--dos-ink)' : 'transparent'};"><span style="font-size:11px; font-weight:700; letter-spacing:0.12em; text-transform:uppercase; line-height:1; color:${active ? 'var(--dos-paper)' : 'var(--dos-quiet)'}; white-space:nowrap;">bedroom</span></div>`;
+        ]]]
+    - type: custom:button-card
+      template: dos_seg
+      entity: sensor.music_now
+      triggers_update: all
+      styles:
+        card:
+        - height: 38px
+      tap_action:
+        action: perform-action
+        perform_action: script.music_room_toggle
+        data:
+          room: bathroom
+      label: |
+        [[[
+          const active = !!((states['sensor.music_now']||{attributes:{}}).attributes.bathroom);
+          return `<div style="height:100%; box-sizing:border-box; display:flex; align-items:center; justify-content:center; border-left:1px solid var(--dos-line); background:${active ? 'var(--dos-ink)' : 'transparent'};"><span style="font-size:11px; font-weight:700; letter-spacing:0.12em; text-transform:uppercase; line-height:1; color:${active ? 'var(--dos-paper)' : 'var(--dos-quiet)'}; white-space:nowrap;">bathroom</span></div>`;
+        ]]]
+  # Per-room volume. Living and bedroom are the Marantz zones; bathroom is
+  # the Philips speaker's own volume (its music arrives via Spotify
+  # Connect, so the speaker owns loudness, not the AVR).
+  - type: custom:button-card
+    template: dos_section_header
+    variables:
+      title: volume
+    card_mod:
+      style: |
+        ha-card { margin-top: 28px !important; }
+  - type: custom:stack-in-card
+    mode: horizontal
+    card_mod:
+      style: |
+        :host > ha-card { background: transparent !important; box-shadow: none !important; border-radius: 0 !important; --horizontal-stack-card-gap: 12px; margin: 0 0 10px 0 !important; }
+    cards:
+    - type: custom:button-card
+      show_icon: false
+      show_name: false
+      show_state: false
+      show_label: true
+      entity: media_player.marantz_1
+      triggers_update: all
+      tap_action:
+        action: none
+      hold_action:
+        action: more-info
+      label: |
+        [[[
+          const z = states['media_player.marantz_1'];
+          const on = z && !['off','unavailable','unknown'].includes(z.state);
+          const here = !!((states['sensor.music_now']||{attributes:{}}).attributes.living);
+          const note = here ? '<span style="color:var(--dos-accent); margin-left:7px;">&#9834;</span>' : '';
+          const word = on ? '' : '<span style="font-size:clamp(8.5px,0.8cqw,10px); letter-spacing:0.08em; text-transform:uppercase; font-weight:600; color:var(--dos-quiet); margin-left:8px;">off</span>';
+          return `<div style="display:flex; flex-direction:column; justify-content:center; height:100%;">
+            <span style="font-size:clamp(12px,1.15cqw,14px); font-weight:600; color:var(${on ? '--dos-ink' : '--dos-quiet'});">Living${note}${word}</span>
+            <span style="font-size:clamp(9px,0.85cqw,10.5px); color:var(--dos-quiet); margin-top:2px;">Marantz main zone</span></div>`;
+        ]]]
+      styles:
+        card:
+        - padding: '0'
+        - height: 38px
+        label:
+        - font-family: inherit
+        - text-align: left
+        - justify-self: stretch
+        - padding: '0'
+        - min-width: '0'
+    - type: custom:stack-in-card
+      mode: horizontal
+      card_mod:
+        style: |
+          :host > ha-card { background: transparent !important; border: 1px solid var(--dos-line) !important; box-shadow: none !important; border-radius: 0 !important; --horizontal-stack-card-gap: 0px; }
+          :host { flex: 0 0 auto !important; }
+      cards:
+      - type: custom:button-card
+        template: dos_seg
+        extra_styles: ':host { flex: 0 0 auto !important; transition: opacity 80ms ease; } :host(:active) { opacity: 0.35; }'
+        styles:
+          card:
+          - height: 38px
+        tap_action:
+          action: perform-action
+          perform_action: media_player.volume_down
+          target:
+            entity_id: media_player.marantz_1
+        label: '[[[ return `<div style="height:100%; display:flex; align-items:center; justify-content:center; padding:0 15px;"><span style="font-size:14px; font-weight:400; line-height:1; color:var(--dos-quiet);">−</span></div>`; ]]]'
+      - type: custom:button-card
+        template: dos_seg
+        extra_styles: ':host { flex: 0 0 auto !important; transition: opacity 80ms ease; } :host(:active) { opacity: 0.35; }'
+        entity: media_player.marantz_1
+        triggers_update: all
+        tap_action:
+          action: more-info
+        styles:
+          card:
+          - height: 38px
+          - width: 52px
+        label: |
+          [[[
+            const a = (states['media_player.marantz_1']||{attributes:{}}).attributes || {};
+            const d = (a.volume_level==null) ? '—' : Math.round(a.volume_level*100) + '%';
+            return `<div style="height:100%; box-sizing:border-box; display:flex; align-items:center; justify-content:center; border-left:1px solid var(--dos-line);"><span style="font-size:11px; font-weight:600; line-height:1; color:var(--dos-text); font-variant-numeric:tabular-nums; white-space:nowrap;">${d}</span></div>`;
+          ]]]
+      - type: custom:button-card
+        template: dos_seg
+        extra_styles: ':host { flex: 0 0 auto !important; transition: opacity 80ms ease; } :host(:active) { opacity: 0.35; }'
+        styles:
+          card:
+          - height: 38px
+        tap_action:
+          action: perform-action
+          perform_action: media_player.volume_up
+          target:
+            entity_id: media_player.marantz_1
+        label: '[[[ return `<div style="height:100%; box-sizing:border-box; display:flex; align-items:center; justify-content:center; padding:0 15px; border-left:1px solid var(--dos-line);"><span style="font-size:14px; font-weight:400; line-height:1; color:var(--dos-quiet);">+</span></div>`; ]]]'
+  - type: custom:stack-in-card
+    mode: horizontal
+    card_mod:
+      style: |
+        :host > ha-card { background: transparent !important; box-shadow: none !important; border-radius: 0 !important; --horizontal-stack-card-gap: 12px; margin: 0 0 10px 0 !important; }
+    cards:
+    - type: custom:button-card
+      show_icon: false
+      show_name: false
+      show_state: false
+      show_label: true
+      entity: media_player.marantz_2
+      triggers_update: all
+      tap_action:
+        action: none
+      hold_action:
+        action: more-info
+      label: |
+        [[[
+          const z = states['media_player.marantz_2'];
+          const on = z && !['off','unavailable','unknown'].includes(z.state);
+          const here = !!((states['sensor.music_now']||{attributes:{}}).attributes.bedroom);
+          const note = here ? '<span style="color:var(--dos-accent); margin-left:7px;">&#9834;</span>' : '';
+          const word = on ? '' : '<span style="font-size:clamp(8.5px,0.8cqw,10px); letter-spacing:0.08em; text-transform:uppercase; font-weight:600; color:var(--dos-quiet); margin-left:8px;">off</span>';
+          return `<div style="display:flex; flex-direction:column; justify-content:center; height:100%;">
+            <span style="font-size:clamp(12px,1.15cqw,14px); font-weight:600; color:var(${on ? '--dos-ink' : '--dos-quiet'});">Bedroom${note}${word}</span>
+            <span style="font-size:clamp(9px,0.85cqw,10.5px); color:var(--dos-quiet); margin-top:2px;">Marantz zone 2</span></div>`;
+        ]]]
+      styles:
+        card:
+        - padding: '0'
+        - height: 38px
+        label:
+        - font-family: inherit
+        - text-align: left
+        - justify-self: stretch
+        - padding: '0'
+        - min-width: '0'
+    - type: custom:stack-in-card
+      mode: horizontal
+      card_mod:
+        style: |
+          :host > ha-card { background: transparent !important; border: 1px solid var(--dos-line) !important; box-shadow: none !important; border-radius: 0 !important; --horizontal-stack-card-gap: 0px; }
+          :host { flex: 0 0 auto !important; }
+      cards:
+      - type: custom:button-card
+        template: dos_seg
+        extra_styles: ':host { flex: 0 0 auto !important; transition: opacity 80ms ease; } :host(:active) { opacity: 0.35; }'
+        styles:
+          card:
+          - height: 38px
+        tap_action:
+          action: perform-action
+          perform_action: media_player.volume_down
+          target:
+            entity_id: media_player.marantz_2
+        label: '[[[ return `<div style="height:100%; display:flex; align-items:center; justify-content:center; padding:0 15px;"><span style="font-size:14px; font-weight:400; line-height:1; color:var(--dos-quiet);">−</span></div>`; ]]]'
+      - type: custom:button-card
+        template: dos_seg
+        extra_styles: ':host { flex: 0 0 auto !important; transition: opacity 80ms ease; } :host(:active) { opacity: 0.35; }'
+        entity: media_player.marantz_2
+        triggers_update: all
+        tap_action:
+          action: more-info
+        styles:
+          card:
+          - height: 38px
+          - width: 52px
+        label: |
+          [[[
+            const a = (states['media_player.marantz_2']||{attributes:{}}).attributes || {};
+            const d = (a.volume_level==null) ? '—' : Math.round(a.volume_level*100) + '%';
+            return `<div style="height:100%; box-sizing:border-box; display:flex; align-items:center; justify-content:center; border-left:1px solid var(--dos-line);"><span style="font-size:11px; font-weight:600; line-height:1; color:var(--dos-text); font-variant-numeric:tabular-nums; white-space:nowrap;">${d}</span></div>`;
+          ]]]
+      - type: custom:button-card
+        template: dos_seg
+        extra_styles: ':host { flex: 0 0 auto !important; transition: opacity 80ms ease; } :host(:active) { opacity: 0.35; }'
+        styles:
+          card:
+          - height: 38px
+        tap_action:
+          action: perform-action
+          perform_action: media_player.volume_up
+          target:
+            entity_id: media_player.marantz_2
+        label: '[[[ return `<div style="height:100%; box-sizing:border-box; display:flex; align-items:center; justify-content:center; padding:0 15px; border-left:1px solid var(--dos-line);"><span style="font-size:14px; font-weight:400; line-height:1; color:var(--dos-quiet);">+</span></div>`; ]]]'
+  - type: custom:stack-in-card
+    mode: horizontal
+    card_mod:
+      style: |
+        :host > ha-card { background: transparent !important; box-shadow: none !important; border-radius: 0 !important; --horizontal-stack-card-gap: 12px; }
+    cards:
+    - type: custom:button-card
+      show_icon: false
+      show_name: false
+      show_state: false
+      show_label: true
+      entity: media_player.bathroom
+      triggers_update: all
+      tap_action:
+        action: none
+      hold_action:
+        action: more-info
+      label: |
+        [[[
+          const z = states['media_player.bathroom'];
+          const on = z && !['off','unavailable','unknown'].includes(z.state);
+          const here = !!((states['sensor.music_now']||{attributes:{}}).attributes.bathroom);
+          const note = here ? '<span style="color:var(--dos-accent); margin-left:7px;">&#9834;</span>' : '';
+          const word = on ? '' : '<span style="font-size:clamp(8.5px,0.8cqw,10px); letter-spacing:0.08em; text-transform:uppercase; font-weight:600; color:var(--dos-quiet); margin-left:8px;">off</span>';
+          return `<div style="display:flex; flex-direction:column; justify-content:center; height:100%;">
+            <span style="font-size:clamp(12px,1.15cqw,14px); font-weight:600; color:var(${on ? '--dos-ink' : '--dos-quiet'});">Bathroom${note}${word}</span>
+            <span style="font-size:clamp(9px,0.85cqw,10.5px); color:var(--dos-quiet); margin-top:2px;">Philips speaker</span></div>`;
+        ]]]
+      styles:
+        card:
+        - padding: '0'
+        - height: 38px
+        label:
+        - font-family: inherit
+        - text-align: left
+        - justify-self: stretch
+        - padding: '0'
+        - min-width: '0'
+    - type: custom:stack-in-card
+      mode: horizontal
+      card_mod:
+        style: |
+          :host > ha-card { background: transparent !important; border: 1px solid var(--dos-line) !important; box-shadow: none !important; border-radius: 0 !important; --horizontal-stack-card-gap: 0px; }
+          :host { flex: 0 0 auto !important; }
+      cards:
+      - type: custom:button-card
+        template: dos_seg
+        extra_styles: ':host { flex: 0 0 auto !important; transition: opacity 80ms ease; } :host(:active) { opacity: 0.35; }'
+        styles:
+          card:
+          - height: 38px
+        tap_action:
+          action: perform-action
+          perform_action: media_player.volume_down
+          target:
+            entity_id: media_player.bathroom
+        label: '[[[ return `<div style="height:100%; display:flex; align-items:center; justify-content:center; padding:0 15px;"><span style="font-size:14px; font-weight:400; line-height:1; color:var(--dos-quiet);">−</span></div>`; ]]]'
+      - type: custom:button-card
+        template: dos_seg
+        extra_styles: ':host { flex: 0 0 auto !important; transition: opacity 80ms ease; } :host(:active) { opacity: 0.35; }'
+        entity: media_player.bathroom
+        triggers_update: all
+        tap_action:
+          action: more-info
+        styles:
+          card:
+          - height: 38px
+          - width: 52px
+        label: |
+          [[[
+            const a = (states['media_player.bathroom']||{attributes:{}}).attributes || {};
+            const d = (a.volume_level==null) ? '—' : Math.round(a.volume_level*100) + '%';
+            return `<div style="height:100%; box-sizing:border-box; display:flex; align-items:center; justify-content:center; border-left:1px solid var(--dos-line);"><span style="font-size:11px; font-weight:600; line-height:1; color:var(--dos-text); font-variant-numeric:tabular-nums; white-space:nowrap;">${d}</span></div>`;
+          ]]]
+      - type: custom:button-card
+        template: dos_seg
+        extra_styles: ':host { flex: 0 0 auto !important; transition: opacity 80ms ease; } :host(:active) { opacity: 0.35; }'
+        styles:
+          card:
+          - height: 38px
+        tap_action:
+          action: perform-action
+          perform_action: media_player.volume_up
+          target:
+            entity_id: media_player.bathroom
+        label: '[[[ return `<div style="height:100%; box-sizing:border-box; display:flex; align-items:center; justify-content:center; padding:0 15px; border-left:1px solid var(--dos-line);"><span style="font-size:14px; font-weight:400; line-height:1; color:var(--dos-quiet);">+</span></div>`; ]]]'
+  - type: custom:button-card
+    show_icon: false
+    show_name: false
+    show_state: false
+    show_label: true
+    tap_action:
+      action: none
+    label: |
+      [[[
+        return `<span style="display:block; white-space:normal; font-size:clamp(9.5px,0.9cqw,11.5px); color:var(--dos-quiet); line-height:1.5;">Rooms start or stop music where you are; living and bedroom share the Music Assistant stream, the bathroom runs its own Spotify stream on the Philips speaker.</span>`;
+      ]]]
+    styles:
+      card:
+      - border-radius: '0'
+      - padding: '0'
+      - margin: 22px 0 0 0
+      label:
+      - font-family: inherit
+      - text-align: left
+      - justify-self: stretch
+      - padding: '0'
+      - white-space: normal
