@@ -20,6 +20,14 @@ Energy view (day):
 
 ![Energy view, day palette](docs/screenshots/energy-day.png)
 
+Now Playing console with inline Spotify search (results play in a room of choice):
+
+![Now Playing subview with search results](docs/screenshots/media-now-day.png)
+
+Tapping a gauge or chart tile opens a full-screen subview of the underlying data, with pan and selection zoom:
+
+![Solar chart subview](docs/screenshots/chart-solar-day.png)
+
 On a phone the views collapse to a single-column flow (general and plan, day and night):
 
 | | | |
